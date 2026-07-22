@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "Bash",
+      "PowerShell",
+      "WebSearch",
+      "WebFetch",
+      "Bash(cd:*)",
+      "Bash(PYTHONIOENCODING=utf-8:*)",
+      "Bash(python:*)",
+      "PowerShell(cd:*)",
+      "PowerShell(Set-Location:*)",
+      "PowerShell(chdir:*)",
+      "PowerShell(sl:*)"
+    ],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(rmdir:*)",
+      "Bash(unlink:*)",
+      "Bash(shred:*)",
+      "Bash(git clean:*)",
+      "PowerShell(rm:*)",
+      "PowerShell(del:*)",
+      "PowerShell(rd:*)",
+      "PowerShell(rmdir:*)",
+      "PowerShell(ri:*)",
+      "PowerShell(erase:*)",
+      "PowerShell(git clean:*)"
+    ],
+    "deny": []
+  }
+}
