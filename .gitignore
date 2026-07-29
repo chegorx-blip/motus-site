@@ -4,3 +4,7 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Secrets (never track these)
+.env
+.env.*
