@@ -16,8 +16,14 @@
       "PowerShell(cd:*)",
       "PowerShell(Set-Location:*)",
       "PowerShell(chdir:*)",
-      "PowerShell(sl:*)"
+      "PowerShell(sl:*)",
+      "mcp__workspace-mcp__get_spreadsheet_info",
+      "mcp__workspace-mcp__read_sheet_values",
+      "mcp__workspace-mcp__resize_sheet_dimensions",
+      "mcp__workspace-mcp__list_script_projects",
+      "mcp__workspace-mcp__manage_conditional_formatting"
     ],
+    "deny": [],
     "ask": [
       "Bash(rm:*)",
       "Bash(rmdir:*)",
@@ -31,7 +37,6 @@
       "PowerShell(ri:*)",
       "PowerShell(erase:*)",
       "PowerShell(git clean:*)"
-    ],
-    "deny": []
+    ]
   }
 }
