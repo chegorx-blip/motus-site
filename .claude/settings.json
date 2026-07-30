@@ -21,7 +21,11 @@
       "mcp__workspace-mcp__read_sheet_values",
       "mcp__workspace-mcp__resize_sheet_dimensions",
       "mcp__workspace-mcp__list_script_projects",
-      "mcp__workspace-mcp__manage_conditional_formatting"
+      "mcp__workspace-mcp__manage_conditional_formatting",
+      "mcp__claude_ai_Firecrawl_parsing__firecrawl_scrape",
+      "Bash(mkdir -p .claude/skills/test-driven-development .claude/skills/brainstorming .claude/skills/writing-plans .claude/skills/systematic-debugging .claude/skills/verification-before-completion)",
+      "Edit(/.claude/skills/test-driven-development/**)",
+      "Bash(mkdir -p .claude/skills/test-driven-development/references)"
     ],
     "deny": [],
     "ask": [
@@ -37,6 +41,10 @@
       "PowerShell(ri:*)",
       "PowerShell(erase:*)",
       "PowerShell(git clean:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/che/Desktop/Vscode/project1/.claude/skills",
+      "/Users/che/Desktop/Vscode/project1/.claude/skills/test-driven-development"
     ]
   }
 }
