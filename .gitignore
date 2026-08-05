@@ -7,4 +7,4 @@ Thumbs.db
 
 # Secrets (never track these)
 .env
-.env.*
+.env.*desktop/
