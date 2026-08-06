@@ -607,6 +607,63 @@ section{
 .advantage h3{font-size:16px; margin-bottom:8px;}
 .advantage p{font-size:14px; color:var(--text-muted);}
 
+/* ---------- subnav ---------- */
+.subnav{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.subnav-inner{
+  max-width:none; margin:0;
+  display:flex; align-items:center; gap:28px;
+  padding:12px 24px;
+  overflow-x:auto;
+}
+.subnav-inner a{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--text-muted); text-decoration:none; white-space:nowrap;
+  padding:4px 0; border-bottom:1.5px solid transparent;
+  transition:color .2s ease, border-color .2s ease;
+}
+.subnav-inner a:hover, .subnav-inner a:focus-visible{color:var(--text); border-bottom-color:var(--bronze);}
+@media (max-width:640px){ .subnav-inner{padding:10px 16px; gap:18px;} }
+
+.topbar-cta{
+  font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink); background:var(--bronze); padding:8px 16px; border-radius:4px; text-decoration:none;
+  transition:filter .2s ease; white-space:nowrap;
+}
+.topbar-cta:hover{filter:brightness(1.08);}
+@media (max-width:640px){ .topbar-cta{display:none;} }
+
+/* ---------- partner / payment strips ---------- */
+.partner-strip, .payment-strip{
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:22px 24px;
+  margin-top:28px;
+  display:flex; align-items:flex-start; gap:16px;
+}
+.partner-strip svg, .payment-strip svg{
+  width:26px;height:26px; flex:none; margin-top:2px;
+  stroke:var(--bronze); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;
+}
+.partner-strip h3, .payment-strip h3{font-size:15px; margin-bottom:4px;}
+.partner-strip p, .payment-strip p{font-size:14px; color:var(--text-muted); margin:0;}
+
+/* ---------- hero cyprus line ---------- */
+.hero-cyprus-line{
+  margin-top:14px;
+  font-size:13px;
+  color:var(--text-muted);
+}
+.hero-cyprus-line button{
+  background:none; border:none; padding:0; margin-left:4px;
+  color:var(--text); text-decoration:underline; text-underline-offset:3px;
+  cursor:pointer; font:inherit;
+}
+.hero-cyprus-line button:hover{color:var(--bronze);}
+
 @media (max-width:639px){
   .advantages-grid{grid-template-columns:1fr; gap:26px;}
 }
@@ -1182,6 +1239,7 @@ section{
       <span>TG</span>
     </a>
   </div>
+  <a href="#" class="topbar-cta" id="topbarCta" data-i18n="cta1"></a>
   <div class="langswitch" role="group" aria-label="Language">
     <button type="button" data-lang="en" aria-pressed="false">EN</button>
     <button type="button" data-lang="ru" aria-pressed="false">RU</button>
@@ -1189,6 +1247,13 @@ section{
   </div>
   </div>
 </div>
+</div>
+
+<div class="subnav">
+  <div class="wrap-wide subnav-inner">
+    <a href="#about" data-i18n="navWhy"></a>
+    <a href="#payment" data-i18n="navPayment"></a>
+  </div>
 </div>
 
 <section class="hero" id="hero">
@@ -1212,6 +1277,9 @@ section{
           </div>
         </div>
       </div>
+      <p class="hero-cyprus-line">
+        <span data-i18n="heroCyprusLead"></span><button type="button" id="openCyprusLink"><span data-i18n="tabCyprus"></span></button>
+      </p>
 
       <div class="quick-popover" id="quickPopover">
         <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
@@ -1266,6 +1334,20 @@ section{
         <svg viewBox="0 0 24 24"><path d="M2.6 17.4a2 2 0 0 0-.6 1.4V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r="1"/></svg>
         <h3 data-i18n="adv3Title"></h3>
         <p data-i18n="adv3Body"></p>
+      </div>
+    </div>
+    <div class="partner-strip">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
+      <div>
+        <h3 data-i18n="partnerTitle"></h3>
+        <p data-i18n="partnerBody"></p>
+      </div>
+    </div>
+    <div class="payment-strip" id="payment">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      <div>
+        <h3 data-i18n="paymentTitle"></h3>
+        <p data-i18n="paymentBody"></p>
       </div>
     </div>
   </div>
@@ -1422,6 +1504,13 @@ const content = {
     eyebrow:"VERIFIED · GUARANTEED · READY TO DRIVE",
     h1:"Verified cars from Japan. Delivered to Cyprus. Ready to drive.",
     sub:"Every car is inspected before you get the keys — the first check is on us.",
+    navWhy:"Why us",
+    navPayment:"Payment methods",
+    heroCyprusLead:"Need a car now and don't want to wait on shipping? We source locally too — ",
+    partnerTitle:"A gift for our clients: partner prices below market",
+    partnerBody:"Buy a car through us and get an ongoing 10–30% off post-purchase services — painting, bodywork, electrical work, tuning, multimedia region/language conversion — through our trusted, vetted partner garage.",
+    paymentTitle:"Flexible payment",
+    paymentBody:"Multiple ways to pay, including modern methods — installment terms available on request.",
     cta1:"Start your request",
     cta2:"Talk to us",
     aboutTitle:"Born from a garage, not a used-car lot.",
@@ -1491,6 +1580,13 @@ const content = {
     eyebrow:"ПРОВЕРЕНО · ГАРАНТИЯ · ГОТОВО К ДОРОГЕ",
     h1:"Проверенные автомобили из Японии. Доставка на Кипр. Готовы к дороге.",
     sub:"Каждый автомобиль проверяется до передачи ключей — первая диагностика за наш счёт.",
+    navWhy:"Почему именно мы",
+    navPayment:"Способы оплаты",
+    heroCyprusLead:"Нужна машина прямо сейчас и не хочется ждать доставку? Подбираем и на Кипре — ",
+    partnerTitle:"Подарок для наших клиентов: цены партнёра ниже рынка",
+    partnerBody:"Покупая машину у нас, вы получаете постоянную скидку 10–30% на услуги после покупки — покраска, кузовной ремонт, электрика, тюнинг, смена региона/языка мультимедиа — у нашего проверенного партнёра.",
+    paymentTitle:"Гибкая оплата",
+    paymentBody:"Разные способы оплаты, включая современные — рассрочка обсуждается индивидуально.",
     cta1:"Оставить заявку",
     cta2:"Написать нам",
     aboutTitle:"Выросли из автосервиса, а не с авторынка.",
@@ -1560,6 +1656,13 @@ const content = {
     eyebrow:"ΕΠΑΛΗΘΕΥΜΕΝΟ · ΕΓΓΥΗΣΗ · ΕΤΟΙΜΟ ΓΙΑ ΔΡΟΜΟ",
     h1:"Ελεγμένα αυτοκίνητα από την Ιαπωνία. Παράδοση στην Κύπρο. Έτοιμα για το δρόμο.",
     sub:"Κάθε αυτοκίνητο ελέγχεται πριν παραλάβετε τα κλειδιά — ο πρώτος έλεγχος είναι δωρεάν.",
+    navWhy:"Γιατί εμείς",
+    navPayment:"Τρόποι πληρωμής",
+    heroCyprusLead:"Χρειάζεστε αυτοκίνητο τώρα και δεν θέλετε να περιμένετε τη μεταφορά; Αναζητούμε και τοπικά — ",
+    partnerTitle:"Δώρο για τους πελάτες μας: τιμές συνεργάτη κάτω από την αγορά",
+    partnerBody:"Αγοράστε αυτοκίνητο μέσω εμάς και πάρτε μόνιμη έκπτωση 10–30% σε υπηρεσίες μετά την αγορά — βαφή, εργασίες αμαξώματος, ηλεκτρολογικά, tuning, αλλαγή περιοχής/γλώσσας multimedia — από τον έμπιστο συνεργάτη μας.",
+    paymentTitle:"Ευέλικτη πληρωμή",
+    paymentBody:"Πολλοί τρόποι πληρωμής, συμπεριλαμβανομένων σύγχρονων μεθόδων — δόσεις κατόπιν συνεννόησης.",
     cta1:"Ξεκινήστε το αίτημά σας",
     cta2:"Επικοινωνήστε μαζί μας",
     aboutTitle:"Γεννηθήκαμε από συνεργείο, όχι από παλαιοπωλείο.",
@@ -1889,6 +1992,11 @@ chatFabPrompt.addEventListener('click', (e)=>{
 });
 document.getElementById('openDetailedLink').addEventListener('click', (e)=>{ e.preventDefault(); openRequestModal(); });
 document.getElementById('openRequestModal').addEventListener('click', (e)=>{ e.preventDefault(); openRequestModal(); });
+document.getElementById('topbarCta').addEventListener('click', (e)=>{ e.preventDefault(); openRequestModal(); });
+document.getElementById('openCyprusLink').addEventListener('click', ()=>{
+  openRequestModal();
+  document.getElementById('tabCyprusBtn').click();
+});
 
 const quickPopover = document.getElementById('quickPopover');
 const quickFormToggle = document.getElementById('quickFormToggle');
