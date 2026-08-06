@@ -120,7 +120,7 @@
 
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-html,body{margin:0;padding:0;}
+html,body{margin:0;padding:0;overflow-x:hidden;}
 body{
   background:var(--bg);
   color:var(--text);
@@ -152,7 +152,7 @@ a{color:inherit;}
   margin:0 auto;
   padding:0 24px;
 }
-.wrap-wide{max-width:960px;}
+.wrap-wide{max-width:1120px;}
 
 .hero-grid{
   display:grid;
@@ -167,16 +167,29 @@ a{color:inherit;}
   position:relative;
   opacity:0;
   transform:translateY(16px) scale(0.98);
-  max-width:340px;
+  max-width:400px;
   margin:0 auto;
 }
 .hero.ready .hero-media{animation:riseMedia .7s ease .48s forwards;}
 @keyframes riseMedia{to{opacity:1; transform:translateY(0) scale(1);}}
 .hero-photo-main{
+  position:relative;
   border-radius:4px;
   overflow:hidden;
   aspect-ratio:3/4;
 }
+.hero-photo-main::before,
+.hero-photo-main::after{
+  content:"";
+  position:absolute;
+  width:22px; height:22px;
+  border:1.5px solid var(--bronze);
+  z-index:1;
+  opacity:.85;
+  pointer-events:none;
+}
+.hero-photo-main::before{top:12px; left:12px; border-right:none; border-bottom:none;}
+.hero-photo-main::after{bottom:12px; right:12px; border-left:none; border-top:none;}
 .hero-photo-main img{
   width:100%; height:100%;
   object-fit:cover;
@@ -196,6 +209,41 @@ a{color:inherit;}
   box-shadow:0 10px 28px rgba(20,32,26,0.22);
 }
 .hero-photo-accent img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ---------- route strip (hero signature element) ---------- */
+.route-strip{
+  display:flex; align-items:center;
+  max-width:960px; margin:0 auto;
+  padding:26px 24px 22px;
+  opacity:0; transform:translateY(-8px);
+}
+.hero.ready .route-strip{animation:riseRoute .6s ease .1s forwards;}
+@keyframes riseRoute{to{opacity:1; transform:translateY(0);}}
+.route-stop{display:flex; align-items:center; gap:8px; flex:none;}
+.route-stop-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:clamp(9px,1.6vw,11px);
+  letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--text-muted); white-space:nowrap;
+}
+.route-stop-dot{width:8px;height:8px;border-radius:50%; flex:none;}
+.route-stop-dot.start{background:var(--bronze); animation:beacon 2.6s ease-in-out infinite;}
+.route-stop-dot.end{background:var(--bg); border:1.5px solid var(--bronze); box-sizing:border-box;}
+.route-stop-icon{width:15px;height:15px; flex:none; stroke:var(--text-muted); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;}
+.route-seg{
+  flex:1 1 28px; min-width:16px; height:1px;
+  background:var(--line);
+  margin:0 10px;
+}
+@media (max-width:640px){
+  .route-strip{padding:16px 16px 18px;}
+  .route-stop-label{display:none;}
+  .route-seg{margin:0 8px;}
+}
+@media (prefers-reduced-motion: reduce){
+  .route-strip{opacity:1 !important; transform:none !important; animation:none !important;}
+  .route-stop-dot.start{animation:none !important;}
+}
 
 .about-grid{
   display:grid;
@@ -230,7 +278,6 @@ a{color:inherit;}
   margin:0;
   display:flex;
   align-items:center;
-  justify-content:space-between;
   padding:16px 24px;
 }
 @media (max-width:640px){
@@ -281,6 +328,7 @@ a{color:inherit;}
   display:flex;
   align-items:center;
   gap:18px;
+  margin-left:auto;
 }
 .header-phone{
   display:inline-flex;
@@ -305,7 +353,7 @@ a{color:inherit;}
   stroke-linejoin:round;
   flex:none;
 }
-@media (max-width:640px){
+@media (max-width:900px){
   .header-phone span{display:none;}
   .header-phone{padding-right:10px;}
 }
@@ -359,8 +407,8 @@ a{color:inherit;}
   letter-spacing:clamp(0.06em, 1.6vw, 0.18em);
 }
 h1.headline{
-  font-size:clamp(32px, 4.6vw + 14px, 52px);
-  line-height:1.08;
+  font-size:clamp(30px, 3.6vw + 14px, 42px);
+  line-height:1.14;
   margin-bottom:20px;
   opacity:0;
 }
@@ -607,26 +655,20 @@ section{
 .advantage h3{font-size:16px; margin-bottom:8px;}
 .advantage p{font-size:14px; color:var(--text-muted);}
 
-/* ---------- subnav ---------- */
-.subnav{
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
+/* ---------- topbar nav links ---------- */
+.topbar-nav{
+  display:flex; align-items:center; gap:22px;
+  margin-left:32px;
 }
-.subnav-inner{
-  max-width:none; margin:0;
-  display:flex; align-items:center; gap:28px;
-  padding:12px 24px;
-  overflow-x:auto;
-}
-.subnav-inner a{
+.topbar-nav a{
   font-family:'IBM Plex Mono',monospace;
   font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
-  color:var(--text-muted); text-decoration:none; white-space:nowrap;
+  color:var(--stone); text-decoration:none; white-space:nowrap;
   padding:4px 0; border-bottom:1.5px solid transparent;
   transition:color .2s ease, border-color .2s ease;
 }
-.subnav-inner a:hover, .subnav-inner a:focus-visible{color:var(--text); border-bottom-color:var(--bronze);}
-@media (max-width:640px){ .subnav-inner{padding:10px 16px; gap:18px;} }
+.topbar-nav a:hover, .topbar-nav a:focus-visible{color:var(--paper); border-bottom-color:var(--bronze);}
+@media (max-width:900px){ .topbar-nav{display:none;} }
 
 .topbar-cta{
   font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
@@ -652,8 +694,18 @@ section{
 .partner-strip p, .payment-strip p{font-size:14px; color:var(--text-muted); margin:0;}
 
 /* ---------- hero cyprus line ---------- */
+.hero-trust-line{
+  display:flex; align-items:center; gap:7px;
+  margin-top:16px;
+  font-size:13px;
+  color:var(--text-muted);
+}
+.hero-trust-line svg{
+  width:16px;height:16px; flex:none;
+  stroke:var(--bronze); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;
+}
 .hero-cyprus-line{
-  margin-top:14px;
+  margin-top:10px;
   font-size:13px;
   color:var(--text-muted);
 }
@@ -1224,6 +1276,10 @@ section{
 <div class="topbar">
 <div class="wrap-wide topbar-inner">
   <a href="#hero" class="logo-mark" aria-label="Motus"><svg viewBox="0 0 2366 669" aria-hidden="true"><defs><linearGradient id="motusChrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.28" stop-color="#c8ced2"/><stop offset="0.48" stop-color="#5c676d"/><stop offset="0.58" stop-color="#eef1f2"/><stop offset="0.82" stop-color="#98a1a6"/><stop offset="1" stop-color="#f4f6f7"/></linearGradient></defs><path d="M 241.3 478.2 C 241.6 476.7 242.6 470.7 243.6 464.8 L 245.4 454.0 L 280.2 454.0 C 304.2 454.0 315.0 453.7 315.0 452.9 C 315.0 451.7 366.7 155.6 367.5 152.3 L 368.0 150.0 L 403.4 150.0 L 438.7 150.0 L 469.5 217.5 C 486.4 254.7 500.6 285.3 501.0 285.5 C 501.4 285.7 503.9 283.1 506.6 279.7 C 509.3 276.3 533.5 245.7 560.4 211.8 L 609.3 150.0 L 642.8 150.0 L 676.2 150.0 L 675.6 153.2 C 671.9 173.5 623.0 451.8 623.0 452.7 C 623.0 453.7 636.8 454.0 692.8 454.0 L 762.6 454.0 L 758.2 449.2 C 743.4 433.4 734.1 412.8 730.9 389.2 C 729.3 377.4 730.4 353.2 733.0 340.7 C 746.5 276.8 794.8 228.1 855.5 217.4 C 868.6 215.1 893.1 215.0 905.5 217.3 C 951.9 225.7 982.0 256.2 989.6 302.5 C 991.8 315.9 991.0 341.3 988.0 355.3 C 980.2 392.0 959.8 425.9 932.4 448.0 L 924.9 454.0 L 1001.9 454.0 L 1079.0 454.0 L 1075.6 448.8 C 1066.6 434.5 1062.9 415.7 1065.0 394.5 C 1065.8 386.2 1099.9 188.0 1102.5 176.5 C 1102.9 174.7 1109.0 172.4 1141.3 161.7 C 1162.4 154.7 1180.1 149.0 1180.6 149.0 C 1181.4 149.0 1171.2 209.7 1168.5 220.7 L 1168.0 223.0 L 1209.3 223.2 L 1250.6 223.5 L 1246.8 244.5 C 1244.7 256.1 1242.8 266.1 1242.5 266.8 C 1242.2 267.7 1233.0 268.0 1201.5 268.0 C 1170.0 268.0 1160.8 268.3 1160.5 269.2 C 1159.1 273.1 1140.9 378.1 1140.4 385.2 C 1139.1 401.3 1143.0 414.1 1151.2 421.5 C 1165.0 433.9 1186.8 433.9 1215.1 421.6 C 1216.8 420.9 1216.7 421.9 1211.5 450.8 L 1210.9 454.0 L 1271.0 454.0 L 1331.1 454.0 L 1327.1 448.8 C 1319.8 439.0 1314.5 426.3 1311.9 412.0 C 1310.3 403.4 1310.3 379.9 1311.9 368.0 C 1313.1 359.3 1335.3 230.4 1336.5 225.3 L 1337.0 223.0 L 1374.0 223.0 C 1394.4 223.0 1411.0 223.2 1411.0 223.5 C 1411.0 223.8 1405.1 256.8 1398.0 296.8 C 1390.8 336.8 1384.4 374.4 1383.8 380.3 C 1381.3 404.3 1387.1 418.8 1402.0 425.9 C 1406.9 428.2 1408.7 428.5 1418.5 428.5 C 1428.4 428.5 1430.1 428.2 1435.4 425.7 C 1447.5 420.0 1455.2 411.1 1460.1 396.5 C 1461.8 391.7 1465.7 372.8 1470.0 348.5 C 1473.9 326.5 1480.5 289.4 1484.6 266.0 C 1488.8 242.6 1492.3 223.4 1492.4 223.2 C 1492.6 223.1 1505.5 223.1 1521.1 223.2 L 1549.6 223.5 L 1535.9 301.2 C 1528.3 344.0 1521.0 383.5 1519.6 389.0 C 1513.3 413.6 1502.3 434.5 1488.5 448.3 L 1482.8 454.0 L 1539.8 454.0 L 1596.8 454.0 L 1597.3 451.8 C 1597.6 450.5 1599.5 440.5 1601.5 429.5 C 1603.5 418.5 1605.4 408.7 1605.8 407.8 C 1606.4 406.4 1607.6 406.8 1614.4 411.1 C 1657.6 437.8 1697.6 440.0 1704.0 416.1 C 1704.7 413.5 1704.9 409.7 1704.5 407.1 C 1702.9 396.0 1694.8 387.3 1668.6 368.1 C 1632.9 342.1 1622.4 327.3 1621.2 301.4 C 1620.6 287.3 1622.5 278.2 1628.6 266.0 C 1638.3 246.5 1658.7 230.5 1683.8 222.6 C 1713.7 213.2 1750.2 214.5 1779.5 225.9 C 1783.9 227.6 1788.1 229.4 1788.8 229.9 C 1789.9 230.5 1789.4 234.7 1786.5 251.6 C 1784.5 263.1 1782.7 272.7 1782.4 272.9 C 1782.2 273.1 1776.6 271.0 1769.9 268.1 C 1752.0 260.5 1745.6 258.9 1730.3 258.3 C 1718.9 257.8 1716.3 258.0 1710.3 259.8 C 1701.8 262.4 1695.8 267.3 1693.4 273.5 C 1688.6 286.2 1697.9 299.1 1726.0 318.5 C 1743.4 330.5 1757.8 344.2 1763.8 354.5 C 1781.7 384.9 1777.0 422.0 1752.2 448.3 L 1746.7 454.0 L 1991.3 454.0 C 2186.4 454.0 2236.0 454.3 2236.0 455.2 C 2236.0 455.9 2235.1 461.7 2234.0 468.0 C 2232.9 474.3 2232.0 479.8 2232.0 480.2 C 2232.0 480.7 1851.4 481.0 1386.1 481.0 L 540.3 481.0 L 542.5 468.2 C 543.8 461.2 545.1 454.8 545.4 454.0 C 546.3 451.5 577.1 274.6 576.8 273.3 C 576.6 272.6 554.9 299.7 528.5 333.4 C 502.1 367.2 480.2 394.5 479.8 394.2 C 479.4 393.8 467.1 367.2 452.5 335.1 C 437.9 303.0 425.4 275.7 424.7 274.4 C 423.6 272.3 422.9 275.1 419.1 296.8 C 416.8 310.4 410.4 346.7 405.0 377.5 C 399.6 408.3 393.5 443.4 391.5 455.5 C 389.5 467.6 387.7 478.3 387.4 479.2 C 386.9 480.9 382.5 481.0 313.8 481.0 L 240.8 481.0 L 241.3 478.2 Z M 858.1 437.4 C 877.9 431.6 895.2 410.0 905.4 378.4 C 911.0 360.8 913.1 347.3 913.7 325.0 C 914.1 307.9 913.9 304.3 912.2 295.6 C 907.3 272.2 895.5 258.3 879.0 256.4 C 844.0 252.4 813.6 296.4 807.9 359.5 C 804.9 392.8 810.8 418.3 824.5 430.8 C 827.5 433.6 831.9 436.5 834.2 437.3 C 839.9 439.3 851.3 439.4 858.1 437.4 Z " fill="url(#motusChrome)" fill-rule="evenodd"/><path class="logo-dot" d="M 184.0 489.7 C 179.1 488.1 170.7 479.5 169.2 474.4 C 166.4 465.0 168.4 457.5 175.5 450.5 C 180.6 445.3 185.7 443.0 192.0 443.0 C 198.3 443.0 203.4 445.3 208.5 450.5 C 218.7 460.6 218.7 473.4 208.5 483.5 C 201.5 490.6 193.3 492.6 184.0 489.7 Z " fill="#B4894E" fill-rule="evenodd"/></svg></a>
+  <nav class="topbar-nav">
+    <a href="#about" data-i18n="navWhy"></a>
+    <a href="#payment" data-i18n="navPayment"></a>
+  </nav>
   <div class="topbar-right">
   <a class="header-phone" href="tel:+35795588595" target="_top">
     <svg viewBox="0 0 24 24"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
@@ -1249,17 +1305,25 @@ section{
 </div>
 </div>
 
-<div class="subnav">
-  <div class="wrap-wide subnav-inner">
-    <a href="#about" data-i18n="navWhy"></a>
-    <a href="#payment" data-i18n="navPayment"></a>
-  </div>
-</div>
-
 <section class="hero" id="hero">
+  <div class="route-strip" aria-hidden="true">
+    <div class="route-stop">
+      <span class="route-stop-dot start"></span>
+      <span class="route-stop-label" data-i18n="routeRequest"></span>
+    </div>
+    <span class="route-seg"></span>
+    <div class="route-stop">
+      <svg class="route-stop-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+      <span class="route-stop-label" data-i18n="routeVerified"></span>
+    </div>
+    <span class="route-seg"></span>
+    <div class="route-stop">
+      <svg class="route-stop-icon" viewBox="0 0 24 24"><path d="M2.6 17.4a2 2 0 0 0-.6 1.4V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r="1"/></svg>
+      <span class="route-stop-label" data-i18n="routeKeys"></span>
+    </div>
+  </div>
   <div class="wrap wrap-wide hero-grid">
     <div class="hero-copy">
-      <div class="mono eyebrow" data-i18n="eyebrow"></div>
       <h1 class="headline" data-i18n="h1"></h1>
       <p class="subhead" data-i18n="sub"></p>
       <div class="cta-row">
@@ -1277,6 +1341,10 @@ section{
           </div>
         </div>
       </div>
+      <p class="hero-trust-line">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span data-i18n="heroWarranty"></span>
+      </p>
       <p class="hero-cyprus-line">
         <span data-i18n="heroCyprusLead"></span><button type="button" id="openCyprusLink"><span data-i18n="tabCyprus"></span></button>
       </p>
@@ -1506,6 +1574,10 @@ const content = {
     sub:"Every car is inspected before you get the keys — the first check is on us.",
     navWhy:"Why us",
     navPayment:"Payment methods",
+    routeRequest:"Your request",
+    routeVerified:"Sourced & verified",
+    routeKeys:"Keys in your hand",
+    heroWarranty:"1-year / 15,000 km engine & gearbox warranty on every car",
     heroCyprusLead:"Need a car now and don't want to wait on shipping? We source locally too — ",
     partnerTitle:"A gift for our clients: partner prices below market",
     partnerBody:"Buy a car through us and get an ongoing 10–30% off post-purchase services — painting, bodywork, electrical work, tuning, multimedia region/language conversion — through our trusted, vetted partner garage.",
@@ -1582,6 +1654,10 @@ const content = {
     sub:"Каждый автомобиль проверяется до передачи ключей — первая диагностика за наш счёт.",
     navWhy:"Почему именно мы",
     navPayment:"Способы оплаты",
+    routeRequest:"Ваша заявка",
+    routeVerified:"Найдено и проверено",
+    routeKeys:"Ключи у вас",
+    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км на каждый автомобиль",
     heroCyprusLead:"Нужна машина прямо сейчас и не хочется ждать доставку? Подбираем и на Кипре — ",
     partnerTitle:"Подарок для наших клиентов: цены партнёра ниже рынка",
     partnerBody:"Покупая машину у нас, вы получаете постоянную скидку 10–30% на услуги после покупки — покраска, кузовной ремонт, электрика, тюнинг, смена региона/языка мультимедиа — у нашего проверенного партнёра.",
@@ -1658,6 +1734,10 @@ const content = {
     sub:"Κάθε αυτοκίνητο ελέγχεται πριν παραλάβετε τα κλειδιά — ο πρώτος έλεγχος είναι δωρεάν.",
     navWhy:"Γιατί εμείς",
     navPayment:"Τρόποι πληρωμής",
+    routeRequest:"Το αίτημά σας",
+    routeVerified:"Βρέθηκε & ελέγχθηκε",
+    routeKeys:"Τα κλειδιά σας",
+    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ σε κάθε αυτοκίνητο",
     heroCyprusLead:"Χρειάζεστε αυτοκίνητο τώρα και δεν θέλετε να περιμένετε τη μεταφορά; Αναζητούμε και τοπικά — ",
     partnerTitle:"Δώρο για τους πελάτες μας: τιμές συνεργάτη κάτω από την αγορά",
     partnerBody:"Αγοράστε αυτοκίνητο μέσω εμάς και πάρτε μόνιμη έκπτωση 10–30% σε υπηρεσίες μετά την αγορά — βαφή, εργασίες αμαξώματος, ηλεκτρολογικά, tuning, αλλαγή περιοχής/γλώσσας multimedia — από τον έμπιστο συνεργάτη μας.",

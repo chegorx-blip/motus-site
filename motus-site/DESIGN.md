@@ -65,7 +65,11 @@ Scale (mobile → desktop via `clamp()`, not fixed breakpoint jumps):
 
 ## Layout
 
-- Container: `max-width: 720px` (`.wrap`), `960px` for wider sections (`.wrap-wide`)
+- Container: `max-width: 720px` (`.wrap`), `1120px` for wider sections (`.wrap-wide`, widened 2026-08-06
+  from 960px — on very wide monitors (2560px+) the old 960px column left excessive dead margin on
+  both sides; also raised `h1.headline`'s clamp max from 52px to 42px in the same pass, because past
+  the `wrap-wide` cap the text column stops growing while `vw`-based font size kept growing, so wide
+  screens got an oversized heading crammed into a fixed-width column and wrapped badly)
 - Horizontal padding: `24px`
 - Breakpoints in use: `460px, 480px, 520px, 640px, 860px` (mobile-first; `860px` is the main
   hero two-column threshold, everything below is single-column)
