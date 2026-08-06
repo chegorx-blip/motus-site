@@ -103,11 +103,80 @@ Scale (mobile → desktop via `clamp()`, not fixed breakpoint jumps):
 - No countdown timers or fabricated urgency copy, per brand voice.
 - No stock-photo hero — the hero image/video is real inventory, not lifestyle stock.
 
+## Site architecture & content (added 2026-08-06, from owner review + reference pass)
+
+References used for this pass: **Bring a Trailer** (chosen by the owner — plain, information-
+dense, trust through specifics, not decoration) for header/nav structure; **Anassa Hotel**
+(Paphos) for "one strong photo, almost no text" restraint, which the existing Deep Cyprus
+palette already leans toward. Explicitly *not* following the two weakest local competitors
+(DriveClick/buycars.cy — cluttered icon-grid, unlocalized pricing widget; generic "photo +
+headline + 2 buttons" template shared by most Cyprus import dealers).
+
+**Header, two bars (mirrors BaT's structure, not its content):**
+- Black top bar: logo, primary nav, language switch (already correct — plain text, bronze
+  underline, not a flag dropdown), and a visible link to the request page (bronze weight,
+  equivalent to how BaT prints "Submit a Vehicle" — not buried).
+- White second bar, topic tabs: "Почему именно мы" (see differentiation note below), "Виды
+  оплат", and **one slot intentionally left open** for whatever topic the deeper market/model
+  research surfaces as worth its own tab — do not fill this speculatively.
+
+**Hero must carry both services, not just Japan import.** Currently only "Verified cars from
+Japan…" — needs a visible, non-buried second thread for Cyprus local sourcing ("need a car
+now, don't want to wait on shipping — we source locally too"). Whether that's a hero subline,
+a second CTA, or a dedicated strip below the fold is an implementation call — the requirement
+is visibility, not a specific placement.
+
+**"Why us" needs real differentiation, not the current 3 generic claims.** Verified competitor
+copy (Japan Motors, DriveClick, others) already says "inspected / warranty / transparent
+price" near-verbatim — keeping those three claims as the *entire* differentiation section reads
+identical to every competitor. Fold in something competitors don't say: the AutoExpert
+ownership/partnership angle below is the strongest candidate.
+
+**AutoExpert partner-pricing mention.** Motus's owner also owns AutoExpert (service/tuning
+garage, Limassol) — Motus buyers get some of the best prices on Cyprus for post-purchase work
+(ceramic coating, polishing, JDM infotainment "region change," etc.) through that ownership.
+State this compactly and vividly (one strong line/card), not as an exhaustive service list —
+overwhelming detail was explicitly ruled out. Whether "we own both companies" is said outright
+or softened to "partner pricing" is an open copywriting call, not decided yet.
+
+**Request flow becomes a standalone page, not the current modal.** Existing `.request-modal`
+(Japan/Cyprus tab switcher, per-intent field groups) already has the right internal logic —
+promote it to its own route (e.g. `/order`) instead of a same-page modal, because it must also
+work as a cold-open destination: shared via direct link or QR code to people who've never seen
+the homepage, so it can't assume any prior context. Requirements for that page:
+- First interaction is the intent choice (Japan import vs. Cyprus search) — genuinely different
+  field sets per path, confirmed explicitly by the owner, not one shared form.
+- The form should surface what the client is *getting* while they fill it in — included
+  services, bonuses, anything free — not just collect fields silently. It should read as
+  selling, not just intake.
+- Fast and simple over clever — no unnecessary steps, no login/account system (there's no
+  ongoing account relationship to support, unlike BaT's bidding/watchlist mechanics — adding
+  auth here would be pure unneeded complexity).
+- Must support a `?src=` style query tag per traffic source (QR at reception, a future QR at a
+  parts shop, etc.) so visits can be attributed later once analytics is live.
+
+**Form backend:** submissions go through one decoupled endpoint (not hard-wired straight into
+a spreadsheet API from the client) so the destination can change later — currently the target
+is the "MOTUS CRM — Рабочая" Google Sheet's "Заявки" tab (where staff already look), with
+Bitrix24 (free tier, chosen 2026-08-06 for lead/pipeline management) as the likely next
+destination once connected — swapping should mean reconfiguring the endpoint, not rebuilding
+the form.
+
+**Analytics:** Google Analytics (chosen over a cookieless paid alternative — accepted the
+cookie-consent-banner tradeoff) plus Vercel Web Analytics/Speed Insights (scripts already added
+to `index.html`, awaiting the owner enabling both in the Vercel dashboard).
+
 ## Known gaps (tracked, not silently fixed)
 
 - **Form submission is not wired to a backend yet.** Both the quick-form and the detailed
   request modal currently just show a success state locally (see comments in the `<script>`
-  block). The target is the existing Google Sheets CRM ("Заявки" / "Заявки Кипр" tabs) via an
-  Apps Script Web App — deferred until that CRM pipeline is finalized (separate task).
+  block). Target: a decoupled endpoint → "Заявки" tab in the MOTUS CRM sheet (see above),
+  deferred until that pipeline is built (separate task).
+- **Request modal needs to become the standalone `/order` page** described above — not done yet.
+- **Hero/why-us copy still needs the content changes above** (dual-service visibility,
+  differentiated why-us, AutoExpert partner line) — not yet written into `index.html`.
+- **Header not yet restructured** into the black-bar/white-bar layout described above.
+- No cookie-consent banner yet for Google Analytics — required once GA is actually added (EU/
+  Cyprus, GDPR).
 - Hero photo/video are embedded as base64 inside `index.html` for portability; consider moving
   to hosted files if the page weight becomes a problem (currently ~1MB total).
