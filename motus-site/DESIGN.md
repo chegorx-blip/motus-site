@@ -176,7 +176,10 @@ to `index.html`, awaiting the owner enabling both in the Vercel dashboard).
   request modal currently just show a success state locally (see comments in the `<script>`
   block). Target: a decoupled endpoint → "Заявки" tab in the MOTUS CRM sheet (see above),
   deferred until that pipeline is built (separate task).
-- **Request modal needs to become the standalone `/order` page** described above — not done yet.
+- ~~Request modal needs to become the standalone `/order` page~~ — done 2026-08-06: `order.html` created
+  (deploys at `/order` via `vercel.json`'s `cleanUrls`), holds the full Japan/Cyprus intent form,
+  reads `?intent=cyprus` and `?src=` from the URL for cold-open QR/link entry. `index.html`'s CTAs
+  now link there instead of opening an in-page modal (modal markup + its JS removed from `index.html`).
 - **Hero/why-us copy still needs the content changes above** (dual-service visibility,
   differentiated why-us, AutoExpert partner line) — not yet written into `index.html`.
 - **Header not yet restructured** into the black-bar/white-bar layout described above.

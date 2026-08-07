@@ -709,12 +709,12 @@ section{
   font-size:13px;
   color:var(--text-muted);
 }
-.hero-cyprus-line button{
-  background:none; border:none; padding:0; margin-left:4px;
+.hero-cyprus-line a{
+  margin-left:4px;
   color:var(--text); text-decoration:underline; text-underline-offset:3px;
-  cursor:pointer; font:inherit;
+  font:inherit;
 }
-.hero-cyprus-line button:hover{color:var(--bronze);}
+.hero-cyprus-line a:hover{color:var(--bronze);}
 
 @media (max-width:639px){
   .advantages-grid{grid-template-columns:1fr; gap:26px;}
@@ -1295,7 +1295,7 @@ section{
       <span>TG</span>
     </a>
   </div>
-  <a href="#" class="topbar-cta" id="topbarCta" data-i18n="cta1"></a>
+  <a href="order.html" class="topbar-cta" data-i18n="cta1"></a>
   <div class="langswitch" role="group" aria-label="Language">
     <button type="button" data-lang="en" aria-pressed="false">EN</button>
     <button type="button" data-lang="ru" aria-pressed="false">RU</button>
@@ -1329,7 +1329,7 @@ section{
       <div class="cta-row">
         <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
         <div class="hero-below-form">
-          <button type="button" class="detailed-link" id="openDetailedLink" data-i18n="detailedLinkText"></button>
+          <a href="order.html" class="detailed-link" data-i18n="detailedLinkText"></a>
           <div class="hero-talk">
             <span data-i18n="cta2"></span>
             <a href="https://wa.me/35795588595" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">
@@ -1346,7 +1346,7 @@ section{
         <span data-i18n="heroWarranty"></span>
       </p>
       <p class="hero-cyprus-line">
-        <span data-i18n="heroCyprusLead"></span><button type="button" id="openCyprusLink"><span data-i18n="tabCyprus"></span></button>
+        <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="tabCyprus"></a>
       </p>
 
       <div class="quick-popover" id="quickPopover">
@@ -1442,7 +1442,7 @@ section{
     <h2 data-i18n="finalTitle"></h2>
     <p data-i18n="finalBody"></p>
 
-    <button type="button" class="btn btn-primary" id="openRequestModal" data-i18n="cta1"></button>
+    <a href="order.html" class="btn btn-primary" data-i18n="cta1"></a>
 
     <div class="contacts-block">
       <div class="mono contacts-title" data-i18n="contactsTitle"></div>
@@ -1465,84 +1465,6 @@ section{
     </div>
   </div>
 </section>
-
-<div class="request-modal" id="requestModal" aria-hidden="true">
-  <div class="request-modal-backdrop" id="requestModalBackdrop"></div>
-  <div class="request-modal-panel" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
-    <button type="button" class="request-modal-close" id="requestModalClose" aria-label="Close">&times;</button>
-    <div class="request-modal-scroll">
-      <div class="route-mark route-mark-static" aria-hidden="true">
-        <svg viewBox="0 0 100 16">
-          <circle class="route-dot" cx="6" cy="8" r="3"/>
-          <line class="route-line" x1="14" y1="8" x2="100" y2="8"/>
-        </svg>
-      </div>
-      <h2 class="request-modal-title" id="requestModalTitle" data-i18n="requestModalTitle"></h2>
-
-      <div class="request-tabs" role="tablist">
-        <button type="button" class="request-tab active" id="tabJapanBtn" data-intent="japan" role="tab" aria-selected="true" data-i18n="tabJapan"></button>
-        <button type="button" class="request-tab" id="tabCyprusBtn" data-intent="cyprus" role="tab" aria-selected="false" data-i18n="tabCyprus"></button>
-      </div>
-
-      <div class="request-perks" id="requestPerks">
-        <div class="request-perk-group" data-group="cyprus">
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksCyBonusLabel"></span>
-            <span data-i18n="perksCyBonus"></span>
-          </div>
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksPaymentLabel"></span>
-            <span data-i18n="perksPayment"></span>
-          </div>
-        </div>
-        <div class="request-perk-group active" data-group="japan">
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksHonestLabel"></span>
-            <span data-i18n="perksHonest"></span>
-          </div>
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksTurnkeyLabel"></span>
-            <span data-i18n="perksTurnkey"></span>
-          </div>
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksBonusLabel"></span>
-            <span data-i18n="perksBonus"></span>
-          </div>
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksServiceLabel"></span>
-            <span data-i18n="perksService"></span>
-          </div>
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksPaymentLabel"></span>
-            <span data-i18n="perksPayment"></span>
-          </div>
-        </div>
-      </div>
-
-      <form class="request-form" id="requestForm" novalidate>
-        <div class="request-groups" id="requestGroups"></div>
-
-        <div class="request-consent">
-          <label class="request-checkbox" id="consent0Row" style="display:none;">
-            <input type="checkbox" name="consent0">
-            <span data-i18n="consent0"></span>
-          </label>
-          <label class="request-checkbox">
-            <input type="checkbox" name="consent1" required>
-            <span data-i18n="consent1"></span>
-          </label>
-          <label class="request-checkbox">
-            <input type="checkbox" name="consent2" required>
-            <span data-i18n="consent2"></span>
-          </label>
-        </div>
-
-        <button type="submit" class="btn request-submit" data-i18n="submitBtn"></button>
-        <div class="request-success" id="requestSuccess" data-i18n="successMsg"></div>
-      </form>
-    </div>
-  </div>
-</div>
 
 <div class="chatfab" id="chatFab">
   <div class="chatfab-prompt" id="chatFabPrompt">
@@ -2044,38 +1966,10 @@ chatFabPromptClose.addEventListener('click', (e)=>{
   dismissPrompt();
 });
 
-/* ---------- request modal ---------- */
-const requestModal = document.getElementById('requestModal');
-const requestForm = document.getElementById('requestForm');
-const requestSuccess = document.getElementById('requestSuccess');
-const requestPerks = document.getElementById('requestPerks');
-
-function openRequestModal(){
-  dismissPrompt();
-  chatFab.classList.remove('open');
-  chatFabToggle.setAttribute('aria-expanded', 'false');
-  requestModal.classList.add('open');
-  requestModal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-  const firstInput = requestForm.querySelector('input, select, textarea');
-  if(firstInput) setTimeout(()=>firstInput.focus(), 350);
-}
-function closeRequestModal(){
-  requestModal.classList.remove('open');
-  requestModal.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-}
-
+/* ---------- request form now lives on order.html; this page only links there ---------- */
 chatFabPrompt.addEventListener('click', (e)=>{
   if(e.target === chatFabPromptClose) return;
-  openRequestModal();
-});
-document.getElementById('openDetailedLink').addEventListener('click', (e)=>{ e.preventDefault(); openRequestModal(); });
-document.getElementById('openRequestModal').addEventListener('click', (e)=>{ e.preventDefault(); openRequestModal(); });
-document.getElementById('topbarCta').addEventListener('click', (e)=>{ e.preventDefault(); openRequestModal(); });
-document.getElementById('openCyprusLink').addEventListener('click', ()=>{
-  openRequestModal();
-  document.getElementById('tabCyprusBtn').click();
+  location.href = 'order.html';
 });
 
 const quickPopover = document.getElementById('quickPopover');
@@ -2100,40 +1994,6 @@ quickForm.addEventListener('submit', (e)=>{
   // "Заявки" / "Заявки Кипр" pipeline as the detailed form, tagged as a quick lead.
   quickForm.classList.add('submitted');
   quickFormSuccess.classList.add('visible');
-});
-document.getElementById('requestModalClose').addEventListener('click', closeRequestModal);
-document.getElementById('requestModalBackdrop').addEventListener('click', closeRequestModal);
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape' && requestModal.classList.contains('open')) closeRequestModal();
-});
-
-document.querySelectorAll('.request-tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    document.querySelectorAll('.request-tab').forEach(t=>{
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    });
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
-    requestIntent = tab.dataset.intent;
-    document.querySelectorAll('.request-perk-group').forEach(g=>{
-      g.classList.toggle('active', g.dataset.group === requestIntent);
-    });
-    renderFormGroups(document.documentElement.lang || 'en', requestIntent);
-  });
-});
-
-requestForm.addEventListener('submit', (e)=>{
-  e.preventDefault();
-  if(!requestForm.checkValidity()){
-    requestForm.reportValidity();
-    return;
-  }
-  // Demo-only: this preview does not submit to the real Motus/AutoExpert CRM yet.
-  // Production version should POST to the real "Заявки" / "Заявки Кипр" Google Forms
-  // (per-language, per-intent field IDs), tagging which intent (cyprus/japan) was used.
-  requestModal.classList.add('submitted');
-  requestSuccess.classList.add('visible');
 });
 </script>
 
