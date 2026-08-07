@@ -8,3 +8,4 @@ Thumbs.db
 # Secrets (never track these)
 .env
 .env.*
+desktop/
