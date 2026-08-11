@@ -228,8 +228,15 @@ a{color:inherit;}
   color:var(--text-muted); white-space:nowrap;
 }
 .route-stop-dot{width:8px;height:8px;border-radius:50%; flex:none;}
-.route-stop-dot.start{background:var(--bronze); animation:beacon 2.6s ease-in-out infinite;}
+.route-stop-dot.start{background:var(--bronze); animation:beaconOpacity 2.6s ease-in-out infinite;}
 .route-stop-dot.end{background:var(--bg); border:1.5px solid var(--bronze); box-sizing:border-box;}
+@keyframes beaconOpacity{
+  0%,100%{opacity:1;}
+  50%{opacity:0.5;}
+}
+@media (prefers-reduced-motion: reduce){
+  .route-stop-dot.start{animation:none;}
+}
 .route-stop-icon{width:15px;height:15px; flex:none; stroke:var(--text-muted); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;}
 .route-seg{
   flex:1 1 28px; min-width:16px; height:1px;
