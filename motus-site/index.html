@@ -608,39 +608,10 @@ section{
 
 /* ---------- advantages ---------- */
 .advantages-grid{
-  position:relative;
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:28px;
   margin-top:8px;
-}
-.connector-line{
-  position:absolute;
-  top:9px;
-  left:4.5px;
-  right:calc(33.333% - 23.17px);
-  height:1px;
-  background:var(--line);
-  display:none;
-}
-@media (min-width:640px){
-  .connector-line{display:block;}
-}
-.advantage{position:relative;}
-.advantage .dot{
-  width:9px;height:9px;border-radius:50%;
-  background:var(--dot);
-  margin-bottom:14px;
-  position:relative;
-  z-index:1;
-}
-@keyframes beaconDiv{
-  0%,100%{opacity:1;}
-  50%{opacity:0.5;}
-}
-.dot-start{animation:beaconDiv 2.6s ease-in-out infinite;}
-@media (prefers-reduced-motion: reduce){
-  .dot-start{animation:none;}
 }
 .advantage svg{
   width:26px;height:26px;
@@ -1383,22 +1354,24 @@ section{
 
 <section class="advantages reveal" id="advantages">
   <div class="wrap">
+    <div class="route-mark" aria-hidden="true">
+      <svg viewBox="0 0 100 16">
+        <circle class="route-dot" cx="6" cy="8" r="3"/>
+        <line class="route-line" x1="14" y1="8" x2="100" y2="8"/>
+      </svg>
+    </div>
     <div class="advantages-grid">
-      <div class="connector-line"></div>
       <div class="advantage">
-        <div class="dot dot-start"></div>
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
         <h3 data-i18n="adv1Title"></h3>
         <p data-i18n="adv1Body"></p>
       </div>
       <div class="advantage">
-        <div class="dot"></div>
         <svg viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.75Z"/><path d="m9 12 2 2 4-4"/></svg>
         <h3 data-i18n="adv2Title"></h3>
         <p data-i18n="adv2Body"></p>
       </div>
       <div class="advantage">
-        <div class="dot"></div>
         <svg viewBox="0 0 24 24"><path d="M2.6 17.4a2 2 0 0 0-.6 1.4V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r="1"/></svg>
         <h3 data-i18n="adv3Title"></h3>
         <p data-i18n="adv3Body"></p>
