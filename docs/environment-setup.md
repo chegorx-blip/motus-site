@@ -1,0 +1,92 @@
+# Environment setup — снимок конфигурации (для переноса на другую машину)
+
+**Снято:** 2026-08-18
+**Зачем:** чтобы новая сессия Claude Code на другой машине могла понять, что было настроено здесь, и знала, что нужно воспроизвести.
+
+---
+
+## 1. MCP-серверы
+
+### Локальные (нужно установить/запустить заново на новой машине)
+
+| Имя | Тип | Область конфига | Команда/URL | Что даёт |
+|---|---|---|---|---|
+| `workspace-mcp` | http | `~/.mcp.json` (user-level) | `http://localhost:8000/mcp` | Gmail, Calendar, Drive, Sheets, Docs, Slides, Forms, Apps Script, Tasks, Contacts — локальный сервер, надо поднять отдельно (репозиторий лежал в `~/Desktop/Vscode/google_workspace_mcp`) |
+| `context7` | stdio | `./.mcp.json` (project-level, project1) | `npx -y @upstash/context7-mcp` | Актуальная документация библиотек/фреймворков |
+
+Файлы конфига для копирования как есть (без секретов внутри них):
+- `~/.mcp.json`
+- `./.mcp.json` (в корне project1)
+
+### claude.ai-коннекторы (НЕ требуют переноса — привязаны к аккаунту claude.ai, появятся сами на новой машине после входа в тот же аккаунт)
+- claude.ai Firecrawl parsing
+- claude.ai Google Calendar
+- claude.ai Google Drive
+- claude.ai Todoist
+- claude.ai Canva — на момент снимка не авторизован, нужно подключить через claude.ai → Settings → Connectors
+- claude.ai Gmail — на момент снимка не авторизован, нужно подключить через claude.ai → Settings → Connectors
+
+---
+
+## 2. CLAUDE.md
+
+- `~/.claude/CLAUDE.md` (глобальный) — **отсутствовал** на исходной машине. Если нужен — создать заново.
+- `./CLAUDE.md` (проектный, project1) — существует в репозитории, переносится вместе с git-клоном. Ничего отдельно делать не нужно.
+
+---
+
+## 3. Файловая память (`~/.claude/projects/*/memory/`)
+
+Это **не в git** — живёт только на диске машины, где работал Claude Code. При переезде на новую машину папку `~/.claude/projects/` нужно скопировать целиком (или синхронизировать), иначе память начнётся с нуля.
+
+На исходной машине было два каталога памяти:
+
+**`-Users-che-Desktop-Vscode-project1/memory/`** (текущий проект):
+MEMORY.md, feedback_autoexpert_bot_icon_autonomy.md, feedback_autoexpert_bot_translate_all.md, feedback_beginner_plain_explanations.md, goal_multi_gmail_connector.md, idea_telegram_parts_search_bot.md, project_autoexpert_client_app_idea.md, project_autoexpert_site_seo_rebuild.md, project_context7_superpowers_install.md, project_expedition_jimny_dream.md, project_motus_website_benchmark_goal.md, reference_aibasis_prompt_templates.md, user_email_identity.md
+
+**`-Users-che/memory/`** (другой/старый путь проекта, `[INFERRED]` — вероятно тот же проект до переезда в `Desktop/Vscode/project1`):
+MEMORY.md, autoexpert_motus_business.md, autoexpert_telegram_supplier_bot.md, feedback_actionable_links.md, feedback_gmail_declutter.md, feedback_memory_language.md, feedback_token_efficiency.md, google_tasks_lists.md, maserati_levante_parts_search.md, motus_crm_voice_bot_plan.md, project1_cross_machine_sync.md, project1_git_rules.md, project1_mission_roadmap.md, session_2026-07-28_greek_gym_grill.md, skroutz_receipts_print_workflow.md, todoist_project_structure.md, user_email_chegorx_rename.md, user_novice_tech_explanations.md
+
+**Действие при переносе:** скопировать `~/.claude/projects/` целиком с исходной машины (rsync/архив), либо принять, что память начнётся заново.
+
+---
+
+## 4. Переменные окружения для MCP в settings.json
+
+Проверены: `~/.claude/settings.json`, `./.claude/settings.json`, `./.claude/settings.local.json`.
+**Ни в одном нет ключа `env`** — единственный ключ везде `permissions`. На новой машине переменные окружения для MCP через settings.json настраивать не требуется (их и не было).
+
+---
+
+## 5. Доступ к Google-сервисам — детали и что переносить
+
+Два независимых пути авторизации:
+
+### А) `workspace-mcp` (локальный сервер) — личный OAuth, файлы на диске
+```
+~/.google_workspace_mcp/credentials/
+  chegorx@gmail.com.json
+  motus.cy@gmail.com.json
+  autoexpertt21@gmail.com.json
+  autoexpert.cy@gmail.com.json
+```
+Это токены персонального OAuth (не сервисный аккаунт), по одному файлу на почтовый ящик.
+
+**Перенос — два варианта:**
+1. Скопировать папку `~/.google_workspace_mcp/credentials/` защищённым способом (не через git, не через обычный облачный синк без шифрования) — тогда авторизация переедет вместе с файлами.
+2. Не копировать и пройти OAuth заново на новой машине для каждого из 4 ящиков (дольше, но чище с точки зрения безопасности).
+
+### Б) claude.ai-коннекторы (Gmail / Google Calendar / Google Drive)
+Авторизация на стороне claude.ai через личный OAuth, к файлам машины не привязана. **Ничего переносить не нужно** — доступ действует на любой машине при входе в тот же аккаунт claude.ai. На момент снимка Gmail-коннектор не был авторизован — подключить отдельно.
+
+---
+
+## Чек-лист для новой машины
+
+- [ ] Склонировать репозиторий project1 (CLAUDE.md и `./.mcp.json` приедут автоматически)
+- [ ] Скопировать `~/.mcp.json`
+- [ ] Поднять `workspace-mcp` локально на порту 8000 (репозиторий сервера отдельно, не в этом проекте)
+- [ ] Перенести или заново авторизовать `~/.google_workspace_mcp/credentials/` (4 ящика)
+- [ ] Скопировать `~/.claude/projects/` для сохранения файловой памяти
+- [ ] Войти в тот же аккаунт claude.ai — коннекторы (Calendar/Drive/Firecrawl/Todoist) подтянутся сами
+- [ ] Авторизовать claude.ai Gmail и Canva коннекторы (были не подключены и на исходной машине)
