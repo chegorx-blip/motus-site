@@ -134,7 +134,10 @@ MEMORY.md, autoexpert_motus_business.md, autoexpert_telegram_supplier_bot.md, fe
 
 4. Запустить сервер ИЗ ЭТОЙ ЖЕ папки (сервер ищет .env в текущей директории):
    cd <путь-к-папке>
-   uv run workspace-mcp   # порт 8000, как на исходной машине
+   uv run main.py --transport streamable-http   # порт 8000, как на исходной машине
+   # ВАЖНО: НЕ "uv run workspace-mcp" — та команда стартует в режиме stdio
+   # (для встраивания в один клиент-процесс), а не как сетевой HTTP-сервер.
+   # Проверено на живой ошибке 2026-08-18 при переносе на Windows.
 
 5. Прописать в ~/.mcp.json (на Windows — %USERPROFILE%\.mcp.json) файл:
    {

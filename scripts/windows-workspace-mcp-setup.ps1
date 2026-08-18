@@ -129,6 +129,7 @@ Write-Host "Файл секретов (впиши туда 2 значения в
 Write-Host ""
 Write-Host "Дальше, ПОСЛЕ того как впишешь секреты в .env:" -ForegroundColor Cyan
 Write-Host "  cd `"$repoPath`"" -ForegroundColor White
-Write-Host "  uv run workspace-mcp" -ForegroundColor White
+Write-Host "  uv run main.py --transport streamable-http" -ForegroundColor White
+Write-Host "  (НЕ 'uv run workspace-mcp' — та команда стартует в режиме stdio, не HTTP, и workspace-cli к ней не подключится)" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Это запустит сервер на localhost:8000 и откроет в браузере авторизацию Google по очереди для каждого добавляемого ящика." -ForegroundColor White
