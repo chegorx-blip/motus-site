@@ -65,12 +65,12 @@ MEMORY.md, autoexpert_motus_business.md, autoexpert_telegram_supplier_bot.md, fe
 ### А) `workspace-mcp` (локальный сервер) — личный OAuth, файлы на диске
 ```
 ~/.google_workspace_mcp/credentials/
-  chegorx@gmail.com.json
-  motus.cy@gmail.com.json
-  autoexpertt21@gmail.com.json
-  autoexpert.cy@gmail.com.json
+  <личный-gmail>.json
+  <motus-business-gmail>.json
+  <autoexpert-business-gmail-1>.json
+  <autoexpert-business-gmail-2>.json
 ```
-Это токены персонального OAuth (не сервисный аккаунт), по одному файлу на почтовый ящик.
+Это токены персонального OAuth (не сервисный аккаунт), по одному файлу на почтовый ящик — всего 4 ящика: 1 личный + 3 бизнес (Motus, AutoExpert×2). Реальные адреса не публикуются в этом файле — они видны в именах файлов на самом диске (`~/.google_workspace_mcp/credentials/`).
 
 **Перенос — два варианта:**
 1. Скопировать папку `~/.google_workspace_mcp/credentials/` защищённым способом (не через git, не через обычный облачный синк без шифрования) — тогда авторизация переедет вместе с файлами.
