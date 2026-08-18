@@ -113,30 +113,34 @@ MEMORY.md, autoexpert_motus_business.md, autoexpert_telegram_supplier_bot.md, fe
 ### Инструкция — можно скопировать целиком и отдать локальному Claude на втором компьютере
 
 ```
-1. Установить Python 3.10+ и пакет:
-   pip install workspace-mcp
+1. Установить uv (менеджер Python-окружений — так реально запущено на Mac):
+   pip install uv
 
-2. Создать файл .env в рабочей папке сервера с такими переменными
-   (значения запросить у пользователя напрямую, НЕ через чат — это секреты):
-   GOOGLE_OAUTH_CLIENT_ID=<спросить у пользователя>
-   GOOGLE_OAUTH_CLIENT_SECRET=<спросить у пользователя>
+2. Склонировать репозиторий сервера в отдельную папку:
+   git clone https://github.com/taylorwilsdon/google_workspace_mcp.git <путь-к-папке>
+
+3. В КОРНЕ этой склонированной папки (рядом с pyproject.toml) создать файл .env
+   с такими переменными (значения — вручную, НЕ через чат с Claude — это секреты):
+   GOOGLE_OAUTH_CLIENT_ID=<взять у пользователя вручную>
+   GOOGLE_OAUTH_CLIENT_SECRET=<взять у пользователя вручную>
    OAUTHLIB_INSECURE_TRANSPORT=1
    MCP_SINGLE_USER_MODE=1
 
-3. Запустить сервер локально (порт 8000, как на исходной машине):
-   workspace-mcp   # либо команда запуска, которую укажет README пакета
+4. Запустить сервер ИЗ ЭТОЙ ЖЕ папки (сервер ищет .env в текущей директории):
+   cd <путь-к-папке>
+   uv run workspace-mcp   # порт 8000, как на исходной машине
 
-4. Прописать в ~/.mcp.json (на Windows — %USERPROFILE%\.mcp.json) файл:
+5. Прописать в ~/.mcp.json (на Windows — %USERPROFILE%\.mcp.json) файл:
    {
      "mcpServers": {
        "workspace-mcp": { "type": "http", "url": "http://localhost:8000/mcp" }
      }
    }
 
-5. Авторизовать 4 почтовых ящика через OAuth в браузере — по одному,
+6. Авторизовать 4 почтовых ящика через OAuth в браузере — по одному,
    пока сервер запущен (каждый создаст свой JSON-файл в папке credentials).
 
-6. Проверить: запросить у Claude на этой машине список доступных
+7. Проверить: запросить у Claude на этой машине список доступных
    Google-аккаунтов через workspace-mcp — должно быть 4.
 ```
 
