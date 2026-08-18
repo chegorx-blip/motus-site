@@ -81,6 +81,25 @@ MEMORY.md, autoexpert_motus_business.md, autoexpert_telegram_supplier_bot.md, fe
 
 ---
 
+## 6. Git remotes
+
+Репозиторий `project1` синхронизируется с двумя remote:
+- `origin` → `git@github.com:chegorx-blip/project1.git` (SSH)
+- `gdrive` → `~/Library/CloudStorage/GoogleDrive-.../GitRepos/project1.git` (локальный путь к папке Google Drive этой машины)
+
+**Перенос:**
+- Для `origin` новой машине нужен свой SSH-ключ, привязанный к твоему GitHub-аккаунту — ключ не переносится через чат/копипаст, либо генерируешь новый и добавляешь его в GitHub, либо копируешь `~/.ssh/` защищённым способом.
+- Для `gdrive` remote путь зависит от того, куда на новой машине смонтирован Google Drive (`git remote set-url gdrive <новый-путь>` после клонирования).
+- На момент снимка на `origin` кроме `main` существует ветка `draft-b-spacious` — если она нужна, после клонирования сделать `git fetch --all`, чтобы она тоже подтянулась.
+
+## 7. Настройки Claude Code (`settings.json`)
+
+Помимо отсутствия `env`-переменных (см. п.4), сами файлы содержат `permissions` — правила разрешений на инструменты. Их стоит скопировать целиком, иначе на новой машине разрешения на инструменты придётся настраивать заново с нуля:
+- `~/.claude/settings.json` (глобальные)
+- `./.claude/settings.json` и `./.claude/settings.local.json` (проектные, project1 — второй файл обычно не в git, копировать отдельно)
+
+---
+
 ## Чек-лист для новой машины
 
 - [ ] Склонировать репозиторий project1 (CLAUDE.md и `./.mcp.json` приедут автоматически)
@@ -90,3 +109,6 @@ MEMORY.md, autoexpert_motus_business.md, autoexpert_telegram_supplier_bot.md, fe
 - [ ] Скопировать `~/.claude/projects/` для сохранения файловой памяти
 - [ ] Войти в тот же аккаунт claude.ai — коннекторы (Calendar/Drive/Firecrawl/Todoist) подтянутся сами
 - [ ] Авторизовать claude.ai Gmail и Canva коннекторы (были не подключены и на исходной машине)
+- [ ] Настроить SSH-ключ для `origin` (GitHub) и поправить путь `gdrive` remote под новую машину
+- [ ] `git fetch --all`, если нужна ветка `draft-b-spacious`
+- [ ] Скопировать `~/.claude/settings.json` и проектные `settings.json`/`settings.local.json`
