@@ -221,14 +221,22 @@ a{color:inherit;}
 @keyframes riseRoute{to{opacity:1; transform:translateY(0);}}
 .route-stop{display:flex; align-items:center; gap:8px; flex:none;}
 .route-stop-label{
+  display:none; /* labels off for now, per owner request — icons/dots only */
   font-family:'IBM Plex Mono',monospace;
   font-size:clamp(9px,1.6vw,11px);
   letter-spacing:0.14em; text-transform:uppercase;
   color:var(--text-muted); white-space:nowrap;
 }
 .route-stop-dot{width:8px;height:8px;border-radius:50%; flex:none;}
-.route-stop-dot.start{background:var(--bronze); animation:beacon 2.6s ease-in-out infinite;}
+.route-stop-dot.start{background:var(--bronze); animation:beaconOpacity 2.6s ease-in-out infinite;}
 .route-stop-dot.end{background:var(--bg); border:1.5px solid var(--bronze); box-sizing:border-box;}
+@keyframes beaconOpacity{
+  0%,100%{opacity:1;}
+  50%{opacity:0.5;}
+}
+@media (prefers-reduced-motion: reduce){
+  .route-stop-dot.start{animation:none;}
+}
 .route-stop-icon{width:15px;height:15px; flex:none; stroke:var(--text-muted); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;}
 .route-seg{
   flex:1 1 28px; min-width:16px; height:1px;
@@ -607,41 +615,11 @@ section{
 
 /* ---------- advantages ---------- */
 .advantages-grid{
-  position:relative;
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:28px;
   margin-top:8px;
 }
-.connector-line{
-  position:absolute;
-  top:9px;
-  left:16.6667%;
-  right:16.6667%;
-  height:1px;
-  background:var(--line);
-  display:none;
-  transform:scaleX(0);
-  transform-origin:left center;
-  transition:transform 1s ease .15s;
-}
-@media (min-width:640px){
-  .connector-line{display:block;}
-}
-.reveal.in .connector-line{transform:scaleX(1);}
-.advantage{position:relative;}
-.advantage .dot{
-  width:9px;height:9px;border-radius:50%;
-  background:var(--dot);
-  margin-bottom:14px;
-  position:relative;
-  z-index:1;
-  transform:scale(0);
-  transition:transform .35s ease;
-}
-.reveal.in .advantage:nth-child(1) .dot{transition-delay:.25s; transform:scale(1);}
-.reveal.in .advantage:nth-child(2) .dot{transition-delay:.45s; transform:scale(1);}
-.reveal.in .advantage:nth-child(3) .dot{transition-delay:.65s; transform:scale(1);}
 .advantage svg{
   width:26px;height:26px;
   stroke:var(--text);
@@ -1383,22 +1361,24 @@ section{
 
 <section class="advantages reveal" id="advantages">
   <div class="wrap">
+    <div class="route-mark" aria-hidden="true">
+      <svg viewBox="0 0 100 16">
+        <circle class="route-dot" cx="6" cy="8" r="3"/>
+        <line class="route-line" x1="14" y1="8" x2="100" y2="8"/>
+      </svg>
+    </div>
     <div class="advantages-grid">
-      <div class="connector-line"></div>
       <div class="advantage">
-        <div class="dot"></div>
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
         <h3 data-i18n="adv1Title"></h3>
         <p data-i18n="adv1Body"></p>
       </div>
       <div class="advantage">
-        <div class="dot"></div>
         <svg viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.75Z"/><path d="m9 12 2 2 4-4"/></svg>
         <h3 data-i18n="adv2Title"></h3>
         <p data-i18n="adv2Body"></p>
       </div>
       <div class="advantage">
-        <div class="dot"></div>
         <svg viewBox="0 0 24 24"><path d="M2.6 17.4a2 2 0 0 0-.6 1.4V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r="1"/></svg>
         <h3 data-i18n="adv3Title"></h3>
         <p data-i18n="adv3Body"></p>
