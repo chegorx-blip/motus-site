@@ -1,0 +1,19 @@
+# Секреты — никогда не коммитить
+.env
+google_oauth_client.json
+google_calendar_token.json
+
+# .env.example не содержит секретов (только имена переменных) — исключение
+# из родительского правила .env.* в .gitignore репозитория project1-clone
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Временные голосовые файлы, скачанные для распознавания
+*.ogg
+*.mp3
+tmp/
