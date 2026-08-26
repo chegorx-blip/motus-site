@@ -656,6 +656,84 @@ section{
 .topbar-cta:hover{filter:brightness(1.08);}
 @media (max-width:640px){ .topbar-cta{display:none;} }
 
+/* ---------- process accordion ---------- */
+.process-accordion{
+  border:1px solid var(--border);
+  border-radius:6px;
+  margin-top:28px;
+  overflow:hidden;
+}
+.process-toggle{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:20px 24px;
+  text-align:left;
+  color:var(--text);
+  font-family:inherit;
+}
+.process-toggle-text{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.process-eyebrow{color:var(--accent);}
+.process-toggle-text > span:last-child{font-size:15px; font-weight:600;}
+.process-chevron{
+  width:20px;height:20px; flex:none;
+  stroke:var(--text-muted); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;
+  transition:transform .25s ease;
+}
+.process-accordion.open .process-chevron{transform:rotate(180deg);}
+.process-panel{
+  display:grid;
+  grid-template-rows:0fr;
+  transition:grid-template-rows .3s ease;
+}
+.process-accordion.open .process-panel{grid-template-rows:1fr;}
+.process-panel-inner{
+  overflow:hidden;
+  min-height:0;
+}
+.process-steps{
+  list-style:none;
+  margin:0;
+  padding:0 24px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  border-top:1px solid var(--border);
+  padding-top:20px;
+}
+.process-steps li{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+.process-step-num{
+  flex:none;
+  width:26px;height:26px;
+  border-radius:50%;
+  background:var(--accent);
+  color:var(--ink);
+  font-size:12px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.process-steps h4{font-size:14.5px; margin-bottom:3px;}
+.process-steps p{font-size:13.5px; color:var(--text-muted); margin:0; line-height:1.55;}
+@media (prefers-reduced-motion: reduce){
+  .process-chevron{transition:none !important;}
+  .process-panel{transition:none !important;}
+}
+
 /* ---------- partner / payment strips ---------- */
 .partner-strip, .payment-strip{
   border:1px solid var(--border);
@@ -683,46 +761,39 @@ section{
   stroke:var(--bronze); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;
 }
 .hero-cyprus-line{
-  margin-top:10px;
-  font-size:13px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-top:20px;
+  padding:14px 18px;
+  border-left:3px solid var(--bronze);
+  background:var(--surface);
+  border-radius:0 4px 4px 0;
+  font-size:14px;
   color:var(--text-muted);
 }
 .hero-cyprus-line a{
-  margin-left:4px;
-  color:var(--text); text-decoration:underline; text-underline-offset:3px;
-  font:inherit;
+  flex:none;
+  color:var(--ink);
+  background:var(--accent);
+  padding:8px 14px;
+  border-radius:3px;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
+  transition:filter .18s ease;
 }
-.hero-cyprus-line a:hover{color:var(--bronze);}
+.hero-cyprus-line a:hover{filter:brightness(1.08);}
+@media (max-width:520px){
+  .hero-cyprus-line{flex-direction:column; align-items:flex-start;}
+  .hero-cyprus-line a{align-self:stretch; text-align:center;}
+}
 
 @media (max-width:639px){
   .advantages-grid{grid-template-columns:1fr; gap:26px;}
 }
 
-/* ---------- testimonial ---------- */
-.testimonial-box{
-  border:1px dashed var(--border);
-  border-radius:3px;
-  padding:24px 24px 20px;
-  background:var(--surface);
-}
-.placeholder-tag{
-  display:inline-block;
-  color:var(--accent);
-  margin-bottom:14px;
-}
-.testimonial-box blockquote{
-  margin:0 0 14px;
-  font-style:italic;
-  color:var(--text-muted);
-  font-size:15px;
-  line-height:1.6;
-}
-.testimonial-box cite{
-  font-style:normal;
-  font-size:13px;
-  color:var(--text-muted);
-  opacity:0.8;
-}
 
 /* ---------- final cta ---------- */
 .final{
@@ -901,6 +972,49 @@ section{
 .chatfab-item-primary svg{stroke:var(--paper);}
 .chatfab-item-primary:hover{filter:brightness(1.15);}
 
+.messenger-row{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+  margin-top:32px;
+}
+.messenger-circle{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:64px;height:64px;
+  border-radius:50%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--paper);
+  transition:filter .18s ease, transform .18s ease;
+}
+.messenger-circle:hover{transform:translateY(-2px);}
+.messenger-circle svg{
+  width:28px;height:28px;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:1.75;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.messenger-circle-telegram{
+  width:76px;height:76px;
+  background:var(--accent);
+  border-color:var(--accent);
+  color:var(--ink);
+  box-shadow:0 6px 18px rgba(20,32,26,0.28);
+}
+.messenger-circle-telegram:hover{filter:brightness(1.08);}
+.messenger-circle-telegram svg{width:32px;height:32px;}
+@media (max-width:480px){
+  .messenger-circle{width:56px;height:56px;}
+  .messenger-circle svg{width:24px;height:24px;}
+  .messenger-circle-telegram{width:66px;height:66px;}
+  .messenger-circle-telegram svg{width:28px;height:28px;}
+}
+
 .contacts-block{
   margin-top:26px;
   padding-top:22px;
@@ -992,6 +1106,12 @@ section{
   flex-direction:column;
   gap:8px;
   align-items:flex-end;
+  height:0;
+  overflow:hidden;
+}
+.chatfab.open .chatfab-menu{
+  height:auto;
+  overflow:visible;
 }
 .chatfab-menu-label{
   color:var(--stone);
@@ -1048,6 +1168,15 @@ section{
     box-shadow:0 4px 14px rgba(20,32,26,0.35);
   }
   .chatfab-item svg{width:20px; height:20px;}
+  /* Text prompt bubble overlaps page content on small screens (fixed
+     positioning has no safe empty space to sit in) — keep just the
+     pulsing button, drop the bubble, per owner's request. */
+  .chatfab-prompt{display:none !important;}
+  .chatfab-ring{border-width:2px;}
+  @keyframes ring{
+    0%{transform:scale(1); opacity:0.8;}
+    100%{transform:scale(1.65); opacity:0;}
+  }
 }
 @media (prefers-reduced-motion: reduce){
   .chatfab-ring{animation:none;}
@@ -1324,7 +1453,7 @@ section{
         <span data-i18n="heroWarranty"></span>
       </p>
       <p class="hero-cyprus-line">
-        <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="tabCyprus"></a>
+        <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="heroCyprusCta"></a>
       </p>
 
       <div class="quick-popover" id="quickPopover">
@@ -1361,7 +1490,7 @@ section{
 
 <section class="advantages reveal" id="advantages">
   <div class="wrap">
-    <div class="route-mark" aria-hidden="true">
+    <div class="route-mark route-mark-static" aria-hidden="true">
       <svg viewBox="0 0 100 16">
         <circle class="route-dot" cx="6" cy="8" r="3"/>
         <line class="route-line" x1="14" y1="8" x2="100" y2="8"/>
@@ -1384,6 +1513,42 @@ section{
         <p data-i18n="adv3Body"></p>
       </div>
     </div>
+    <div class="process-accordion">
+      <button type="button" class="process-toggle" id="processToggle" aria-expanded="false" aria-controls="processPanel">
+        <span class="process-toggle-text">
+          <span class="mono process-eyebrow" data-i18n="processEyebrow"></span>
+          <span data-i18n="processToggleLabel"></span>
+        </span>
+        <svg class="process-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="process-panel" id="processPanel">
+        <div class="process-panel-inner">
+          <ol class="process-steps">
+            <li>
+              <span class="process-step-num">1</span>
+              <div><h4 data-i18n="processStep1Title"></h4><p data-i18n="processStep1Body"></p></div>
+            </li>
+            <li>
+              <span class="process-step-num">2</span>
+              <div><h4 data-i18n="processStep2Title"></h4><p data-i18n="processStep2Body"></p></div>
+            </li>
+            <li>
+              <span class="process-step-num">3</span>
+              <div><h4 data-i18n="processStep3Title"></h4><p data-i18n="processStep3Body"></p></div>
+            </li>
+            <li>
+              <span class="process-step-num">4</span>
+              <div><h4 data-i18n="processStep4Title"></h4><p data-i18n="processStep4Body"></p></div>
+            </li>
+            <li>
+              <span class="process-step-num">5</span>
+              <div><h4 data-i18n="processStep5Title"></h4><p data-i18n="processStep5Body"></p></div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
     <div class="partner-strip">
       <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
       <div>
@@ -1401,16 +1566,6 @@ section{
   </div>
 </section>
 
-<section class="testimonial reveal" id="testimonial">
-  <div class="wrap">
-    <div class="testimonial-box">
-      <div class="mono placeholder-tag" data-i18n="testiTag"></div>
-      <blockquote data-i18n="testiQuote"></blockquote>
-      <cite data-i18n="testiAttr"></cite>
-    </div>
-  </div>
-</section>
-
 <section class="final reveal" id="final">
   <div class="wrap">
     <div class="route-mark" aria-hidden="true">
@@ -1424,6 +1579,15 @@ section{
 
     <a href="order.html" class="btn btn-primary" data-i18n="cta1"></a>
 
+    <div class="messenger-row">
+      <a class="messenger-circle messenger-circle-telegram" href="https://t.me/motus_cy" target="_blank" rel="noopener" aria-label="Telegram">
+        <svg viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
+      </a>
+      <a class="messenger-circle" href="https://wa.me/35795588595" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+      </a>
+    </div>
+
     <div class="contacts-block">
       <div class="mono contacts-title" data-i18n="contactsTitle"></div>
       <a class="contact-row" href="https://maps.google.com/?q=Giannou+Kranidioti+21,+Limassol+3110,+Cyprus" target="_blank" rel="noopener">
@@ -1433,14 +1597,6 @@ section{
       <a class="contact-row" href="tel:+35795588595" target="_top">
         <svg viewBox="0 0 24 24"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
         <span>+357 95 588 595</span>
-      </a>
-      <a class="contact-row" href="https://wa.me/35795588595" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-        <span>WhatsApp</span>
-      </a>
-      <a class="contact-row" href="https://t.me/motus_cy" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
-        <span>@motus_cy</span>
       </a>
     </div>
   </div>
@@ -1479,8 +1635,21 @@ const content = {
     routeRequest:"Your car request",
     routeVerified:"Search & verification",
     routeKeys:"Keys in your hand",
-    heroWarranty:"1-year / 15,000 km engine & gearbox warranty on every car",
-    heroCyprusLead:"Need a car now and don't want to wait on shipping? We source locally too — ",
+    heroWarranty:"1-year / 15,000 km engine & gearbox warranty on cars from Japan",
+    heroCyprusLead:"Need a car now and don't want to wait on shipping? We source locally too.",
+    heroCyprusCta:"Search in Cyprus",
+    processEyebrow:"How it works",
+    processToggleLabel:"What happens to the car from the port to the keys in your hand",
+    processStep1Title:"We meet it at the port and register it",
+    processStep1Body:"We collect the car at the port, clear customs, pass MOT, and register it in Cyprus.",
+    processStep2Title:"Full diagnostics in our garage",
+    processStep2Body:"We check every unit and assembly — engine, gearbox, suspension, electronics. We look at the car's real condition, not just its paperwork.",
+    processStep3Title:"First service",
+    processStep3Body:"We perform the first service before handing the car over to you.",
+    processStep4Title:"We walk you through its condition and options",
+    processStep4Body:"We show you the car's real condition and offer optional extras — at prices well below market rate.",
+    processStep5Title:"Keys in your hand",
+    processStep5Body:"The car is fully ready to drive — paperwork, registration, diagnostics, and servicing are already done.",
     partnerTitle:"A gift for our clients: partner prices below market",
     partnerBody:"Buy a car through us and get an ongoing 10–30% off post-purchase services — painting, bodywork, electrical work, tuning, multimedia region/language conversion — through our trusted, vetted partner garage.",
     paymentTitle:"Flexible payment",
@@ -1492,12 +1661,9 @@ const content = {
     adv1Title:"Fully inspected",
     adv1Body:"No hidden history. You see the full report before you decide.",
     adv2Title:"Warranty included",
-    adv2Body:"1-year / 15,000 km engine & gearbox warranty, plus a free first service when serviced at our partner garage.",
+    adv2Body:"For cars imported from Japan: 1-year / 15,000 km engine & gearbox warranty, plus a free first service at our partner garage.",
     adv3Title:"One final price",
     adv3Body:"MOT, road tax, Cyprus registration — already in the price you see. No hidden extras after the auction.",
-    testiTag:"Placeholder — replace with real review",
-    testiQuote:"[A real client's review goes here — short, specific, in their own words.]",
-    testiAttr:"— Client name, car model, month",
     finalTitle:"Get in, and drive away.",
     finalBody:"We handle the rest — the auction, the paperwork, the delivery.",
     finalCta:"Talk to us on Telegram",
@@ -1559,8 +1725,21 @@ const content = {
     routeRequest:"Ваша заявка на подбор авто",
     routeVerified:"Поиск и проверка",
     routeKeys:"Ключи у вас",
-    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км на каждый автомобиль",
-    heroCyprusLead:"Нужна машина прямо сейчас и не хочется ждать доставку? Подбираем и на Кипре — ",
+    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км на автомобили из Японии",
+    heroCyprusLead:"Нужна машина прямо сейчас и не хочется ждать доставку? Подбираем и покупаем авто на Кипре.",
+    heroCyprusCta:"Поиск на Кипре",
+    processEyebrow:"Как это работает",
+    processToggleLabel:"Что происходит с автомобилем от порта до передачи ключей",
+    processStep1Title:"Встречаем в порту и оформляем",
+    processStep1Body:"Забираем автомобиль в порту, проходим растаможку, техосмотр и ставим на учёт на Кипре.",
+    processStep2Title:"Полная диагностика в гараже",
+    processStep2Body:"Проверяем все узлы и агрегаты — двигатель, коробку, подвеску, электрику. Смотрим реальное состояние автомобиля, а не только документы.",
+    processStep3Title:"Первое техническое обслуживание",
+    processStep3Body:"Делаем первое ТО перед тем, как передать автомобиль клиенту.",
+    processStep4Title:"Согласовываем состояние и допы",
+    processStep4Body:"Показываем клиенту реальное состояние автомобиля и предлагаем возможные допы — по цене заметно ниже рыночной.",
+    processStep5Title:"Передаём ключи",
+    processStep5Body:"Автомобиль полностью готов к эксплуатации — документы, учёт, диагностика и обслуживание уже сделаны.",
     partnerTitle:"Подарок для наших клиентов: цены партнёра ниже рынка",
     partnerBody:"Покупая машину у нас, вы получаете постоянную скидку 10–30% на услуги после покупки — покраска, кузовной ремонт, электрика, тюнинг, смена региона/языка мультимедиа — у нашего проверенного партнёра.",
     paymentTitle:"Гибкая оплата",
@@ -1572,12 +1751,9 @@ const content = {
     adv1Title:"Полная проверка",
     adv1Body:"Никакой скрытой истории. Вы видите полный отчёт до принятия решения.",
     adv2Title:"Гарантия включена",
-    adv2Body:"Гарантия на ДВС и АКПП 1 год / 15 000 км, плюс первое ТО бесплатно у нашего партнёра.",
+    adv2Body:"При заказе автомобиля из Японии — гарантия на ДВС и АКПП 1 год / 15 000 км, плюс первое ТО бесплатно у нашего партнёра.",
     adv3Title:"Одна честная цена",
     adv3Body:"MOT, дорожный налог, регистрация на Кипре — уже в цене, которую вы видите. Никаких доплат после аукциона.",
-    testiTag:"Заглушка — заменить на реальный отзыв",
-    testiQuote:"[Здесь будет отзыв реального клиента — коротко, по делу, его словами.]",
-    testiAttr:"— Имя клиента, модель авто, месяц",
     finalTitle:"Сел и поехал.",
     finalBody:"Остальное берём на себя — аукцион, документы, доставку.",
     finalCta:"Написать в Telegram",
@@ -1639,8 +1815,21 @@ const content = {
     routeRequest:"Το αίτημά σας για αυτοκίνητο",
     routeVerified:"Αναζήτηση & έλεγχος",
     routeKeys:"Τα κλειδιά σας",
-    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ σε κάθε αυτοκίνητο",
-    heroCyprusLead:"Χρειάζεστε αυτοκίνητο τώρα και δεν θέλετε να περιμένετε τη μεταφορά; Αναζητούμε και τοπικά — ",
+    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ σε αυτοκίνητα από την Ιαπωνία",
+    heroCyprusLead:"Χρειάζεστε αυτοκίνητο τώρα και δεν θέλετε να περιμένετε τη μεταφορά; Αναζητούμε και τοπικά.",
+    heroCyprusCta:"Αναζήτηση στην Κύπρο",
+    processEyebrow:"Πώς λειτουργεί",
+    processToggleLabel:"Τι συμβαίνει με το αυτοκίνητο από το λιμάνι μέχρι τα κλειδιά στα χέρια σας",
+    processStep1Title:"Το παραλαμβάνουμε στο λιμάνι και το ταξινομούμε",
+    processStep1Body:"Παραλαμβάνουμε το αυτοκίνητο στο λιμάνι, εκτελωνίζουμε, περνάμε ΜΟΤ και το ταξινομούμε στην Κύπρο.",
+    processStep2Title:"Πλήρης διάγνωση στο συνεργείο μας",
+    processStep2Body:"Ελέγχουμε κάθε μηχανικό μέρος — κινητήρα, κιβώτιο, ανάρτηση, ηλεκτρονικά. Εξετάζουμε την πραγματική κατάσταση του αυτοκινήτου, όχι μόνο τα χαρτιά.",
+    processStep3Title:"Πρώτο service",
+    processStep3Body:"Κάνουμε το πρώτο service πριν παραδώσουμε το αυτοκίνητο.",
+    processStep4Title:"Συζητάμε την κατάσταση και τυχόν πρόσθετα",
+    processStep4Body:"Σας δείχνουμε την πραγματική κατάσταση του αυτοκινήτου και προτείνουμε πρόσθετες υπηρεσίες — σε τιμές αρκετά κάτω από την αγορά.",
+    processStep5Title:"Τα κλειδιά στα χέρια σας",
+    processStep5Body:"Το αυτοκίνητο είναι πλήρως έτοιμο για χρήση — χαρτιά, ταξινόμηση, διάγνωση και service έχουν ήδη γίνει.",
     partnerTitle:"Δώρο για τους πελάτες μας: τιμές συνεργάτη κάτω από την αγορά",
     partnerBody:"Αγοράστε αυτοκίνητο μέσω εμάς και πάρτε μόνιμη έκπτωση 10–30% σε υπηρεσίες μετά την αγορά — βαφή, εργασίες αμαξώματος, ηλεκτρολογικά, tuning, αλλαγή περιοχής/γλώσσας multimedia — από τον έμπιστο συνεργάτη μας.",
     paymentTitle:"Ευέλικτη πληρωμή",
@@ -1652,12 +1841,9 @@ const content = {
     adv1Title:"Πλήρως ελεγμένο",
     adv1Body:"Καμία κρυφή ιστορία. Βλέπετε την πλήρη αναφορά πριν αποφασίσετε.",
     adv2Title:"Με εγγύηση",
-    adv2Body:"Εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ, και δωρεάν πρώτο service στον συνεργάτη μας.",
+    adv2Body:"Για αυτοκίνητα εισαγωγής από την Ιαπωνία: εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ, και δωρεάν πρώτο service στον συνεργάτη μας.",
     adv3Title:"Μία τίμια τιμή",
     adv3Body:"MOT, τέλη κυκλοφορίας, ταξινόμηση στην Κύπρο — ήδη μέσα στην τιμή που βλέπετε. Καμία κρυφή χρέωση μετά τη δημοπρασία.",
-    testiTag:"Προσωρινό — αντικαταστήστε με πραγματική αξιολόγηση",
-    testiQuote:"[Εδώ θα μπει η αξιολόγηση πραγματικού πελάτη — σύντομη, με τα δικά του λόγια.]",
-    testiAttr:"— Όνομα πελάτη, μοντέλο, μήνας",
     finalTitle:"Μπείτε και φύγετε.",
     finalBody:"Εμείς αναλαμβάνουμε τα υπόλοιπα — τη δημοπρασία, τα χαρτιά, την παράδοση.",
     finalCta:"Μιλήστε μας στο Telegram",
@@ -1907,12 +2093,22 @@ const io = new IntersectionObserver((entries)=>{
 }, {threshold:0.15});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
+const processAccordion = document.querySelector('.process-accordion');
+const processToggle = document.getElementById('processToggle');
+if(processAccordion && processToggle){
+  processToggle.addEventListener('click', ()=>{
+    const open = processAccordion.classList.toggle('open');
+    processToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+
 const chatFab = document.getElementById('chatFab');
 const chatFabToggle = document.getElementById('chatFabToggle');
 chatFabToggle.addEventListener('click', (e)=>{
   e.stopPropagation();
   const open = chatFab.classList.toggle('open');
   chatFabToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if(open) dismissPrompt();
 });
 document.addEventListener('click', (e)=>{
   if(chatFab.classList.contains('open') && !chatFab.contains(e.target)){
