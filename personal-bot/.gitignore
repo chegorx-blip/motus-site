@@ -2,11 +2,12 @@
 .env
 google_oauth_client.json
 google_calendar_token.json
-google_gmail_token.json
+google_gmail_token_*.json
 
-# Локальное состояние — какие письма уже показали в алертах (не секрет, но
-# машинно-специфичное и бессмысленное в git)
+# Локальное состояние — какие письма уже показали в алертах, накопленные
+# правила срочности (не секреты, но машинно-специфичны и бессмысленны в git)
 seen_mail_ids.json
+urgency_rules.json
 
 # .env.example не содержит секретов (только имена переменных) — исключение
 # из родительского правила .env.* в .gitignore репозитория project1-clone

@@ -26,7 +26,7 @@ from telegram.ext import (
 
 from config import ALLOWED_CHAT_ID, TELEGRAM_BOT_TOKEN
 from handlers.dispatch import handle_choice_button
-from handlers.mail_alerts import check_urgent_mail, send_daily_mail_summary
+from handlers.mail_alerts import check_urgent_mail, handle_urgency_feedback, send_daily_mail_summary
 from handlers.text import handle_text_message
 from handlers.voice import handle_voice
 
@@ -63,6 +63,7 @@ def main() -> None:
     app.add_handler(MessageHandler(filters.VOICE, owner_only(handle_voice)))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, owner_only(handle_text_message)))
     app.add_handler(CallbackQueryHandler(owner_only(handle_choice_button), pattern=r"^choice:"))
+    app.add_handler(CallbackQueryHandler(owner_only(handle_urgency_feedback), pattern=r"^urgency:"))
 
     # JobQueue требует, чтобы python-telegram-bot был установлен с extra
     # "job-queue" (см. requirements.txt) — без этого app.job_queue будет None.
