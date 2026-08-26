@@ -29,18 +29,23 @@ def handle_cancel_event(search_query: str, user_data: dict) -> tuple[str, list[d
             None,
         )
 
-    matches = find_upcoming_events(search_query)
+    matches, is_uncertain = find_upcoming_events(search_query)
 
     if not matches:
         return f"🤔 Не нашёл предстоящих событий, похожих на «{search_query}».", None
 
-    if len(matches) > 1:
+    if len(matches) > 1 or is_uncertain:
         user_data[PENDING_KEY] = matches
         listing = "\n".join(
             f"{i + 1}. {m['summary']} ({m['start']})" for i, m in enumerate(matches)
         )
+        question = (
+            "Нашёл вот это, но не уверен, что то самое — точно оно?"
+            if is_uncertain and len(matches) == 1
+            else "Нашёл несколько подходящих событий, выбери какое"
+        )
         return (
-            f"🤔 Нашёл несколько подходящих событий, выбери какое (кнопкой или голосом номер):\n{listing}",
+            f"🤔 {question} (кнопкой или голосом номер):\n{listing}",
             matches,
         )
 
