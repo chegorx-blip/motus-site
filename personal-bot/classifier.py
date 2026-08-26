@@ -14,7 +14,6 @@ handlers/voice.py решает, какой обработчик вызвать, 
 """
 
 from adapters.claude_client import ask_structured
-from user_context import get_user_context
 
 _SYSTEM_PROMPT = """\
 Ты — классификатор сообщений личного помощника. Пользователь присылает голосовые \
@@ -72,8 +71,6 @@ cancel_event, тот же именительный падеж) — только 
 будущий разбор. Если сомневаешься — false.
 
 Для остальных типов достаточно summary — короткое изложение сути одним предложением.
-
-{user_context}\
 """
 
 _SCHEMA = {
@@ -116,5 +113,4 @@ def classify(text: str) -> dict:
      "summary": "..."}
     Поля title/date_hint пустые строки, если не тип "event".
     """
-    system_prompt = _SYSTEM_PROMPT.format(user_context=get_user_context())
-    return ask_structured(system_prompt, text, _SCHEMA)
+    return ask_structured(_SYSTEM_PROMPT, text, _SCHEMA)
