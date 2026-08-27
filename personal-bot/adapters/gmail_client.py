@@ -2,8 +2,9 @@
 Адаптер Gmail — работает сразу с несколькими ящиками (MAILBOXES, см. config.py).
 
 Единственное место в проекте, которое знает про Gmail API. Остальной код
-просто вызывает list_recent_unread(mailbox_id) и получает уже собранные
-короткие карточки писем.
+вызывает list_recent_unread(mailbox_id) (фоновые алерты) или
+search_mail(mailbox_id, query) (поиск по запросу из Telegram) и получает уже
+собранные короткие карточки писем.
 
 Авторизация устроена так же, как в adapters/calendar_client.py (тот же
 "паспорт" приложения google_oauth_client.json, тот же Google Cloud проект
@@ -108,6 +109,25 @@ def list_recent_unread(mailbox_id: str, max_results: int = 20) -> list[dict]:
             q="newer_than:1d",
             maxResults=max_results,
         )
+        .execute()
+    )
+    message_ids = [m["id"] for m in result.get("messages", [])]
+    return _fetch_summaries(mailbox_id, message_ids)
+
+
+def search_mail(mailbox_id: str, query: str, max_results: int = 5) -> list[dict]:
+    """Поиск по одному ящику в стандартном синтаксисе Gmail (from:/subject:/
+    обычные слова по теме+телу), за последние 3 дня, по всем письмам —
+    прочитанным и непрочитанным (не только «Входящие», в отличие от
+    list_recent_unread — по запросу пользователя ищем везде, письмо могло
+    лежать в другой папке/архиве). Используется поиском по запросу из
+    Telegram (handlers/mail_search.py), не фоновыми алертами."""
+    service = _get_service(mailbox_id)
+    full_query = f"newer_than:3d {query}" if query else "newer_than:3d"
+    result = (
+        service.users()
+        .messages()
+        .list(userId="me", q=full_query, maxResults=max_results)
         .execute()
     )
     message_ids = [m["id"] for m in result.get("messages", [])]

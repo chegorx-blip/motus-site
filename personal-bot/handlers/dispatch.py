@@ -7,9 +7,12 @@
    текущее сообщение ответом на него, и если да — сразу выполняет выбор, не
    гоняя текст через полную классификацию заново.
 2. Иначе — обычная классификация (событие / перенос / отмена / мысль / почта /
-   поиск / неясно). Мысль (thought) сохраняется в память Claude Code —
+   поиск запчасти / неясно). Мысль (thought) сохраняется в память Claude Code —
    черновиком в инбокс по умолчанию, или сразу полноценной записью, если
-   пользователь явно попросил запомнить (см. handlers/thought.py).
+   пользователь явно попросил запомнить (см. handlers/thought.py). Почта (mail)
+   ищет письма по всем 4 ящикам по запросу пользователя (см.
+   handlers/mail_search.py) — не путать с фоновыми алертами
+   (handlers/mail_alerts.py), это разные независимые пути.
 
 Три независимых типа уточняющих вопросов могут ожидать ответа (какое событие
 отменить / какое перенести / это перенос или новое) — _ACTIVE_PENDING_KEYS
@@ -33,14 +36,13 @@ from handlers.cancel_event import resolve_pending_choice as _resolve_cancel_choi
 from handlers.event import PENDING_KEY as _EVENT_DUP_PENDING_KEY
 from handlers.event import handle_event
 from handlers.event import resolve_pending_duplicate_check as _resolve_event_dup
+from handlers.mail_search import handle_mail_search
 from handlers.reschedule_event import PENDING_KEY as _RESCHEDULE_PENDING_KEY
 from handlers.reschedule_event import handle_reschedule_event
 from handlers.reschedule_event import resolve_pending_choice as _resolve_reschedule_choice
 from handlers.thought import handle_thought
 
 _STUB_REPLIES = {
-    "mail": "📧 Понял, это про почту: «{summary}».\n"
-    "Пока не умею работать с почтой из бота — это следующий шаг.",
     "parts_search": "🔍 Понял, это поиск запчасти: «{summary}».\n"
     "Пока не умею искать по сайтам — это следующий шаг.",
     "unclear": "🤔 Не совсем понял, что с этим делать: «{summary}».",
@@ -189,6 +191,9 @@ async def handle_text(
         is_explicit_save = result.get("is_explicit_save", False) or _is_push_command(text)
         reply = handle_thought(summary=result["summary"], is_explicit_save=is_explicit_save)
         await update.message.reply_text(f"{prefix}{reply}")
+    elif message_type == "mail":
+        reply = handle_mail_search(search_query=result["search_query"])
+        await update.message.reply_text(f"{prefix}{reply}", parse_mode="Markdown")
     else:
         reply_template = _STUB_REPLIES.get(message_type, _STUB_REPLIES["unclear"])
         reply = reply_template.format(**result)
