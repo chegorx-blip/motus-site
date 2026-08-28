@@ -1989,17 +1989,58 @@ if(srcParam){
   requestForm.appendChild(srcField);
 }
 
+// Google Apps Script Web App URL — deploy motus-apps-script.gs in the
+// "MOTUS CRM — Рабочая" Sheet (Extensions -> Apps Script -> Deploy -> Web app),
+// then paste the resulting /exec URL here.
+const CRM_WEBHOOK_URL = 'REPLACE_WITH_APPS_SCRIPT_WEB_APP_URL';
+
+// The <form> uses per-intent field name prefixes (cyModel/jpModel, etc.) so both
+// tabs can share one <form> without id collisions. Strip the "cy"/"jp" prefix and
+// lowercase the first letter so both flows write to the same CRM column names.
+function stripIntentPrefix(name, intent){
+  const prefix = intent === 'cyprus' ? 'cy' : 'jp';
+  if(!name.startsWith(prefix)) return name;
+  const rest = name.slice(prefix.length);
+  return rest.charAt(0).toLowerCase() + rest.slice(1);
+}
+
 requestForm.addEventListener('submit', (e)=>{
   e.preventDefault();
   if(!requestForm.checkValidity()){
     requestForm.reportValidity();
     return;
   }
-  // Demo-only: this preview does not submit to the real Motus/AutoExpert CRM yet.
-  // Production version should POST to the real "Заявки" / "Заявки Кипр" Google Forms
-  // (per-language, per-intent field IDs), tagging which intent (cyprus/japan) was used.
-  requestModal.classList.add('submitted');
-  requestSuccess.classList.add('visible');
+
+  const formData = new FormData(requestForm);
+  const payload = { intent: requestIntent };
+  for(const [name, value] of formData.entries()){
+    if(name === 'src'){ payload.source = value; continue; }
+    payload[stripIntentPrefix(name, requestIntent)] = value;
+  }
+
+  const submitBtn = requestForm.querySelector('.request-submit');
+  if(submitBtn) submitBtn.disabled = true;
+
+  fetch(CRM_WEBHOOK_URL, {
+    method: 'POST',
+    // Apps Script Web Apps don't support proper CORS preflight for JSON content-type
+    // from a different origin; text/plain avoids the preflight while Apps Script's
+    // doPost still reads e.postData.contents as the raw JSON string via JSON.parse().
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  })
+    .catch(err=>{
+      // Network/CORS failures land here even on a successful server-side write,
+      // since the request is fire-and-forget from the browser's perspective —
+      // Apps Script doesn't send back CORS headers. We still show success to the
+      // client; the real signal is the row appearing in the Sheet.
+      console.warn('CRM webhook request may not have completed cleanly:', err);
+    })
+    .finally(()=>{
+      requestModal.classList.add('submitted');
+      requestSuccess.classList.add('visible');
+      if(submitBtn) submitBtn.disabled = false;
+    });
 });
 </script>
 
