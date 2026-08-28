@@ -1989,10 +1989,12 @@ if(srcParam){
   requestForm.appendChild(srcField);
 }
 
-// Google Apps Script Web App URL — deploy motus-apps-script.gs in the
-// "MOTUS CRM — Рабочая" Sheet (Extensions -> Apps Script -> Deploy -> Web app),
-// then paste the resulting /exec URL here.
-const CRM_WEBHOOK_URL = 'REPLACE_WITH_APPS_SCRIPT_WEB_APP_URL';
+// Google Apps Script Web App URL — deployed 2026-08-28 as a new "Webhook" file
+// inside the existing MOTUS CRM bound script project (spreadsheet
+// 1C8GnXBKUD0qM29FsoTX0h2SUSzEoKu5opVHbA-nmWSE, "MOTUS CRM — Рабочая"),
+// reusing the sheet's own composeReq_/getNotifyEmails_ helpers so site leads
+// behave identically to Google-Form leads (top-insert, notify email, TG link).
+const CRM_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyi-msy1byt3bCdlntUw_9kikOylxlxtqBddF9pdKSkYSkxBykNwk_0zJZF-f7i6giS/exec';
 
 // The <form> uses per-intent field name prefixes (cyModel/jpModel, etc.) so both
 // tabs can share one <form> without id collisions. Strip the "cy"/"jp" prefix and
