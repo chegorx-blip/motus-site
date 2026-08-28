@@ -25,6 +25,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from config import MAILBOXES
+
 _SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 _CLIENT_SECRET_PATH = os.path.join(os.path.dirname(__file__), "..", "google_oauth_client.json")
 
@@ -71,6 +73,19 @@ def _extract_headers(message: dict) -> tuple[str, str]:
     return sender, subject
 
 
+def _gmail_url(mailbox_id: str, msg_id: str) -> str:
+    """Прямая ссылка на письмо в веб-версии Gmail, открывающаяся в ПРАВИЛЬНОМ
+    аккаунте — обычная ссылка вида mail.google.com/mail/u/0/... привязана к
+    "первому" залогиненному в браузере аккаунту, что почти никогда не тот из
+    4 ящиков, что нужен. authuser=<email> явно указывает Google, какой из
+    залогиненных аккаунтов использовать (если пользователь в браузере вообще
+    залогинен под этим адресом — если нет, Google сам покажет выбор аккаунта).
+    #all — открывает письмо независимо от того, во «Входящих» оно, в архиве
+    или где угодно ещё (в отличие от #inbox, которое не находит архивные)."""
+    email = MAILBOXES.get(mailbox_id, "")
+    return f"https://mail.google.com/mail/?authuser={email}#all/{msg_id}"
+
+
 def _fetch_summaries(mailbox_id: str, message_ids: list[str]) -> list[dict]:
     service = _get_service(mailbox_id)
     summaries = []
@@ -89,6 +104,7 @@ def _fetch_summaries(mailbox_id: str, message_ids: list[str]) -> list[dict]:
                 "sender": sender,
                 "subject": subject,
                 "snippet": full.get("snippet", ""),
+                "url": _gmail_url(mailbox_id, msg_id),
             }
         )
     return summaries

@@ -16,6 +16,7 @@ adapters/urgency_rules.py) — так классификатор со време
 """
 
 from adapters.claude_client import ask_structured
+from adapters.mail_translator import strip_invisible
 from adapters.urgency_rules import format_rules_for_prompt
 from user_context import get_user_context
 
@@ -31,6 +32,10 @@ _SYSTEM_PROMPT = """\
 {user_context}
 {rules}
 
+Дополнительно переведи тему и фрагмент письма на русский (subject_ru/snippet_ru) \
+— коротко, по сути. Имена собственные (бренды, компании, географические названия, \
+имена людей) НЕ переводи, оставляй как есть. Если уже на русском — верни как есть.
+
 Ответь про ОДНО присланное письмо (тема, отправитель, короткий фрагмент текста)."""
 
 _SCHEMA = {
@@ -38,16 +43,26 @@ _SCHEMA = {
     "properties": {
         "urgent": {"type": "boolean"},
         "reason": {"type": "string"},
+        "subject_ru": {"type": "string"},
+        "snippet_ru": {"type": "string"},
     },
-    "required": ["urgent", "reason"],
+    "required": ["urgent", "reason", "subject_ru", "snippet_ru"],
     "additionalProperties": False,
 }
 
 
 def classify_urgency(sender: str, subject: str, snippet: str) -> dict:
-    """Возвращает {"urgent": bool, "reason": "..."} для одного письма."""
+    """Возвращает {"urgent": bool, "reason": "...", "subject_ru": "...",
+    "snippet_ru": "..."} для одного письма. Перевод (subject_ru/snippet_ru)
+    достаётся "бесплатно" в этом же вызове — отдельного вызова только на
+    перевод для срочных писем не нужно (в отличие от дневной сводки/поиска,
+    у которых нет своего LLM-вызова — см. adapters/mail_translator.py)."""
     system_prompt = _SYSTEM_PROMPT.format(
         user_context=get_user_context(), rules=format_rules_for_prompt()
     )
-    user_message = f"От: {sender}\nТема: {subject}\nФрагмент: {snippet}"
+    # Тот же Unicode-мусор рассылок, что сбивал перевод в mail_translator.py,
+    # мог точно так же засорять и этот вызов — чистим на входе (см. strip_invisible).
+    clean_subject = strip_invisible(subject)
+    clean_snippet = strip_invisible(snippet)
+    user_message = f"От: {sender}\nТема: {clean_subject}\nФрагмент: {clean_snippet}"
     return ask_structured(system_prompt, user_message, _SCHEMA)

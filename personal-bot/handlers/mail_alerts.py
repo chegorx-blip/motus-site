@@ -25,6 +25,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from adapters.gmail_client import list_recent_unread
+from adapters.mail_translator import translate_mails
 from adapters.seen_store import filter_unseen, mark_seen
 from adapters.urgency_classifier import classify_urgency
 from adapters.urgency_rules import add_rule
@@ -59,11 +60,22 @@ def _within_urgent_window() -> bool:
 
 
 def _format_line(mail: dict) -> str:
-    snippet = mail["snippet"]
+    """Карточка письма для Telegram — тема/фрагмент берутся в русском переводе,
+    если он есть в карточке (subject_ru/snippet_ru — из classify_urgency для
+    срочных, из translate_mails для дневной сводки), иначе оригинал (перевод
+    не должен ронять весь алерт, если сам провалился, см. mail_translator.py).
+    Ссылка на письмо (mail["url"]) ведёт в правильный аккаунт Gmail — см.
+    adapters/gmail_client._gmail_url."""
+    subject = mail.get("subject_ru") or mail["subject"]
+    snippet = mail.get("snippet_ru") or mail["snippet"]
     if len(snippet) > _MAX_SNIPPET_CHARS:
         snippet = snippet[:_MAX_SNIPPET_CHARS] + "…"
     mailbox_label = MAILBOXES.get(mail["mailbox_id"], mail["mailbox_id"])
-    return f"• *{mail['subject']}*\n  от {mail['sender']} ({mailbox_label})\n  {snippet}"
+    return (
+        f"• [{subject}]({mail['url']})\n"
+        f"  от {mail['sender']} ({mailbox_label})\n"
+        f"  {snippet}"
+    )
 
 
 def _collect_all_unread() -> list[dict]:
@@ -101,6 +113,13 @@ async def check_urgent_mail(context: ContextTypes.DEFAULT_TYPE) -> None:
         if not verdict.get("urgent"):
             continue
 
+        # Перевод достался "бесплатно" в том же вызове classify_urgency —
+        # кладём его в карточку письма, чтобы _format_line подхватил
+        # subject_ru/snippet_ru вместо оригинала (см. её docstring).
+        translated_mail = dict(mail)
+        translated_mail["subject_ru"] = verdict.get("subject_ru")
+        translated_mail["snippet_ru"] = verdict.get("snippet_ru")
+
         feedback_id = mail["id"]
         context.bot_data.setdefault(_PENDING_URGENCY_KEY, {})[feedback_id] = {
             "sender": mail["sender"],
@@ -114,7 +133,7 @@ async def check_urgent_mail(context: ContextTypes.DEFAULT_TYPE) -> None:
                 ]
             ]
         )
-        text = f"🚨 Срочная почта:\n\n{_format_line(mail)}\n\n_{verdict.get('reason', '')}_"
+        text = f"🚨 Срочная почта:\n\n{_format_line(translated_mail)}\n\n_{verdict.get('reason', '')}_"
         await context.bot.send_message(
             chat_id=ALLOWED_CHAT_ID, text=text, parse_mode="Markdown", reply_markup=keyboard
         )
@@ -155,6 +174,10 @@ async def send_daily_mail_summary(context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         return
 
-    lines = "\n\n".join(_format_line(m) for m in all_mails)
+    # В отличие от срочных алертов, у дневной сводки нет своего LLM-вызова
+    # (никакой классификации срочности) — перевод получаем отдельным батч-
+    # вызовом на всю пачку сразу, не по одному письму (см. mail_translator.py).
+    translated_mails = translate_mails(all_mails)
+    lines = "\n\n".join(_format_line(m) for m in translated_mails)
     text = f"📬 Дежурная почта за сутки ({len(all_mails)}):\n\n{lines}"
     await context.bot.send_message(chat_id=ALLOWED_CHAT_ID, text=text, parse_mode="Markdown")
