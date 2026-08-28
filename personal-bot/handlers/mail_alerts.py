@@ -5,10 +5,12 @@
 Два независимых алерта:
 - срочная почта — каждые 30 минут, 07:30–22:30. Каждое новое непрочитанное
   письмо во всех 4 ящиках проходит через urgency_classifier (Claude решает
-  срочно/нет по общим признакам + накопленным правилам пользователя) — только
-  срочные пушатся сразу, с кнопками ✅/❌ под каждым письмом, чтобы
-  пользователь мог поправить классификатор "на горячую" (см. resolve_urgency
-  ниже — привязано к CallbackQueryHandler в main.py).
+  срочно/нет по общим признакам + накопленным правилам пользователя) — все
+  срочные из одного прогона уходят ОДНИМ сообщением (не по одному на письмо
+  — явный запрос пользователя 2026-08-28), с отдельным рядом кнопок ✅/❌ под
+  каждым письмом внутри этого сообщения, чтобы пользователь мог поправить
+  классификатор "на горячую" по каждому письму независимо (см.
+  handle_urgency_feedback ниже — привязано к CallbackQueryHandler в main.py).
 - дежурная сводка — раз в день в 08:00, все непрочитанные письма во всех 4
   ящиках за сутки одним сообщением, без классификации срочности. Письма от
   доменов из adapters/mail_ignore_list.py (Vercel/Google-входы/рассылки/
@@ -55,6 +57,11 @@ _URGENT_WINDOW_END = datetime.time(hour=22, minute=30)
 # потому что алерт присылает фоновая задача (JobQueue), а не сообщение
 # пользователя, у которого был бы context.user_data этого конкретного чата.
 _PENDING_URGENCY_KEY = "pending_urgency_feedback"
+
+# message_id → {"header": str, "blocks": [str, ...]} — состояние текста
+# каждого отправленного пакета срочных алертов, обновляемое при каждом
+# ✅/❌. См. check_urgent_mail и handle_urgency_feedback.
+_PENDING_MESSAGES_KEY = "pending_urgency_messages"
 
 
 def _within_urgent_window() -> bool:
@@ -104,6 +111,20 @@ async def check_urgent_mail(context: ContextTypes.DEFAULT_TYPE) -> None:
     if not new_mails:
         return
 
+    # Одно сообщение на весь пакет срочных писем, а не одно на письмо — если
+    # за 30 минут пришло сразу 4 срочных, пользователь должен увидеть один
+    # отчёт с 4 карточками, не 4 отдельных пуша подряд (явный запрос
+    # пользователя 2026-08-28). Кнопки ✅/❌ привязаны к КОНКРЕТНОМУ письму
+    # через callback_data — Telegram разрешает несколько рядов кнопок под
+    # одним сообщением, так что каждое письмо просто получает свой ряд.
+    #
+    # feedback_id письма → индекс его блока в blocks — используется при
+    # нажатии кнопки, чтобы найти и заменить ровно этот блок. Строим по
+    # ГОТОВОМУ списку blocks (не по new_mails), чтобы индекс не мог
+    # разъехаться из-за писем, пропущенных как не-срочные/с ошибкой.
+    blocks = []
+    keyboard_rows = []
+    block_index_by_feedback_id = {}
     seen_ids = []
     for mail in new_mails:
         seen_ids.append(mail["id"])
@@ -124,29 +145,49 @@ async def check_urgent_mail(context: ContextTypes.DEFAULT_TYPE) -> None:
         translated_mail["snippet_ru"] = verdict.get("snippet_ru")
 
         feedback_id = mail["id"]
+        keyboard_rows.append(
+            [
+                InlineKeyboardButton("✅ верно, срочное", callback_data=f"urgency:yes:{feedback_id}"),
+                InlineKeyboardButton("❌ нет, не срочное", callback_data=f"urgency:no:{feedback_id}"),
+            ]
+        )
+        blocks.append(f"{_format_line(translated_mail)}\n_{verdict.get('reason', '')}_")
+        block_index_by_feedback_id[feedback_id] = len(blocks) - 1
         context.bot_data.setdefault(_PENDING_URGENCY_KEY, {})[feedback_id] = {
             "sender": mail["sender"],
             "subject": mail["subject"],
         }
-        keyboard = InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("✅ верно, срочное", callback_data=f"urgency:yes:{feedback_id}"),
-                    InlineKeyboardButton("❌ нет, не срочное", callback_data=f"urgency:no:{feedback_id}"),
-                ]
-            ]
-        )
-        text = f"🚨 Срочная почта:\n\n{_format_line(translated_mail)}\n\n_{verdict.get('reason', '')}_"
-        await context.bot.send_message(
-            chat_id=ALLOWED_CHAT_ID, text=text, parse_mode="Markdown", reply_markup=keyboard
-        )
 
     mark_seen(seen_ids)
 
+    if not blocks:
+        return
+
+    header = "🚨 Срочная почта:" if len(blocks) == 1 else f"🚨 Срочная почта ({len(blocks)}):"
+    sent_message = await context.bot.send_message(
+        chat_id=ALLOWED_CHAT_ID,
+        text=f"{header}\n\n" + "\n\n".join(blocks),
+        parse_mode="Markdown",
+        reply_markup=InlineKeyboardMarkup(keyboard_rows),
+    )
+    # Держим header + список блоков ПО ID СООБЩЕНИЯ — так handle_urgency_feedback
+    # может собрать новый текст заново из актуальных блоков вместо того, чтобы
+    # разбирать query.message.text_markdown обратно (Telegram реконструирует
+    # Markdown из отправленного не обязательно байт-в-байт, что рисковало бы
+    # сломать точный поиск подстроки).
+    message_state = {"header": header, "blocks": blocks}
+    context.bot_data.setdefault(_PENDING_MESSAGES_KEY, {})[sent_message.message_id] = message_state
+    for feedback_id, block_index in block_index_by_feedback_id.items():
+        context.bot_data[_PENDING_URGENCY_KEY][feedback_id]["message_id"] = sent_message.message_id
+        context.bot_data[_PENDING_URGENCY_KEY][feedback_id]["block_index"] = block_index
+
 
 async def handle_urgency_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Нажатие ✅/❌ под срочным алертом — запоминает оценку пользователя как
-    правило на будущее (см. adapters/urgency_rules.py) и убирает кнопки."""
+    """Нажатие ✅/❌ под одним из писем в пакете срочных алертов — запоминает
+    оценку пользователя как правило на будущее (см. adapters/urgency_rules.py),
+    заменяет ТОЛЬКО текст этого письма подтверждением и убирает ТОЛЬКО его
+    ряд кнопок — остальные письма того же сообщения (если их несколько)
+    остаются нетронутыми, каждое со своими ✅/❌."""
     query = update.callback_query
     await query.answer()
 
@@ -154,18 +195,46 @@ async def handle_urgency_feedback(update: Update, context: ContextTypes.DEFAULT_
     pending = context.bot_data.get(_PENDING_URGENCY_KEY, {})
     mail_info = pending.pop(feedback_id, None)
 
+    # Ряд кнопок, отвечающий этому feedback_id, ищем по callback_data второй
+    # кнопки в ряду ("urgency:no:<feedback_id>") — так убираем именно его,
+    # не полагаясь на порядок/индекс, который мог бы разъехаться.
+    remaining_rows = [
+        row
+        for row in query.message.reply_markup.inline_keyboard
+        if row[1].callback_data != f"urgency:no:{feedback_id}"
+    ]
+    new_markup = InlineKeyboardMarkup(remaining_rows) if remaining_rows else None
+
     if mail_info is None:
-        await query.edit_message_reply_markup(reply_markup=None)
+        await query.edit_message_reply_markup(reply_markup=new_markup)
         return
 
     add_rule(mail_info["sender"], mail_info["subject"], urgent=(verdict == "yes"))
     confirmation = "✅ Запомнил: это было срочное." if verdict == "yes" else "❌ Запомнил: это не срочное."
-    # Markdown исходного текста (жирное/курсив) при edit сохраняем тем же
-    # parse_mode — иначе звёздочки/подчёркивания из карточки письма
-    # отобразятся сырыми символами вместо форматирования.
-    await query.edit_message_text(
-        f"{query.message.text_markdown}\n\n{confirmation}", parse_mode="Markdown"
-    )
+
+    # Текст пересобираем заново из message_state (header + список блоков),
+    # обновляя ровно блок этого письма по его индексу — не пытаемся
+    # разобрать/найти подстроку в query.message.text_markdown (Telegram
+    # реконструирует Markdown из отправленного текста не обязательно
+    # байт-в-байт, точный поиск подстроки был бы ненадёжен).
+    messages = context.bot_data.get(_PENDING_MESSAGES_KEY, {})
+    message_state = messages.get(query.message.message_id)
+    if message_state is None:
+        # Состояние потеряно (перезапуск бота между отправкой и нажатием) —
+        # покажем хотя бы подтверждение отдельной строкой, не теряя факт.
+        await query.edit_message_text(
+            f"{query.message.text_markdown}\n\n{confirmation}",
+            parse_mode="Markdown",
+            reply_markup=new_markup,
+        )
+        return
+
+    block_index = mail_info.get("block_index")
+    if block_index is not None and block_index < len(message_state["blocks"]):
+        message_state["blocks"][block_index] = f"{message_state['blocks'][block_index]}\n{confirmation}"
+
+    new_text = f"{message_state['header']}\n\n" + "\n\n".join(message_state["blocks"])
+    await query.edit_message_text(new_text, parse_mode="Markdown", reply_markup=new_markup)
 
 
 async def send_daily_mail_summary(context: ContextTypes.DEFAULT_TYPE) -> None:
