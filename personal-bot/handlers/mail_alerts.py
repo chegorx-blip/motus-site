@@ -10,7 +10,9 @@
   пользователь мог поправить классификатор "на горячую" (см. resolve_urgency
   ниже — привязано к CallbackQueryHandler в main.py).
 - дежурная сводка — раз в день в 08:00, все непрочитанные письма во всех 4
-  ящиках за сутки одним сообщением, без классификации срочности.
+  ящиках за сутки одним сообщением, без классификации срочности. Письма от
+  доменов из adapters/mail_ignore_list.py (Vercel/Google-входы/рассылки/
+  трекинг посылок и т.п. шум) в сводку не попадают.
 
 "Уже показанные" письма не повторяются между прогонами срочной проверки — см.
 adapters/seen_store.py. Дневная сводка НЕ помечает письма как показанные:
@@ -25,6 +27,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from adapters.gmail_client import list_recent_unread
+from adapters.mail_ignore_list import is_ignored
 from adapters.mail_translator import translate_mails
 from adapters.seen_store import filter_unseen, mark_seen
 from adapters.urgency_classifier import classify_urgency
@@ -168,7 +171,14 @@ async def handle_urgency_feedback(update: Update, context: ContextTypes.DEFAULT_
 async def send_daily_mail_summary(context: ContextTypes.DEFAULT_TYPE) -> None:
     all_mails = _collect_all_unread()
 
-    if not all_mails:
+    # Список-игнор по домену отправителя (adapters/mail_ignore_list.py) —
+    # только здесь, в дневной сводке. Срочные алерты не нуждаются в этом
+    # списке (urgency_classifier уже решает по смыслу письма, не по домену),
+    # а поиск по запросу не должен ничего прятать от пользователя, который
+    # явно что-то ищет — см. docstring mail_ignore_list.py.
+    visible_mails = [m for m in all_mails if not is_ignored(m["sender"])]
+
+    if not visible_mails:
         await context.bot.send_message(
             chat_id=ALLOWED_CHAT_ID, text="📭 Дежурная почта: новых непрочитанных писем нет."
         )
@@ -177,7 +187,7 @@ async def send_daily_mail_summary(context: ContextTypes.DEFAULT_TYPE) -> None:
     # В отличие от срочных алертов, у дневной сводки нет своего LLM-вызова
     # (никакой классификации срочности) — перевод получаем отдельным батч-
     # вызовом на всю пачку сразу, не по одному письму (см. mail_translator.py).
-    translated_mails = translate_mails(all_mails)
+    translated_mails = translate_mails(visible_mails)
     lines = "\n\n".join(_format_line(m) for m in translated_mails)
-    text = f"📬 Дежурная почта за сутки ({len(all_mails)}):\n\n{lines}"
+    text = f"📬 Дежурная почта за сутки ({len(visible_mails)}):\n\n{lines}"
     await context.bot.send_message(chat_id=ALLOWED_CHAT_ID, text=text, parse_mode="Markdown")
