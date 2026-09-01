@@ -1214,6 +1214,62 @@ section{
   .chatfab-arrow{animation:none !important;}
 }
 
+/* ---------- cookie consent banner ---------- */
+.cookie-banner{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  z-index:60;
+  background:var(--ink);
+  border-top:1px solid rgba(233,228,217,.16);
+  box-shadow:0 -4px 20px rgba(0,0,0,.25);
+}
+.cookie-banner[hidden]{display:none;}
+.cookie-banner-inner{
+  display:flex;
+  align-items:center;
+  gap:24px;
+  padding:16px 24px;
+}
+.cookie-banner-inner p{
+  flex:1;
+  margin:0;
+  font-size:13px;
+  line-height:1.5;
+  color:var(--stone);
+}
+.cookie-banner-actions{
+  display:flex;
+  gap:10px;
+  flex:none;
+}
+.btn-cookie-accept, .btn-cookie-decline{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px; letter-spacing:.05em;
+  padding:9px 16px;
+  border-radius:4px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:filter .18s ease, background .18s ease;
+}
+.btn-cookie-accept{
+  background:var(--bronze);
+  color:var(--ink);
+  border:none;
+  font-weight:600;
+}
+.btn-cookie-accept:hover{filter:brightness(1.08);}
+.btn-cookie-decline{
+  background:transparent;
+  color:var(--stone);
+  border:1px solid rgba(233,228,217,.28);
+}
+.btn-cookie-decline:hover{color:var(--paper); border-color:rgba(233,228,217,.5);}
+@media (max-width:640px){
+  .cookie-banner-inner{flex-direction:column; align-items:stretch; gap:14px; padding:16px;}
+  .cookie-banner-actions{justify-content:stretch;}
+  .btn-cookie-accept, .btn-cookie-decline{flex:1;}
+}
+
 .chatfab-prompt{
   max-width:210px;
   background:var(--surface);
@@ -1658,6 +1714,16 @@ section{
   </button>
 </div>
 
+<div class="cookie-banner" id="cookieBanner" hidden>
+  <div class="wrap-wide cookie-banner-inner">
+    <p data-i18n="cookieText"></p>
+    <div class="cookie-banner-actions">
+      <button type="button" class="btn-cookie-decline" id="cookieDecline" data-i18n="cookieDecline"></button>
+      <button type="button" class="btn-cookie-accept" id="cookieAccept" data-i18n="cookieAccept"></button>
+    </div>
+  </div>
+</div>
+
 <script>
 const content = {
   en:{
@@ -1705,6 +1771,9 @@ const content = {
     contactsTitle:"Contact us",
     chatToggleLabel:"Chat with us",
     chatPrompt:"Need a car? Ask us — quick reply.",
+    cookieText:"We use cookies to understand how visitors use this site (Google Analytics). No personal data is sold or shared with third parties beyond that.",
+    cookieAccept:"Accept",
+    cookieDecline:"Decline",
     chatQuestionsLabel:"Still have questions?",
     detailedLinkText:"Already decided? Place your order →",
     quickPerksLine:"Warranty · Service discount · All-in, turn-key price",
@@ -1795,6 +1864,9 @@ const content = {
     contactsTitle:"Связаться с нами",
     chatToggleLabel:"Написать нам",
     chatPrompt:"Нужна машина? Спросите — ответим быстро.",
+    cookieText:"Мы используем cookie, чтобы понимать, как посетители пользуются сайтом (Google Analytics). Персональные данные не продаются и не передаются третьим лицам сверх этого.",
+    cookieAccept:"Принять",
+    cookieDecline:"Отклонить",
     chatQuestionsLabel:"Остались вопросы?",
     detailedLinkText:"Уже решили? Оформите заказ →",
     quickPerksLine:"Гарантия · Скидка на сервис · Цена под ключ, без доплат",
@@ -1885,6 +1957,9 @@ const content = {
     contactsTitle:"Επικοινωνήστε μαζί μας",
     chatToggleLabel:"Μιλήστε μαζί μας",
     chatPrompt:"Χρειάζεστε αυτοκίνητο; Ρωτήστε μας.",
+    cookieText:"Χρησιμοποιούμε cookies για να κατανοήσουμε πώς οι επισκέπτες χρησιμοποιούν αυτόν τον ιστότοπο (Google Analytics). Τα προσωπικά δεδομένα δεν πωλούνται ούτε κοινοποιούνται σε τρίτους πέραν αυτού.",
+    cookieAccept:"Αποδοχή",
+    cookieDecline:"Απόρριψη",
     chatQuestionsLabel:"Έχετε ερωτήσεις;",
     detailedLinkText:"Έχετε αποφασίσει; Κάντε την παραγγελία σας →",
     quickPerksLine:"Εγγύηση · Έκπτωση σέρβις · Τιμή all-in, χωρίς προσαυξήσεις",
@@ -2115,6 +2190,43 @@ render(detectLang());
 
 requestAnimationFrame(()=>{
   document.getElementById('hero').classList.add('ready');
+});
+
+// ---------- cookie consent (gates Google Analytics loading) ----------
+// GA is not wired in yet (see DESIGN.md "Known gaps") — GA_MEASUREMENT_ID stays a
+// placeholder until the owner enables GA in Vercel and hands over the real ID.
+// loadAnalytics() below is written now so wiring the real ID later is a one-line change,
+// not a redesign of the consent flow.
+const GA_MEASUREMENT_ID = 'REPLACE_WITH_GA_MEASUREMENT_ID';
+const COOKIE_CONSENT_KEY = 'motus_cookie_consent'; // 'accepted' | 'declined'
+
+function loadAnalytics(){
+  if(GA_MEASUREMENT_ID.startsWith('REPLACE_WITH_')) return; // not configured yet
+  const s1 = document.createElement('script');
+  s1.async = true;
+  s1.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(s1);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ window.dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', GA_MEASUREMENT_ID, { anonymize_ip: true });
+}
+
+const cookieBanner = document.getElementById('cookieBanner');
+const cookieConsent = localStorage.getItem(COOKIE_CONSENT_KEY);
+if(cookieConsent === 'accepted'){
+  loadAnalytics();
+} else if(cookieConsent !== 'declined'){
+  cookieBanner.hidden = false;
+}
+document.getElementById('cookieAccept').addEventListener('click', ()=>{
+  localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
+  cookieBanner.hidden = true;
+  loadAnalytics();
+});
+document.getElementById('cookieDecline').addEventListener('click', ()=>{
+  localStorage.setItem(COOKIE_CONSENT_KEY, 'declined');
+  cookieBanner.hidden = true;
 });
 
 const io = new IntersectionObserver((entries)=>{
