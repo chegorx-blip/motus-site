@@ -120,6 +120,15 @@
 
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
+@media (min-width:641px){
+  /* Reserve gutter space on both edges so centered content (hero-copy etc.)
+     lines up with what the eye perceives as center, not the geometric
+     center of the full window width minus a scrollbar that only exists on
+     one side. Desktop only — touch/mobile browsers use overlay scrollbars
+     that don't take up layout space, so this isn't needed there and was
+     visibly pushing content left on mobile when applied globally. */
+  html{scrollbar-gutter:stable both-edges;}
+}
 html,body{margin:0;padding:0;overflow-x:hidden;}
 body{
   background:var(--bg);
@@ -484,7 +493,11 @@ a{color:inherit;}
     position:relative;
     z-index:1;
   }
-  .hero-visual .eyebrow{color:var(--bronze); margin-bottom:14px;}
+  .hero-visual .eyebrow{
+    color:var(--bronze);
+    margin-bottom:14px;
+    text-shadow:0 1px 10px rgba(20,32,26,.9), 0 1px 3px rgba(20,32,26,1), 0 0 2px rgba(20,32,26,1);
+  }
   .hero-visual h1.headline{
     color:var(--paper);
     max-width:820px;
@@ -502,8 +515,23 @@ a{color:inherit;}
     margin:0 auto;
     text-align:center;
   }
-  .hero .cta-row{justify-content:center;}
-  .hero .hero-below-form{justify-content:center;}
+  /* CTA block (2026-09-02 rebuild): a true vertical stack, one thing per
+     row, each centered — this is what actually fixes the "corner-cut"
+     misalignment (button/hint centered independently but not to each
+     other) and the "cluttered" messenger+link row (4 elements were sharing
+     one line). Three visual tiers top to bottom: primary button+hint,
+     secondary messenger row, tertiary text link. */
+  .hero .cta-row{
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+  .hero .hero-below-form{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
   .hero .hero-trust-line{justify-content:center;}
   .hero .hero-cyprus-line{margin-left:auto; margin-right:auto;}
   .hero .quick-popover{margin-left:auto; margin-right:auto;}
@@ -537,7 +565,7 @@ h1.headline{
   flex-wrap:wrap;
   opacity:0;
 }
-.cta-primary-group{display:flex; flex-direction:column; align-items:flex-start; gap:6px;}
+.cta-primary-group{display:flex; flex-direction:column; align-items:center; gap:6px;}
 .cta-primary-hint{
   font-size:12px;
   color:var(--text-muted);
@@ -1817,8 +1845,8 @@ section{
               <svg viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
             </a>
           </div>
-          <a href="order.html" class="detailed-link" data-i18n="detailedLinkText"></a>
         </div>
+        <a href="order.html" class="detailed-link" data-i18n="detailedLinkText"></a>
       </div>
       <p class="hero-cyprus-line">
         <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="heroCyprusCta"></a>
