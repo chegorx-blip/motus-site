@@ -1029,6 +1029,12 @@ section{
   transition:stroke-dashoffset 1.1s ease .2s;
 }
 .reveal.in .route-line{stroke-dashoffset:0;}
+/* .final's route-mark got a wider viewBox (2026-09-02, previous change) so
+   the visual width grew without the stroke itself getting thicker — the
+   line inside is now 306 units long (x1=14 to x2=320) instead of 86, so its
+   own dash-array/offset must match or the draw-in animation either snaps
+   instantly or never fully completes. */
+.final .route-line{stroke-dasharray:306; stroke-dashoffset:306;}
 /* .route-mark's default stroke (translucent paper) was tuned for the dark
    pine background it originally lived on (.final section) — on the paper/
    light background of .advantages it was nearly invisible. */
@@ -1980,9 +1986,9 @@ section{
 <section class="final reveal" id="final">
   <div class="wrap">
     <div class="route-mark" aria-hidden="true">
-      <svg viewBox="0 0 100 16">
+      <svg viewBox="0 0 320 16" preserveAspectRatio="none">
         <circle class="route-dot" cx="6" cy="8" r="3"/>
-        <line class="route-line" x1="14" y1="8" x2="100" y2="8"/>
+        <line class="route-line" x1="14" y1="8" x2="320" y2="8"/>
       </svg>
     </div>
     <h2 data-i18n="finalTitle"></h2>
