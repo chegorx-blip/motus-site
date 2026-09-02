@@ -464,7 +464,7 @@ a{color:inherit;}
     justify-content:center;
     text-align:center;
     padding-top:14%;
-    margin-bottom:40px;
+    margin-bottom:8px;
   }
   .hero-visual .hero-bg{
     position:absolute;
@@ -557,6 +557,13 @@ h1.headline{
   max-width:44ch;
   margin-bottom:32px;
   opacity:0;
+}
+@media (min-width:641px){
+  /* .subhead's max-width:44ch (readability cap for the paragraph) was never
+     centered within .hero-copy — it stuck to the left edge, so its own
+     center sat well left of the actual centered block below it (warranty
+     callout, CTA). Measured live: 95.6px off at 1856px width. */
+  .hero .subhead{margin-left:auto; margin-right:auto;}
 }
 .cta-row{
   display:flex;
