@@ -425,6 +425,14 @@ a{color:inherit;}
 .hero{
   padding:56px 0 48px;
 }
+@media (min-width:641px){
+  /* On desktop the hero photo is full-bleed and must start flush against
+     the header — the 56px top padding above was creating a visible gap of
+     empty paper-color background between the header and the photo (measured
+     live: ~57px at 1920px). Bottom padding stays; it applies to the content
+     band below the photo, not the photo itself. */
+  .hero{padding-top:0;}
+}
 /* Full-bleed hero photo — desktop/tablet only (2026-09-01 rebuild).
    Pattern taken from ginzajdm.com's actual hero (checked live): the photo
    carries ONLY eyebrow + headline, short, centered, never overlapping the
@@ -529,7 +537,7 @@ h1.headline{
   flex-wrap:wrap;
   opacity:0;
 }
-.cta-primary-group{display:flex; flex-direction:column; gap:6px;}
+.cta-primary-group{display:flex; flex-direction:column; align-items:flex-start; gap:6px;}
 .cta-primary-hint{
   font-size:12px;
   color:var(--text-muted);
@@ -670,6 +678,7 @@ svg[fill="currentColor"]{stroke:none; fill:currentColor;}
 .btn{
   display:inline-flex;
   align-items:center;
+  justify-content:center;
   gap:8px;
   padding:13px 22px;
   font-size:14px;
@@ -1795,8 +1804,8 @@ section{
       </p>
       <div class="cta-row">
         <div class="cta-primary-group">
-          <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
           <p class="cta-primary-hint" data-i18n="cta1Hint"></p>
+          <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
         </div>
         <div class="hero-below-form">
           <div class="hero-talk">
