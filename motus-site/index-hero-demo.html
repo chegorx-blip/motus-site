@@ -1861,6 +1861,16 @@ section{
         <div class="cta-primary-group">
           <p class="cta-primary-hint" data-i18n="cta1Hint"></p>
           <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
+          <div class="quick-popover" id="quickPopover">
+            <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
+            <form class="quick-form" id="quickForm" novalidate>
+              <input type="text" name="qName" required data-i18n-placeholder="quickName">
+              <input type="text" name="qContact" required data-i18n-placeholder="quickContact">
+              <input type="text" name="qModel" data-i18n-placeholder="quickModel">
+              <button type="submit" class="btn btn-primary" data-i18n="submitBtn"></button>
+            </form>
+            <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
+          </div>
         </div>
         <div class="hero-below-form">
           <div class="hero-talk">
@@ -1878,17 +1888,6 @@ section{
       <p class="hero-cyprus-line">
         <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="heroCyprusCta"></a>
       </p>
-
-      <div class="quick-popover" id="quickPopover">
-        <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
-        <form class="quick-form" id="quickForm" novalidate>
-          <input type="text" name="qName" required data-i18n-placeholder="quickName">
-          <input type="text" name="qContact" required data-i18n-placeholder="quickContact">
-          <input type="text" name="qModel" data-i18n-placeholder="quickModel">
-          <button type="submit" class="btn btn-primary" data-i18n="submitBtn"></button>
-        </form>
-        <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
-      </div>
     </div>
     <div class="hero-media">
       <div class="hero-photo-main"><img src="images/hero-main.jpg" alt="Lexus UX, inspected and delivered by Motus" loading="eager"></div>
