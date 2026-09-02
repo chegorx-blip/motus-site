@@ -707,9 +707,13 @@ h1.headline{
 }
 /* The real WhatsApp glyph is a solid silhouette (fill), not an outline —
    generic `stroke:currentColor; fill:none` icon rules elsewhere on the page
-   were making it render invisible everywhere it's reused. This override, by
-   attribute selector, always wins regardless of which container it's in. */
-svg[fill="currentColor"]{stroke:none; fill:currentColor;}
+   were making it render invisible everywhere it's reused. Plain attribute-
+   selector specificity (0,1,1) was too low to beat container-specific rules
+   like .chatfab-item svg (0,2,0) that come later in the cascade — confirmed
+   live via getComputedStyle that fill was still resolving to "none" inside
+   .chatfab-item. !important makes this the one non-negotiable rule for this
+   specific icon, everywhere it appears. */
+svg[fill="currentColor"]{stroke:none !important; fill:currentColor !important;}
 .btn{
   display:inline-flex;
   align-items:center;
@@ -1012,6 +1016,9 @@ section{
 }
 .final .wrap{padding-top:52px;padding-bottom:56px;}
 .route-mark{width:100px; margin-bottom:12px;}
+/* .final's route-mark made longer (2026-09-02) to read as a real animated
+   underline reaching toward the headline's width, not a short tick mark. */
+.final .route-mark{width:320px; max-width:60%;}
 .route-mark svg{width:100%; height:auto; display:block;}
 .route-dot{fill:var(--bronze); animation:beacon 2.6s ease-in-out infinite;}
 .route-line{
@@ -1191,20 +1198,27 @@ section{
   gap:20px;
   margin-top:32px;
 }
+/* Both circles unified (2026-09-02) — owner's word "5 раз прошу исправить
+   иконку WhatsApp": Telegram was bronze/76px, WhatsApp was transparent/64px
+   with a smaller icon, an intentional-but-confusing asymmetry from the
+   original design. Now both bronze, both the same (smaller-than-before)
+   size — owner explicitly asked for smaller than the old 76px, not the old
+   64px either. */
 .messenger-circle{
   display:flex;
   align-items:center;
   justify-content:center;
-  width:64px;height:64px;
+  width:60px;height:60px;
   border-radius:50%;
-  background:var(--surface);
-  border:1px solid var(--border);
-  color:var(--paper);
+  background:var(--accent);
+  border:1px solid var(--accent);
+  color:var(--ink);
+  box-shadow:0 6px 18px rgba(20,32,26,0.28);
   transition:filter .18s ease, transform .18s ease;
 }
-.messenger-circle:hover{transform:translateY(-2px);}
+.messenger-circle:hover{transform:translateY(-2px); filter:brightness(1.08);}
 .messenger-circle svg{
-  width:28px;height:28px;
+  width:26px;height:26px;
   stroke:currentColor;
   fill:none;
   stroke-width:1.75;
@@ -1212,19 +1226,19 @@ section{
   stroke-linejoin:round;
 }
 .messenger-circle-telegram{
-  width:76px;height:76px;
+  width:60px;height:60px;
   background:var(--accent);
   border-color:var(--accent);
   color:var(--ink);
   box-shadow:0 6px 18px rgba(20,32,26,0.28);
 }
 .messenger-circle-telegram:hover{filter:brightness(1.08);}
-.messenger-circle-telegram svg{width:32px;height:32px;}
+.messenger-circle-telegram svg{width:26px;height:26px;}
 @media (max-width:480px){
-  .messenger-circle{width:56px;height:56px;}
-  .messenger-circle svg{width:24px;height:24px;}
-  .messenger-circle-telegram{width:66px;height:66px;}
-  .messenger-circle-telegram svg{width:28px;height:28px;}
+  .messenger-circle{width:52px;height:52px;}
+  .messenger-circle svg{width:22px;height:22px;}
+  .messenger-circle-telegram{width:52px;height:52px;}
+  .messenger-circle-telegram svg{width:22px;height:22px;}
 }
 
 .contacts-block{
@@ -1893,12 +1907,6 @@ section{
 
 <section class="advantages reveal" id="advantages">
   <div class="wrap">
-    <div class="route-mark route-mark-static" aria-hidden="true">
-      <svg viewBox="0 0 100 16">
-        <circle class="route-dot" cx="6" cy="8" r="3"/>
-        <line class="route-line" x1="14" y1="8" x2="100" y2="8"/>
-      </svg>
-    </div>
     <div class="advantages-grid">
       <div class="advantage">
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
