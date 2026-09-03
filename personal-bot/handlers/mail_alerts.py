@@ -34,7 +34,7 @@ from adapters.mail_translator import translate_mails
 from adapters.seen_store import filter_unseen, mark_seen
 from adapters.urgency_classifier import classify_urgency
 from adapters.urgency_rules import add_rule
-from config import ALLOWED_CHAT_ID, MAILBOXES
+from config import ALLOWED_CHAT_ID, MAILBOXES, TOPIC_MAIL
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +166,7 @@ async def check_urgent_mail(context: ContextTypes.DEFAULT_TYPE) -> None:
     header = "🚨 Срочная почта:" if len(blocks) == 1 else f"🚨 Срочная почта ({len(blocks)}):"
     sent_message = await context.bot.send_message(
         chat_id=ALLOWED_CHAT_ID,
+        message_thread_id=TOPIC_MAIL,
         text=f"{header}\n\n" + "\n\n".join(blocks),
         parse_mode="Markdown",
         reply_markup=InlineKeyboardMarkup(keyboard_rows),
@@ -249,7 +250,9 @@ async def send_daily_mail_summary(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     if not visible_mails:
         await context.bot.send_message(
-            chat_id=ALLOWED_CHAT_ID, text="📭 Дежурная почта: новых непрочитанных писем нет."
+            chat_id=ALLOWED_CHAT_ID,
+            message_thread_id=TOPIC_MAIL,
+            text="📭 Дежурная почта: новых непрочитанных писем нет.",
         )
         return
 
@@ -259,4 +262,6 @@ async def send_daily_mail_summary(context: ContextTypes.DEFAULT_TYPE) -> None:
     translated_mails = translate_mails(visible_mails)
     lines = "\n\n".join(_format_line(m) for m in translated_mails)
     text = f"📬 Дежурная почта за сутки ({len(visible_mails)}):\n\n{lines}"
-    await context.bot.send_message(chat_id=ALLOWED_CHAT_ID, text=text, parse_mode="Markdown")
+    await context.bot.send_message(
+        chat_id=ALLOWED_CHAT_ID, message_thread_id=TOPIC_MAIL, text=text, parse_mode="Markdown"
+    )

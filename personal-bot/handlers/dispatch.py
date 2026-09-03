@@ -30,6 +30,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from classifier import classify
+from config import TOPIC_BY_MESSAGE_TYPE, TOPIC_BY_PROJECT, TOPIC_TASKS
 from handlers.balance import get_oracle_spend_this_month
 from handlers.cancel_event import PENDING_KEY as _CANCEL_PENDING_KEY
 from handlers.cancel_event import handle_cancel_event
@@ -90,6 +91,41 @@ def _build_choice_keyboard(count: int) -> InlineKeyboardMarkup:
         InlineKeyboardButton(str(i + 1), callback_data=f"choice:{i}") for i in range(count)
     ]
     return InlineKeyboardMarkup([buttons])
+
+
+def _topic_for(message_type: str, project: str) -> int | None:
+    """Тема Telegram-группы, куда должен уйти ОТВЕТ бота — по смыслу
+    сообщения (config.TOPIC_BY_MESSAGE_TYPE/TOPIC_BY_PROJECT), не по тому,
+    в какой теме пользователь написал исходное сообщение. Пользователь
+    явно попросил такое поведение 2026-09-03 — иначе мысль, написанная в
+    "Почте", осталась бы там же, а не ушла в "Задачи"/"AutoExpert"/"Motus".
+
+    "thought" — особый случай: тема зависит от classifier.py's поля
+    "project" (autoexpert/motus/none), не только от типа — TOPIC_TASKS как
+    дефолт для project="none" или для мыслей, где LLM не смог определить
+    проект по смыслу.
+
+    None означает "не удалось определить тему" (message_type вне известных
+    — например "unclear") — вызывающий код тогда не передаёт
+    message_thread_id вовсе, и Telegram сам кладёт ответ в тему исходного
+    сообщения (обычное поведение reply)."""
+    if message_type == "thought":
+        return TOPIC_BY_PROJECT.get(project, TOPIC_TASKS)
+    return TOPIC_BY_MESSAGE_TYPE.get(message_type)
+
+
+async def _reply_in_topic(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, topic: int | None, **kwargs
+) -> None:
+    """Как update.message.reply_text, но кладёт сообщение в конкретную тему
+    группы (topic), если она известна — иначе обычный reply (в тему
+    исходного сообщения, штатное поведение Telegram)."""
+    if topic is None:
+        await update.message.reply_text(text, **kwargs)
+        return
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id, message_thread_id=topic, text=text, **kwargs
+    )
 
 
 # "запушь"/"запуш"/"запушено"/"запушил" и т.п. — команда пользователя сохранить
@@ -155,17 +191,19 @@ async def handle_text(
 
     result = classify(text)
     message_type = result.get("type", "unclear")
+    topic = _topic_for(message_type, result.get("project", "none"))
 
     if message_type == "event":
         reply, candidates = handle_event(
             title=result["title"], date_hint=result["date_hint"], user_data=context.user_data
         )
         if candidates:
-            await update.message.reply_text(
-                f"{prefix}{reply}", reply_markup=_build_choice_keyboard(len(candidates))
+            await _reply_in_topic(
+                update, context, f"{prefix}{reply}", topic,
+                reply_markup=_build_choice_keyboard(len(candidates)),
             )
         else:
-            await update.message.reply_text(f"{prefix}{reply}")
+            await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
     elif message_type == "reschedule_event":
         reply, candidates = handle_reschedule_event(
             search_query=result["search_query"],
@@ -173,35 +211,40 @@ async def handle_text(
             user_data=context.user_data,
         )
         if candidates:
-            await update.message.reply_text(
-                f"{prefix}{reply}", reply_markup=_build_choice_keyboard(len(candidates))
+            await _reply_in_topic(
+                update, context, f"{prefix}{reply}", topic,
+                reply_markup=_build_choice_keyboard(len(candidates)),
             )
         else:
-            await update.message.reply_text(f"{prefix}{reply}")
+            await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
     elif message_type == "cancel_event":
         reply, candidates = handle_cancel_event(
             search_query=result["search_query"], user_data=context.user_data
         )
         if candidates:
-            await update.message.reply_text(
-                f"{prefix}{reply}", reply_markup=_build_choice_keyboard(len(candidates))
+            await _reply_in_topic(
+                update, context, f"{prefix}{reply}", topic,
+                reply_markup=_build_choice_keyboard(len(candidates)),
             )
         else:
-            await update.message.reply_text(f"{prefix}{reply}")
+            await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
     elif message_type == "thought":
         is_explicit_save = result.get("is_explicit_save", False) or _is_push_command(text)
         reply = handle_thought(summary=result["summary"], is_explicit_save=is_explicit_save)
-        await update.message.reply_text(f"{prefix}{reply}")
+        await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
     elif message_type == "mail":
         reply = handle_mail_search(search_query=result["search_query"])
-        await update.message.reply_text(f"{prefix}{reply}", parse_mode="Markdown")
+        await _reply_in_topic(update, context, f"{prefix}{reply}", topic, parse_mode="Markdown")
     elif message_type == "balance":
         reply = get_oracle_spend_this_month()
-        await update.message.reply_text(f"{prefix}{reply}")
+        await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
     else:
+        # parts_search/unclear пока не привязаны к теме в TOPIC_BY_MESSAGE_TYPE
+        # (topic будет None) — _reply_in_topic сама падает на обычный reply
+        # в тему исходного сообщения.
         reply_template = _STUB_REPLIES.get(message_type, _STUB_REPLIES["unclear"])
         reply = reply_template.format(**result)
-        await update.message.reply_text(f"{prefix}{reply}")
+        await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
 
 
 async def handle_choice_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

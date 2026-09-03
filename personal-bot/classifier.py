@@ -79,6 +79,12 @@ cancel_event, тот же именительный падеж) — только 
 без такой явной просьбы — false. Это важное различие: true означает мысль сразу и \
 бесповоротно попадёт в постоянную память, false — просто ляжет в черновой список на \
 будущий разбор. Если сомневаешься — false.
+- project: к какому проекту относится мысль по смыслу — "autoexpert" (автосервис \
+AutoExpert — клиенты, машины, запчасти, сайт autoexpert.cy), "motus" (бизнес-проект \
+Motus — импорт машин из Японии, CRM, реклама), или "none" (личное/бытовое/непонятно \
+к какому проекту). Определяй по СМЫСЛУ мысли, не по ключевым словам — если человек \
+сказал "клиенты жалуются, что не находят нас в Google Maps" без явного упоминания \
+названия, но контекст явно про автосервис — это "autoexpert". Если сомневаешься — "none".
 
 Для остальных типов достаточно summary — короткое изложение сути одним предложением.
 """
@@ -103,6 +109,7 @@ _SCHEMA = {
         "date_hint": {"type": "string"},
         "search_query": {"type": "string"},
         "is_explicit_save": {"type": "boolean"},
+        "project": {"type": "string", "enum": ["autoexpert", "motus", "none"]},
         "summary": {"type": "string"},
     },
     "required": [
@@ -111,6 +118,7 @@ _SCHEMA = {
         "date_hint",
         "search_query",
         "is_explicit_save",
+        "project",
         "summary",
     ],
     "additionalProperties": False,
@@ -121,7 +129,10 @@ def classify(text: str) -> dict:
     """
     Возвращает словарь вида:
     {"type": "event", "title": "Позвонить в банк", "date_hint": "в понедельник в 9",
-     "summary": "..."}
-    Поля title/date_hint пустые строки, если не тип "event".
+     "project": "none", "summary": "..."}
+    Поля title/date_hint пустые строки, если не тип "event". "project" (autoexpert/
+    motus/none) используется только для маршрутизации по темам Telegram-группы
+    (см. config.TOPIC_BY_MESSAGE_TYPE, handlers/dispatch.py._topic_for) — сам
+    классификатор ни на что другое его не тратит.
     """
     return ask_structured(_SYSTEM_PROMPT, text, _SCHEMA)
