@@ -30,6 +30,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from classifier import classify
+from handlers.balance import get_oracle_spend_this_month
 from handlers.cancel_event import PENDING_KEY as _CANCEL_PENDING_KEY
 from handlers.cancel_event import handle_cancel_event
 from handlers.cancel_event import resolve_pending_choice as _resolve_cancel_choice
@@ -194,6 +195,9 @@ async def handle_text(
     elif message_type == "mail":
         reply = handle_mail_search(search_query=result["search_query"])
         await update.message.reply_text(f"{prefix}{reply}", parse_mode="Markdown")
+    elif message_type == "balance":
+        reply = get_oracle_spend_this_month()
+        await update.message.reply_text(f"{prefix}{reply}")
     else:
         reply_template = _STUB_REPLIES.get(message_type, _STUB_REPLIES["unclear"])
         reply = reply_template.format(**result)
