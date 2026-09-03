@@ -623,7 +623,22 @@ h1.headline{
   line-height:1.4;
 }
 .quick-popover{
-  max-width:460px;
+  /* Widened from 460px (2026-09-03): the perks line ("Гарантия · Скидка
+     на сервис · Цена под ключ, без доплат") needs ~496px including its
+     letter-spacing (measured live via a cloned span, canvas measureText
+     alone misses letter-spacing) and was wrapping to two lines. max-width
+     alone wasn't enough — with no explicit width, the popover sized itself
+     to its own content, and the perks line (display:inline-block) was
+     circularly sizing itself to the *wrapped* text's line width, never
+     reaching the space it needed to unwrap. An explicit width breaks that
+     loop; min() keeps it from overflowing narrower viewports. */
+  /* 100% here would resolve against .cta-primary-group, a column-flex
+     parent whose own width comes FROM its widest child — a circular
+     dependency that (confirmed live) left the popover stuck at its old
+     ~497px content-driven size despite this rule. 92vw as the shrink
+     fallback breaks that loop by sizing off the viewport instead. */
+  width:min(540px, 92vw);
+  max-width:540px;
   margin-top:0;
   max-height:0;
   overflow:hidden;
@@ -636,13 +651,27 @@ h1.headline{
   margin-top:18px;
 }
 .quick-popover-perks{
-  display:inline-block;
+  /* Was inline-block, which sizes to its own content — with wrapped text
+     that becomes the wrapped line's width, never the popover's actual
+     540px, so it could never claim the room the now-widened popover
+     provides. display:block + text-align:center lets it use the full
+     parent width (2026-09-03 fix — verified live the text now fits on one
+     line at 540px, was wrapping there before). white-space stays "normal"
+     (not nowrap) so narrow/mobile viewports — where the popover shrinks
+     below the ~496px this line needs (confirmed live: 484px scrollWidth
+     vs 357px available at 390px viewport) — get a clean two-line wrap
+     instead of overflowing past the screen edge. */
+  display:block;
+  text-align:center;
   color:var(--accent);
   background:var(--surface);
   border:1px solid var(--border);
   padding:7px 12px;
   border-radius:3px;
   margin-bottom:12px;
+}
+@media (min-width:640px){
+  .quick-popover-perks{white-space:nowrap;}
 }
 @media (prefers-reduced-motion: reduce){
   .quick-popover{transition:none;}
@@ -652,7 +681,12 @@ h1.headline{
   grid-template-columns:1fr 1fr;
   gap:10px;
   width:100%;
-  max-width:460px;
+  /* Widened alongside .quick-popover (2026-09-03) — at the old 460px, each
+     column (~225px, minus 26px padding = 199px usable) was ~19px too
+     narrow for the "Телефон, Telegram или WhatsApp" placeholder (measured
+     218px) and ~14px too narrow for "Какая машина? (необязательно)"
+     (measured 213px), so both got visibly clipped. */
+  max-width:540px;
 }
 .quick-form input{
   grid-column:span 1;
@@ -672,8 +706,22 @@ h1.headline{
 .quick-form input[name="qModel"]{grid-column:1/2;}
 .quick-form .btn{grid-column:2/3; justify-content:center;}
 @media (max-width:520px){
+  /* Found live (2026-09-03): this rule was losing to the un-scoped
+     input[name="qContact"]/[name="qModel"] rules above despite coming
+     later in the cascade, because an attribute selector is MORE specific
+     than a plain type selector — ".quick-form input" (0-1-1) loses to
+     ".quick-form input[name=...]" (0-2-1) regardless of source order.
+     Computed grid-template-columns stayed "165px 183px" (an implicit
+     second column auto-sized to content) instead of collapsing to one
+     column, which is what clipped "Телефон, Telegram или WhatsApp" and
+     "Какая машина? (необязательно)" in their inputs. Matching the
+     attribute selectors' specificity here (rather than just the bare
+     type selector) makes this rule actually win. */
   .quick-form{grid-template-columns:1fr;}
-  .quick-form input,.quick-form .btn{grid-column:1/-1;}
+  .quick-form input[name="qName"],
+  .quick-form input[name="qContact"],
+  .quick-form input[name="qModel"],
+  .quick-form .btn{grid-column:1/-1;}
 }
 .quick-form-success{
   display:none;
