@@ -474,7 +474,11 @@ a{color:inherit;}
     align-items:flex-start;
     justify-content:center;
     text-align:center;
-    padding-top:14%;
+    /* Moved up from 14% (2026-09-03) — headline was sitting at ~42% of the
+       visual's height, level with the cars' bodies/hoods, cramped against
+       them. Sky/mountains occupy roughly the top half of the photo, so this
+       puts the headline there instead, clear of the vehicles. */
+    padding-top:6%;
     margin-bottom:8px;
   }
   .hero-visual .hero-bg{
@@ -1365,12 +1369,16 @@ section{
   height:auto;
   overflow:visible;
 }
+/* No background/border here on purpose (2026-09-03 fix) — .chatfab-menu
+   sits on the dark pine chatfab surface regardless of page theme, but
+   --surface resolves to solid white in the light theme, so the label read
+   as an ugly white patch behind unreadable pale text. It's plain --stone
+   text directly on pine now, with a text-shadow for contrast instead of a
+   background chip — reads clean and matches the .chatfab-item buttons
+   below it without competing for attention. */
 .chatfab-menu-label{
   color:var(--stone);
-  background:var(--surface);
-  border:1px solid var(--border);
-  padding:6px 10px;
-  border-radius:3px;
+  text-shadow:0 1px 4px rgba(20,32,26,.6);
 }
 .chatfab-item{
   display:inline-flex;
@@ -2144,7 +2152,7 @@ const content = {
     adv3Title:"One final price",
     adv3Body:"MOT, road tax, Cyprus registration — already in the price you see. No hidden extras after the auction.",
     finalTitle:"Get in, and drive away.",
-    finalBody:"We handle the rest — the auction, the paperwork, the delivery.",
+    finalBody:"We handle the rest — the auction, the delivery, the paperwork.",
     finalCta:"Talk to us on Telegram",
     finalContact:"@motus_cy · +357 95 5885 95",
     contactsTitle:"Contact us",
@@ -2247,7 +2255,7 @@ const content = {
     adv3Title:"Одна честная цена",
     adv3Body:"MOT, дорожный налог, регистрация на Кипре — уже в цене, которую вы видите. Никаких доплат после аукциона.",
     finalTitle:"Сел и поехал.",
-    finalBody:"Остальное берём на себя — аукцион, документы, доставку.",
+    finalBody:"Остальное берём на себя — аукцион, доставка, оформление.",
     finalCta:"Написать в Telegram",
     finalContact:"@motus_cy · +357 95 5885 95",
     contactsTitle:"Связаться с нами",
@@ -2350,7 +2358,7 @@ const content = {
     adv3Title:"Μία τίμια τιμή",
     adv3Body:"MOT, τέλη κυκλοφορίας, ταξινόμηση στην Κύπρο — ήδη μέσα στην τιμή που βλέπετε. Καμία κρυφή χρέωση μετά τη δημοπρασία.",
     finalTitle:"Μπείτε και φύγετε.",
-    finalBody:"Εμείς αναλαμβάνουμε τα υπόλοιπα — τη δημοπρασία, τα χαρτιά, την παράδοση.",
+    finalBody:"Εμείς αναλαμβάνουμε τα υπόλοιπα — τη δημοπρασία, την παράδοση, τα χαρτιά.",
     finalCta:"Μιλήστε μας στο Telegram",
     finalContact:"@motus_cy · +357 95 5885 95",
     contactsTitle:"Επικοινωνήστε μαζί μας",
