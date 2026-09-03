@@ -521,6 +521,32 @@ a{color:inherit;}
     margin:0 auto;
     text-shadow:0 2px 16px rgba(20,32,26,.55);
   }
+  /* Each phrase of the headline on its own line (2026-09-03), instead of
+     one run-on sentence the browser wraps unpredictably. The last line —
+     the answer to the buyer's real worry, not just supporting context —
+     is set larger/heavier so it reads as the headline's actual point. */
+  .hero-visual .headline-line{
+    display:block;
+    opacity:0;
+    transform:translateY(10px);
+  }
+  .hero-visual .headline-line-emphasis{
+    font-size:1.18em;
+    font-weight:800;
+    margin-top:0.12em;
+  }
+  /* Lines reveal one after another instead of the whole h1 fading in at
+     once — a slower, more deliberate entrance ("elegant, not rushed" per
+     owner's request) than the previous single-block rise. .hero.ready's
+     own .headline rule is suppressed below so the two animations don't
+     fight each other. */
+  .hero.ready .hero-visual .headline-line{
+    animation:rise .7s ease forwards;
+  }
+  .hero.ready .hero-visual .headline-line:nth-child(1){animation-delay:.2s;}
+  .hero.ready .hero-visual .headline-line:nth-child(2){animation-delay:.42s;}
+  .hero.ready .hero-visual .headline-line:nth-child(3){animation-delay:.64s;}
+  .hero.ready .hero-visual h1.headline{animation:none; opacity:1;}
   .hero .hero-media{display:none;} /* old side-by-side photo frame, replaced by .hero-visual above */
 
   /* Center the copy band below the photo — the old left-aligned column made
@@ -1372,13 +1398,21 @@ section{
 /* No background/border here on purpose (2026-09-03 fix) — .chatfab-menu
    sits on the dark pine chatfab surface regardless of page theme, but
    --surface resolves to solid white in the light theme, so the label read
-   as an ugly white patch behind unreadable pale text. It's plain --stone
-   text directly on pine now, with a text-shadow for contrast instead of a
-   background chip — reads clean and matches the .chatfab-item buttons
-   below it without competing for attention. */
+   as an ugly white patch behind unreadable pale text. First fix (plain
+   text + text-shadow, no background) still failed: .chatfab is
+   position:fixed and floats over whatever section is scrolled underneath
+   it — confirmed live by scrolling to the paper-background .advantages
+   section, where pale --stone text over the page's own cream background
+   is nearly invisible, same failure as before just with the culprit
+   reversed. A fixed-position element needs its own solid backdrop
+   regardless of what's under it — matched to the .chatfab-item pine chips
+   below it so the whole menu reads as one consistent piece. */
 .chatfab-menu-label{
   color:var(--stone);
-  text-shadow:0 1px 4px rgba(20,32,26,.6);
+  background:var(--pine);
+  padding:6px 12px;
+  border-radius:3px;
+  box-shadow:0 4px 14px rgba(20,32,26,0.3);
 }
 .chatfab-item{
   display:inline-flex;
@@ -1858,7 +1892,7 @@ section{
     <div class="hero-bg" aria-hidden="true"><img src="images/hero-fullbleed.jpg" alt=""></div>
     <div class="wrap wrap-wide">
       <p class="eyebrow mono" data-i18n="eyebrow"></p>
-      <h1 class="headline" data-i18n="h1"></h1>
+      <h1 class="headline" id="heroHeadlineDesktop"></h1>
     </div>
   </div>
   <div class="route-strip" aria-hidden="true">
@@ -2115,6 +2149,7 @@ const content = {
   en:{
     eyebrow:"VERIFIED · GUARANTEED · READY TO DRIVE",
     h1:"Verified cars from Japan. Delivered to Cyprus. Ready to use from day one.",
+    h1Lines:["Verified cars from Japan.","Delivered to Cyprus.","Ready to use from day one."],
     sub:"Every car is inspected before you get the keys — the first check is on us.",
     navWhy:"Why us",
     navPayment:"Payment methods",
@@ -2218,6 +2253,7 @@ const content = {
   ru:{
     eyebrow:"ПРОВЕРЕНО · ГАРАНТИЯ · ГОТОВО К ДОРОГЕ",
     h1:"Проверенные автомобили из Японии. Доставка на Кипр. Готовы к эксплуатации с первого дня.",
+    h1Lines:["Проверенные автомобили из Японии.","Доставка на Кипр.","Готовы к эксплуатации с первого дня."],
     sub:"Каждый автомобиль проверяется до передачи ключей — первая диагностика за наш счёт.",
     navWhy:"Почему именно мы",
     navPayment:"Способы оплаты",
@@ -2321,6 +2357,7 @@ const content = {
   el:{
     eyebrow:"ΕΠΑΛΗΘΕΥΜΕΝΟ · ΕΓΓΥΗΣΗ · ΕΤΟΙΜΟ ΓΙΑ ΔΡΟΜΟ",
     h1:"Ελεγμένα αυτοκίνητα από την Ιαπωνία. Παράδοση στην Κύπρο. Έτοιμα για χρήση από την πρώτη μέρα.",
+    h1Lines:["Ελεγμένα αυτοκίνητα από την Ιαπωνία.","Παράδοση στην Κύπρο.","Έτοιμα για χρήση από την πρώτη μέρα."],
     sub:"Κάθε αυτοκίνητο ελέγχεται πριν παραλάβετε τα κλειδιά — ο πρώτος έλεγχος είναι δωρεάν.",
     navWhy:"Γιατί εμείς",
     navPayment:"Τρόποι πληρωμής",
@@ -2587,6 +2624,24 @@ function render(lang){
     const key = el.getAttribute('data-i18n');
     if(dict[key] !== undefined) el.textContent = dict[key];
   });
+  /* Desktop hero headline (2026-09-03): rendered from h1Lines, one phrase
+     per line instead of one long sentence the browser wraps wherever it
+     fits — that was breaking mid-phrase ("Готовы" stranding itself at the
+     end of line 2, its own clause "к эксплуатации..." starting line 3).
+     Three lines, each its own <span>, and the last line — "ready to use
+     from day one", the line that answers the buyer's real fear on a
+     used-car market (will this break on me right away) — gets the
+     hero-headline-emphasis class for a heavier/larger weight than the
+     other two, which stay lighter supporting context. innerHTML is safe
+     here: h1Lines is our own fixed content object, never user input, and
+     this is the one spot on the page that needs per-line markup instead
+     of the plain-text data-i18n path all the other elements use. */
+  const headlineEl = document.getElementById('heroHeadlineDesktop');
+  if(headlineEl && dict.h1Lines){
+    headlineEl.innerHTML = dict.h1Lines.map((line, i) =>
+      `<span class="headline-line${i === dict.h1Lines.length - 1 ? ' headline-line-emphasis' : ''}">${line}</span>`
+    ).join('');
+  }
   document.querySelectorAll('.langswitch button').forEach(btn=>{
     btn.setAttribute('aria-pressed', btn.dataset.lang === lang ? 'true' : 'false');
   });
