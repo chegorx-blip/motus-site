@@ -701,10 +701,18 @@ h1.headline{
 }
 .quick-form input::placeholder{color:var(--text-muted); opacity:0.75;}
 .quick-form input:focus{outline:none; border-color:var(--accent);}
-.quick-form input[name="qName"]{grid-column:1/2;}
-.quick-form input[name="qContact"]{grid-column:2/3;}
-.quick-form input[name="qModel"]{grid-column:1/2;}
-.quick-form .btn{grid-column:2/3; justify-content:center;}
+/* Name split into First/Last (2026-09-04) — every real premium-site
+   callback form checked (Range Rover ru-am, Mercedes-Benz Cyprus, UBS,
+   JPMorgan) splits the name field; none used a single combined field.
+   First+Last share the top row, Contact and Model each get their own
+   full-width row below (both need more horizontal room than half the
+   540px popover gives them — Contact in particular was the field that
+   got clipped before at half-width, see the widening fix above it). */
+.quick-form input[name="qFirstName"]{grid-column:1/2;}
+.quick-form input[name="qLastName"]{grid-column:2/3;}
+.quick-form input[name="qContact"]{grid-column:1/-1;}
+.quick-form input[name="qModel"]{grid-column:1/-1;}
+.quick-form .btn{grid-column:1/-1; justify-content:center;}
 @media (max-width:520px){
   /* Found live (2026-09-03): this rule was losing to the un-scoped
      input[name="qContact"]/[name="qModel"] rules above despite coming
@@ -718,7 +726,8 @@ h1.headline{
      attribute selectors' specificity here (rather than just the bare
      type selector) makes this rule actually win. */
   .quick-form{grid-template-columns:1fr;}
-  .quick-form input[name="qName"],
+  .quick-form input[name="qFirstName"],
+  .quick-form input[name="qLastName"],
   .quick-form input[name="qContact"],
   .quick-form input[name="qModel"],
   .quick-form .btn{grid-column:1/-1;}
@@ -1916,7 +1925,7 @@ section{
       <span>TG</span>
     </a>
   </div>
-  <a href="order.html" class="topbar-cta" data-i18n="cta1"></a>
+  <a href="order.html" class="topbar-cta" data-i18n="ctaOrder"></a>
   <div class="langswitch" role="group" aria-label="Language">
     <button type="button" data-lang="en" aria-pressed="false">EN</button>
     <button type="button" data-lang="ru" aria-pressed="false">RU</button>
@@ -1974,7 +1983,8 @@ section{
           <div class="quick-popover" id="quickPopover">
             <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
             <form class="quick-form" id="quickForm" novalidate>
-              <input type="text" name="qName" required data-i18n-placeholder="quickName">
+              <input type="text" name="qFirstName" required data-i18n-placeholder="quickFirstName">
+              <input type="text" name="qLastName" required data-i18n-placeholder="quickLastName">
               <input type="text" name="qContact" required data-i18n-placeholder="quickContact">
               <input type="text" name="qModel" data-i18n-placeholder="quickModel">
               <button type="submit" class="btn btn-primary" data-i18n="submitBtn"></button>
@@ -2103,7 +2113,7 @@ section{
     <h2 data-i18n="finalTitle"></h2>
     <p data-i18n="finalBody"></p>
 
-    <a href="order.html" class="btn btn-primary" data-i18n="cta1"></a>
+    <a href="order.html" class="btn btn-primary" data-i18n="ctaOrder"></a>
 
     <div class="messenger-row">
       <a class="messenger-circle messenger-circle-telegram" href="https://t.me/motus_cy" target="_blank" rel="noopener" aria-label="Telegram">
@@ -2223,8 +2233,9 @@ const content = {
     partnerBody:"10–30% off body, electrical, and multimedia work for as long as you own the car — at our own partner garage, AutoExpert.",
     paymentTitle:"Flexible payment",
     paymentBody:"Multiple ways to pay, including modern methods — installment terms available on request.",
-    cta1:"Start your request",
+    cta1:"Request a callback",
     cta1Hint:"Not sure yet? We'll get in touch and help you choose the right car.",
+    ctaOrder:"Arrange a search",
     cta2:"Talk to us",
     aboutTitle:"Born from a garage, not a used-car lot.",
     aboutBody:"Motus grew out of AutoExpert, a car service in Limassol. First we fixed our clients' cars. Then we started bringing them cars worth trusting. That's the whole idea: we don't sell cars — we remove the risk from buying one. Every car goes through a full cycle before it reaches you — auction, shipping, customs, registration. You just get the keys.",
@@ -2280,7 +2291,7 @@ const content = {
       grpContact:"Contact details", grpVehicle:"Vehicle",
       firstName:"First name", lastName:"Last name", phone:"Phone",
       telegram:"Telegram", email:"Email", city:"City in Cyprus",
-      quickName:"Your name", quickContact:"Phone, Telegram or WhatsApp", quickModel:"Which car? (optional)",
+      quickFirstName:"First name", quickLastName:"Last name", quickContact:"Phone, Telegram or WhatsApp", quickModel:"Which car? (optional)",
       model:"Make, model", color:"Color (needed / not acceptable)",
       budgetFrom:"Budget from", budgetTo:"Budget to",
       yearFrom:"Year from", yearTo:"Year to", yearLimit:"Year of manufacture", engine:"Engine",
@@ -2327,8 +2338,9 @@ const content = {
     partnerBody:"Скидка 10–30% на кузовные, электрику и мультимедиа на весь срок владения машиной — у нашего собственного партнёра, AutoExpert.",
     paymentTitle:"Гибкая оплата",
     paymentBody:"Разные способы оплаты, включая современные — рассрочка обсуждается индивидуально.",
-    cta1:"Оставить заявку",
+    cta1:"Закажите обратный звонок",
     cta1Hint:"Ещё не решили? Мы свяжемся и поможем подобрать автомобиль.",
+    ctaOrder:"Оформить подбор",
     cta2:"Написать нам",
     aboutTitle:"Выросли из автосервиса, а не с авторынка.",
     aboutBody:"Motus вырос из AutoExpert — автосервиса в Лимассоле. Сначала мы чинили машины клиентов. Потом начали привозить им автомобили, за которые не стыдно. В этом вся суть: мы не продаём машины — мы убираем риск из покупки. Каждый автомобиль проходит полный цикл, прежде чем попасть к вам — аукцион, доставка, растаможка, регистрация. Вам остаётся забрать ключи.",
@@ -2384,7 +2396,7 @@ const content = {
       grpContact:"Контактные данные", grpVehicle:"Параметры автомобиля",
       firstName:"Имя", lastName:"Фамилия", phone:"Телефон",
       telegram:"Telegram", email:"Email", city:"Город на Кипре",
-      quickName:"Ваше имя", quickContact:"Телефон, Telegram или WhatsApp", quickModel:"Какая машина? (необязательно)",
+      quickFirstName:"Имя", quickLastName:"Фамилия", quickContact:"Телефон, Telegram или WhatsApp", quickModel:"Какая машина? (необязательно)",
       model:"Марка, модель", color:"Цвет (какой нужен / какой не нужен)",
       budgetFrom:"Бюджет от", budgetTo:"Бюджет до",
       yearFrom:"Год выпуска от", yearTo:"Год выпуска до", yearLimit:"Год выпуска", engine:"Двигатель",
@@ -2431,8 +2443,9 @@ const content = {
     partnerBody:"Έκπτωση 10–30% σε αμάξωμα, ηλεκτρολογικά και multimedia για όσο διάστημα έχετε το αυτοκίνητο — στον δικό μας συνεργάτη, AutoExpert.",
     paymentTitle:"Ευέλικτη πληρωμή",
     paymentBody:"Πολλοί τρόποι πληρωμής, συμπεριλαμβανομένων σύγχρονων μεθόδων — δόσεις κατόπιν συνεννόησης.",
-    cta1:"Ξεκινήστε το αίτημά σας",
+    cta1:"Ζητήστε επιστροφή κλήσης",
     cta1Hint:"Δεν έχετε αποφασίσει ακόμα; Θα επικοινωνήσουμε μαζί σας για να σας βοηθήσουμε να επιλέξετε.",
+    ctaOrder:"Οργανώστε την αναζήτηση",
     cta2:"Επικοινωνήστε μαζί μας",
     aboutTitle:"Γεννηθήκαμε από συνεργείο, όχι από παλαιοπωλείο.",
     aboutBody:"Η Motus προήλθε από την AutoExpert, ένα συνεργείο αυτοκινήτων στη Λεμεσό. Αρχικά επισκευάζαμε τα αυτοκίνητα των πελατών μας. Στη συνέχεια αρχίσαμε να τους φέρνουμε αυτοκίνητα που αξίζει να εμπιστευτούν. Αυτή είναι η ιδέα: δεν πουλάμε αυτοκίνητα — αφαιρούμε τον κίνδυνο από την αγορά τους. Κάθε αυτοκίνητο περνά από πλήρη διαδικασία πριν φτάσει σε εσάς — δημοπρασία, μεταφορά, εκτελωνισμός, ταξινόμηση. Εσείς απλά παίρνετε τα κλειδιά.",
@@ -2488,7 +2501,7 @@ const content = {
       grpContact:"Στοιχεία επικοινωνίας", grpVehicle:"Παράμετροι οχήματος",
       firstName:"Όνομα", lastName:"Επώνυμο", phone:"Τηλέφωνο",
       telegram:"Telegram", email:"Email", city:"Πόλη στην Κύπρο",
-      quickName:"Το όνομά σας", quickContact:"Τηλέφωνο, Telegram ή WhatsApp", quickModel:"Ποιο αυτοκίνητο; (προαιρετικό)",
+      quickFirstName:"Όνομα", quickLastName:"Επώνυμο", quickContact:"Τηλέφωνο, Telegram ή WhatsApp", quickModel:"Ποιο αυτοκίνητο; (προαιρετικό)",
       model:"Μάρκα, μοντέλο", color:"Χρώμα (επιθυμητό / μη αποδεκτό)",
       budgetFrom:"Προϋπολογισμός από", budgetTo:"Προϋπολογισμός έως",
       yearFrom:"Έτος από", yearTo:"Έτος έως", yearLimit:"Έτος κατασκευής", engine:"Κινητήρας",
@@ -2866,8 +2879,12 @@ quickForm.addEventListener('submit', (e)=>{
 
   const formData = new FormData(quickForm);
   const payload = { intent: 'japan', source: 'hero quick form' };
+  // firstName/lastName match order.html's CRM column names (see that
+  // file's stripIntentPrefix) so a quick lead lands in the same columns
+  // as a detailed one, not a separate "name" column nothing else uses.
   for(const [name, value] of formData.entries()){
-    if(name === 'qName') payload.name = value;
+    if(name === 'qFirstName') payload.firstName = value;
+    else if(name === 'qLastName') payload.lastName = value;
     else if(name === 'qContact') payload.contact = value;
     else if(name === 'qModel') payload.model = value;
   }
