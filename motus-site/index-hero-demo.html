@@ -389,9 +389,31 @@ a{color:inherit;}
   stroke-linejoin:round;
   flex:none;
 }
+/* Phone number stays as visible text at every width (2026-09-05) — live
+   research into a direct competitor in the same niche (CarsJapan Cyprus,
+   also Japan-to-Cyprus car import) found them showing the phone number
+   as plain text everywhere, paired with a circular WhatsApp badge; no
+   site checked (including that one) gave the phone icon a matching
+   circle instead. Hiding the number and keeping only a bare icon on
+   mobile (the previous behavior) was the actual root of the icon looking
+   "orphaned" next to the circled messenger icons — text next to circles
+   reads as one coherent contact group, a bare icon next to circles
+   doesn't. */
 @media (max-width:900px){
-  .header-phone span{display:none;}
-  .header-phone{padding-right:10px;}
+  .header-phone{padding-right:10px; font-size:11px; gap:5px; white-space:nowrap;}
+}
+@media (max-width:420px){
+  /* At the narrowest phone widths, keeping the phone number text AND the
+     full 3-language switch AND full messenger badges in one row didn't
+     fit without wrapping the phone number across 3 lines (confirmed
+     live: +357 / 95 / 5885 stacked vertically, unreadable). The language
+     switch is the least essential item in this row on a first viewport
+     — shrinking it (smaller text, tighter gaps) rather than the phone
+     number keeps the number that CarsJapan Cyprus research argued for
+     intact and legible. */
+  .header-phone{font-size:10px;}
+  .langswitch{gap:6px; font-size:11px;}
+  .langswitch button{padding:2px 3px;}
 }
 @media (max-width:480px){
   /* On the narrowest phones the phone number text is already hidden
@@ -631,6 +653,18 @@ h1.headline{
   opacity:0;
   position:relative;
 }
+@media (max-width:640px){
+  /* Below the row's own nowrap breakpoint the two CTA buttons stack, but
+     each kept its natural content width — "Закажите обратный звонок"
+     (232.9px) ended up visibly wider than "Оформить подбор" (168.2px),
+     reported live as the two looking unequal even though they're the
+     same height/style. Stretching both to the full row width makes them
+     literally the same size when stacked, which a side-by-side row
+     doesn't need (there, differing widths read as normal, like Range
+     Rover's own parallel-link CTAs). */
+  .cta-row-dual{flex-direction:column; align-items:stretch;}
+  .cta-row-dual > .btn{width:100%;}
+}
 /* .cta-primary-hint removed 2026-09-04 — the hint sentence above the
    buttons was dropped along with the 3-tier stack it belonged to; none
    of the reference sites checked pad a two-button decision point with
@@ -700,7 +734,12 @@ h1.headline{
   z-index:5;
 }
 .quick-popover.open{
-  max-height:260px;
+  /* Was 260px, a guess that turned out 58px short of the form's real
+     content height (measured live: 318px for perks line + 4 fields +
+     submit button on mobile, where the fields stack in one column) —
+     the cap was silently clipping the bottom of the form. 340px clears
+     it with a small margin so the whole form is actually visible. */
+  max-height:340px;
   opacity:1;
   margin-top:18px;
 }
@@ -2883,13 +2922,39 @@ quickFormToggle.addEventListener('click', ()=>{
   // comment above .cta-row-dual for why nesting it caused a feedback
   // loop that pushed the form far below the buttons). Since it's out of
   // flow it floats OVER whatever's below the row unless something else
-  // reserves that space — padding-bottom on the row itself does that,
-  // measured the same way as top (the button cluster's real height) plus
-  // the popover's own real scrollHeight so it can't drift out of sync
-  // with the actual expanded form.
-  requestAnimationFrame(()=>{
-    ctaRowDual.style.paddingBottom = open ? (parseFloat(quickPopover.style.top) + quickPopover.scrollHeight) + 'px' : '0px';
-  });
+  // reserves that space — padding-bottom on the row itself does that.
+  //
+  // Getting the reserved amount right took two wrong tries: reading
+  // offsetHeight/scrollHeight right after toggling .open caught the CSS
+  // max-height transition (.35s) mid-animation, under-reserving space and
+  // letting the form overlap "Поиск на Кипре" below it. Using the
+  // stylesheet's max-height:260px constant instead avoided that race but
+  // over-reserved, since the form's real content (4 fields + submit
+  // button) is shorter than the 260px cap — left an empty ~100px gap.
+  // Waiting for the transition to actually finish and reading the real
+  // settled height fixes both: no race, no guessing.
+  if(open){
+    quickPopover.addEventListener('transitionend', function onOpen(e){
+      if(e.propertyName !== 'max-height') return;
+      quickPopover.removeEventListener('transitionend', onOpen);
+      if(quickPopover.classList.contains('open')){
+        // padding-bottom is extra space ADDED AFTER the row's own content
+        // (the button cluster), so it must cover only the part of the
+        // popover that extends past the row's own bottom edge — NOT
+        // top + height, which double-counts the button-cluster height:
+        // that height is already the row's natural size before any
+        // padding is added (confirmed live: with top+height, row.bottom
+        // ended up 116px past popover.bottom, exactly the button
+        // cluster's own height, leaving a visible empty gap below the
+        // form). Subtracting the row's pre-padding height cancels that
+        // double-count.
+        const clusterHeight = ctaRowDual.getBoundingClientRect().height;
+        ctaRowDual.style.paddingBottom = (parseFloat(quickPopover.style.top) + quickPopover.offsetHeight - clusterHeight + 20) + 'px';
+      }
+    });
+  } else {
+    ctaRowDual.style.paddingBottom = '0px';
+  }
   if(open){
     const firstInput = quickPopover.querySelector('input');
     // Was focus({preventScroll:true}) — added 2026-09-04 to stop the page
