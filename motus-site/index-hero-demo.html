@@ -569,7 +569,14 @@ a{color:inherit;}
     flex-direction:row;
     flex-wrap:nowrap;
     justify-content:center;
-    align-items:center;
+    /* align-items:center made the secondary button re-center itself
+       against the primary button's group every time the popover form
+       opened inside that group — found live: the button visibly jumped
+       ~540px because the group's height grew by the form's height and
+       "center" recalculated against the new taller box. flex-start pins
+       both buttons to their own top edge regardless of what opens below
+       the first one. */
+    align-items:flex-start;
     gap:14px;
   }
   .hero .cta-row-dual .btn-secondary{white-space:nowrap;}
@@ -613,7 +620,7 @@ h1.headline{
   flex-wrap:wrap;
   opacity:0;
 }
-.cta-primary-group{display:flex; flex-direction:column; align-items:center; gap:6px;}
+.cta-primary-group{display:flex; flex-direction:column; align-items:center; gap:6px; position:relative;}
 /* .cta-primary-hint removed 2026-09-04 — the hint sentence above the
    buttons was dropped along with the 3-tier stack it belonged to; none
    of the reference sites checked pad a two-button decision point with
@@ -633,15 +640,32 @@ h1.headline{
      dependency that (confirmed live) left the popover stuck at its old
      ~497px content-driven size despite this rule. 92vw as the shrink
      fallback breaks that loop by sizing off the viewport instead. */
-  width:min(540px, 92vw);
   max-width:540px;
   margin-top:0;
   max-height:0;
   overflow:hidden;
   opacity:0;
   transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease;
+  /* position:absolute while closed (2026-09-04 fix) — a static-width
+     540px popover, even at max-height:0, still forced its column-flex
+     parent (.cta-primary-group) to be 540px wide, which pushed the whole
+     two-button pair 77px right of the section's true center (confirmed
+     live: pair center at x=789 vs true center x=712 — the "Закажите
+     обратный звонок" button alone looked centered, but the second button
+     next to it read as shoved off to the right). Taking it out of flow
+     when closed removes it from that width calculation entirely; .open
+     switches it back to static so it lays out normally in the stack once
+     visible, and left:50%+translateX(-50%) keeps it centered under the
+     button pair while absolutely positioned. */
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(540px, 92vw);
 }
 .quick-popover.open{
+  position:static;
+  transform:none;
   max-height:220px;
   opacity:1;
   margin-top:18px;
@@ -2802,7 +2826,14 @@ quickFormToggle.addEventListener('click', ()=>{
   const open = quickPopover.classList.toggle('open');
   if(open){
     const firstInput = quickPopover.querySelector('input');
-    if(firstInput) setTimeout(()=>firstInput.focus(), 300);
+    // preventScroll:true (2026-09-04 fix) — plain .focus() made the browser
+    // auto-scroll the whole page ~540px down to bring the newly-revealed
+    // input into view, which visually read as "the second button jumped
+    // to the middle of nowhere" (confirmed live: window.scrollY went from
+    // 0 to 543px on click). The popover's own CSS transition already
+    // handles bringing it into view smoothly — the browser's forced jump
+    // was fighting that, not helping it.
+    if(firstInput) setTimeout(()=>firstInput.focus({preventScroll:true}), 300);
   }
 });
 
