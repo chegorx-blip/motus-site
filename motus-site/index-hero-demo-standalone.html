@@ -558,23 +558,21 @@ a{color:inherit;}
     margin:0 auto;
     text-align:center;
   }
-  /* CTA block (2026-09-02 rebuild): a true vertical stack, one thing per
-     row, each centered — this is what actually fixes the "corner-cut"
-     misalignment (button/hint centered independently but not to each
-     other) and the "cluttered" messenger+link row (4 elements were sharing
-     one line). Three visual tiers top to bottom: primary button+hint,
-     secondary messenger row, tertiary text link. */
-  .hero .cta-row{
-    flex-direction:column;
+  /* CTA block rebuilt again 2026-09-04: two equal-weight buttons side by
+     side ("Закажите обратный звонок" / "Оформить подбор"), replacing the
+     earlier 3-tier vertical stack (bold primary + messenger row + small
+     text link) the owner felt was cluttered. Matches the pattern found
+     live on Range Rover's model page (same-weight parallel CTAs, no
+     contact icons mixed in) — see the HTML comment above .cta-row-dual
+     for the full research note. */
+  .hero .cta-row-dual{
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content:center;
     align-items:center;
-    gap:18px;
+    gap:14px;
   }
-  .hero .hero-below-form{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-  }
+  .hero .cta-row-dual .btn-secondary{white-space:nowrap;}
   .hero .hero-trust-line{justify-content:center;}
   .hero .hero-cyprus-line{margin-left:auto; margin-right:auto;}
   .hero .quick-popover{margin-left:auto; margin-right:auto;}
@@ -616,12 +614,10 @@ h1.headline{
   opacity:0;
 }
 .cta-primary-group{display:flex; flex-direction:column; align-items:center; gap:6px;}
-.cta-primary-hint{
-  font-size:12px;
-  color:var(--text-muted);
-  max-width:240px;
-  line-height:1.4;
-}
+/* .cta-primary-hint removed 2026-09-04 — the hint sentence above the
+   buttons was dropped along with the 3-tier stack it belonged to; none
+   of the reference sites checked pad a two-button decision point with
+   explanatory copy above it. */
 .quick-popover{
   /* Widened from 460px (2026-09-03): the perks line ("Гарантия · Скидка
      на сервис · Цена под ключ, без доплат") needs ~496px including its
@@ -746,65 +742,11 @@ h1.headline{
 .quick-form-success.visible{display:block;}
 .quick-form.submitted{display:none;}
 
-.hero-below-form{
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:18px;
-  margin-top:14px;
-}
-.detailed-link{
-  background:none;
-  border:none;
-  padding:0;
-  color:var(--text-muted);
-  font-size:13px;
-  text-decoration:underline;
-  text-underline-offset:3px;
-  cursor:pointer;
-}
-.detailed-link:hover{color:var(--accent);}
-
-.hero-talk{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-size:14px;
-  font-weight:600;
-  color:var(--text);
-}
-.hero-talk a{
-  width:36px; height:36px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--paper);
-  background:var(--bg-panel);
-  border:none;
-  box-shadow:0 4px 12px rgba(20,32,26,0.2);
-  transition:filter .18s ease;
-  animation:heroIconPulse 5s ease-in-out infinite;
-}
-.hero-talk a:nth-child(2){animation-delay:0s;}
-.hero-talk a:nth-child(3){animation-delay:1.1s;}
-.hero-talk a:hover{filter:brightness(1.15);}
-@keyframes heroIconPulse{
-  0%, 16%, 100%{transform:translateY(0) scale(1);}
-  6%{transform:translateY(-3px) scale(1.12);}
-  11%{transform:translateY(0) scale(1);}
-}
-@media (prefers-reduced-motion: reduce){
-  .hero-talk a{animation:none;}
-}
-.hero-talk svg{
-  width:16px; height:16px;
-  stroke:currentColor;
-  fill:none;
-  stroke-width:1.75;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
+/* .hero-below-form / .detailed-link / .hero-talk removed 2026-09-04 —
+   the hero CTA cluster no longer uses a messenger-icon row (those icons
+   already live in the header, .header-contacts) or a plain-text
+   secondary link (now a same-weight .btn-secondary, see .cta-row-dual).
+   See that class's HTML comment for the research behind this change. */
 /* The real WhatsApp glyph is a solid silhouette (fill), not an outline —
    generic `stroke:currentColor; fill:none` icon rules elsewhere on the page
    were making it render invisible everywhere it's reused. Plain attribute-
@@ -1976,9 +1918,22 @@ section{
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
         <span data-i18n="heroWarranty"></span>
       </p>
-      <div class="cta-row">
+      <!-- CTA cluster rebuilt 2026-09-04 per owner's request + live research
+           into how real premium sites (Range Rover ru-am/ru-kz, UBS,
+           JPMorgan Private Bank) lay out this exact pattern: two roughly
+           equal user intents get two same-weight buttons side by side
+           (Range Rover's model page runs "Запросить обратный звонок" /
+           "Записаться на тест-драйв" / "Найти дилера" as same-style
+           parallel links, not one bold primary + one small link), and
+           direct-contact channels (WhatsApp/Telegram) are NEVER mixed
+           into that button cluster on any site checked — they live in
+           the header/footer instead. The old hint sentence above the
+           buttons is dropped too (none of the reference sites pad a
+           two-button decision point with explanatory copy above it), and
+           the WhatsApp/Telegram row is removed here since the same two
+           icons already live in the header (.header-contacts). -->
+      <div class="cta-row cta-row-dual">
         <div class="cta-primary-group">
-          <p class="cta-primary-hint" data-i18n="cta1Hint"></p>
           <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
           <div class="quick-popover" id="quickPopover">
             <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
@@ -1992,18 +1947,7 @@ section{
             <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
           </div>
         </div>
-        <div class="hero-below-form">
-          <div class="hero-talk">
-            <span data-i18n="cta2"></span>
-            <a href="https://wa.me/35795588595" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.44.79 3.06 1.2 4.72 1.2h.02c5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2Zm5.8 14.03c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.12.11-1.8-.11-.42-.13-.95-.31-1.64-.6-2.88-1.24-4.76-4.12-4.9-4.31-.14-.19-1.18-1.57-1.18-3 0-1.42.75-2.13 1.02-2.42.27-.29.58-.36.78-.36.19 0 .39 0 .56.01.18.01.42-.07.65.5.24.58.82 2.01.9 2.15.07.15.12.32.02.51-.1.19-.15.3-.29.47-.15.17-.31.37-.44.5-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.35 1.46.29.15.46.13.63-.08.17-.2.72-.84.92-1.13.19-.29.39-.24.65-.14.27.1 1.68.79 1.97.94.29.14.48.21.55.33.07.12.07.68-.17 1.35Z"/></svg>
-            </a>
-            <a href="https://t.me/motus_cy" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram">
-              <svg viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
-            </a>
-          </div>
-        </div>
-        <a href="order.html" class="detailed-link" data-i18n="detailedLinkText"></a>
+        <a href="order.html" class="btn btn-secondary" data-i18n="detailedLinkText"></a>
       </div>
       <p class="hero-cyprus-line">
         <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="heroCyprusCta"></a>
@@ -2265,7 +2209,7 @@ const content = {
     cookieAnalyticsBody:"Helps us see which pages are useful, so we can improve the site. Off by default.",
     cookieSavePrefs:"Save preferences",
     chatQuestionsLabel:"Still have questions?",
-    detailedLinkText:"Already decided? Place your order →",
+    detailedLinkText:"Arrange a search",
     quickPerksLine:"Warranty · Service discount · All-in, turn-key price",
     tabCyprus:"Search in Cyprus",
     tabJapan:"Order from Japan",
@@ -2370,7 +2314,7 @@ const content = {
     cookieAnalyticsBody:"Помогает понять, какие страницы полезны, чтобы улучшать сайт. По умолчанию выключено.",
     cookieSavePrefs:"Сохранить настройки",
     chatQuestionsLabel:"Остались вопросы?",
-    detailedLinkText:"Уже решили? Оформите заказ →",
+    detailedLinkText:"Оформить подбор",
     quickPerksLine:"Гарантия · Скидка на сервис · Цена под ключ, без доплат",
     tabCyprus:"Поиск на Кипре",
     tabJapan:"Заказ из Японии",
@@ -2475,7 +2419,7 @@ const content = {
     cookieAnalyticsBody:"Μας βοηθά να δούμε ποιες σελίδες είναι χρήσιμες, ώστε να βελτιώνουμε τον ιστότοπο. Απενεργοποιημένο από προεπιλογή.",
     cookieSavePrefs:"Αποθήκευση προτιμήσεων",
     chatQuestionsLabel:"Έχετε ερωτήσεις;",
-    detailedLinkText:"Έχετε αποφασίσει; Κάντε την παραγγελία σας →",
+    detailedLinkText:"Οργανώστε την αναζήτηση",
     quickPerksLine:"Εγγύηση · Έκπτωση σέρβις · Τιμή all-in, χωρίς προσαυξήσεις",
     tabCyprus:"Αναζήτηση στην Κύπρο",
     tabJapan:"Παραγγελία από Ιαπωνία",
