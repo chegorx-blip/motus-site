@@ -566,23 +566,16 @@ a{color:inherit;}
      contact icons mixed in) — see the HTML comment above .cta-row-dual
      for the full research note. */
   .hero .cta-row-dual{
+    position:relative;
     flex-direction:row;
     flex-wrap:nowrap;
     justify-content:center;
-    /* align-items:center made the secondary button re-center itself
-       against the primary button's group every time the popover form
-       opened inside that group — found live: the button visibly jumped
-       ~540px because the group's height grew by the form's height and
-       "center" recalculated against the new taller box. flex-start pins
-       both buttons to their own top edge regardless of what opens below
-       the first one. */
     align-items:flex-start;
     gap:14px;
   }
   .hero .cta-row-dual .btn-secondary{white-space:nowrap;}
   .hero .hero-trust-line{justify-content:center;}
   .hero .hero-cyprus-line{margin-left:auto; margin-right:auto;}
-  .hero .quick-popover{margin-left:auto; margin-right:auto;}
 }
 .eyebrow{
   color:var(--accent);
@@ -619,22 +612,25 @@ h1.headline{
   gap:20px;
   flex-wrap:wrap;
   opacity:0;
+  position:relative;
 }
-.cta-primary-group{display:flex; flex-direction:column; align-items:center; gap:6px; position:relative;}
-/* Reserves room below the buttons for the floating popover — the popover
-   is always position:absolute (see .quick-popover) so it never re-
-   inflates the flex row and shoves the second button sideways, but that
-   means it floats OVER whatever's below it unless something pushes that
-   content down instead. A CSS :has() version of this was tried first and
-   produced an unexplained wrong padding value live (233px instead of the
-   declared 260px) — dropped in favor of this JS-driven spacer, which
-   reads the popover's own real height so it can never drift out of sync
-   with it. */
-.quick-popover-spacer{height:0; transition:height .35s ease;}
 /* .cta-primary-hint removed 2026-09-04 — the hint sentence above the
    buttons was dropped along with the 3-tier stack it belonged to; none
    of the reference sites checked pad a two-button decision point with
    explanatory copy above it. */
+/* .cta-row-dual carries position:relative + the spacer transition now
+   (2026-09-05 fix) — .quick-popover used to live inside a per-button
+   .cta-primary-group wrapper, so its top:100% resolved against THAT
+   wrapper. A JS spacer meant to reserve space for the open popover also
+   lived inside that same wrapper, which created a feedback loop: the
+   spacer grew the wrapper's height, which pushed top:100% further down
+   every time, producing a large empty gap before the form (confirmed
+   live from the owner's screenshot — the form had drifted ~400px below
+   the buttons). Moving the popover to be a sibling of the whole button
+   row instead means top:100% resolves against the row's own fixed
+   height (just the two buttons, ~50px), which never changes regardless
+   of what the popover or its spacer do. */
+.hero .cta-row-dual{transition:padding-bottom .35s ease;}
 .quick-popover{
   /* Widened from 460px (2026-09-03): the perks line ("Гарантия · Скидка
      на сервис · Цена под ключ, без доплат") needs ~496px including its
@@ -666,8 +662,21 @@ h1.headline{
      whatever's below it instead of pushing it down; .hero-below-form
      etc. get a fixed padding-bottom reservation instead so the floating
      form doesn't visually cover real content. */
+  /* top is set in px by JS on open, NOT a percentage (2026-09-05 fix,
+     third pass) — top:100% kept resolving against whatever ancestor's
+     *full* box (including its own padding-bottom) the popover happened
+     to live in, and since the padding reserved for the popover lived on
+     that very ancestor, every fix so far fed back into itself: reserve
+     space -> ancestor grows -> top:100% grows -> popover drifts further
+     down. A JS-measured top can't be affected by anything the popover or
+     its spacing does. It also has to be JS (not one fixed CSS px value)
+     because the row's real height differs by layout — desktop has both
+     buttons on one line (~50px tall), mobile wraps them onto two lines
+     (~116px tall since .cta-row-dual has no nowrap override below 641px)
+     — a single hardcoded value put the form on top of the second button
+     on mobile. */
   position:absolute;
-  top:100%;
+  top:64px;
   left:50%;
   transform:translateX(-50%);
   width:min(540px, 92vw);
@@ -1964,23 +1973,30 @@ section{
            two-button decision point with explanatory copy above it), and
            the WhatsApp/Telegram row is removed here since the same two
            icons already live in the header (.header-contacts). -->
-      <div class="cta-row cta-row-dual">
-        <div class="cta-primary-group">
-          <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
-          <div class="quick-popover" id="quickPopover">
-            <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
-            <form class="quick-form" id="quickForm" novalidate>
-              <input type="text" name="qFirstName" required data-i18n-placeholder="quickFirstName">
-              <input type="text" name="qLastName" required data-i18n-placeholder="quickLastName">
-              <input type="text" name="qContact" required data-i18n-placeholder="quickContact">
-              <input type="text" name="qModel" data-i18n-placeholder="quickModel">
-              <button type="submit" class="btn btn-primary" data-i18n="submitBtn"></button>
-            </form>
-            <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
-          </div>
-          <div class="quick-popover-spacer" id="quickPopoverSpacer" aria-hidden="true"></div>
-        </div>
+      <!-- .quick-popover moved out of .cta-primary-group (2026-09-05
+           fix): nesting it inside the button's own group made its
+           top:100% resolve against that group's box, and a JS spacer
+           that lived in the SAME group created a feedback loop — the
+           spacer grew the group's height, which pushed top:100% (and so
+           the popover itself) further down every time, producing the
+           large gap the owner saw live. The popover is now a sibling of
+           the whole button row (.cta-row-dual), positioned from that
+           row's own top instead, so nothing it does can feed back into
+           its own position. -->
+      <div class="cta-row cta-row-dual" id="ctaRowDual">
+        <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
         <a href="order.html" class="btn btn-secondary" data-i18n="detailedLinkText"></a>
+        <div class="quick-popover" id="quickPopover">
+          <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
+          <form class="quick-form" id="quickForm" novalidate>
+            <input type="text" name="qFirstName" required data-i18n-placeholder="quickFirstName">
+            <input type="text" name="qLastName" required data-i18n-placeholder="quickLastName">
+            <input type="text" name="qContact" required data-i18n-placeholder="quickContact">
+            <input type="text" name="qModel" data-i18n-placeholder="quickModel">
+            <button type="submit" class="btn btn-primary" data-i18n="submitBtn"></button>
+          </form>
+          <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
+        </div>
       </div>
       <p class="hero-cyprus-line">
         <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="heroCyprusCta"></a>
@@ -2831,18 +2847,36 @@ chatFabPrompt.addEventListener('click', (e)=>{
 
 const quickPopover = document.getElementById('quickPopover');
 const quickFormToggle = document.getElementById('quickFormToggle');
-const quickPopoverSpacer = document.getElementById('quickPopoverSpacer');
+const ctaRowDual = document.getElementById('ctaRowDual');
 quickFormToggle.addEventListener('click', ()=>{
   const open = quickPopover.classList.toggle('open');
-  // quick-popover is always position:absolute (see its CSS) so it never
-  // re-inflates .cta-primary-group and shoves the second button sideways
-  // — but that means it floats OVER the content below it unless something
-  // else reserves that space. This spacer does that job, sized to the
-  // popover's own real scrollHeight (measured after the open class is
-  // applied, so it reflects the actual expanded form) rather than a
-  // guessed CSS constant that (tried first, via a :has() selector) came
-  // out wrong for reasons that weren't worth chasing further.
-  quickPopoverSpacer.style.height = open ? (quickPopover.scrollHeight + 18) + 'px' : '0px';
+  if(open){
+    // Row height differs by layout (desktop: both buttons on one line,
+    // ~50px; mobile: wrapped onto two lines, ~116px — .cta-row-dual has
+    // no nowrap override below 641px). Measuring the two buttons' own
+    // bottom edges (not the row, which the popover isn't nested in
+    // anymore) gives the real "bottom of the button cluster" regardless
+    // of which layout is active, so top can't end up mid-button on
+    // either one.
+    const secondBtn = ctaRowDual.querySelector('.btn-secondary');
+    const rowRect = ctaRowDual.getBoundingClientRect();
+    const btn1Rect = quickFormToggle.getBoundingClientRect();
+    const btn2Rect = secondBtn.getBoundingClientRect();
+    const clusterBottom = Math.max(btn1Rect.bottom, btn2Rect.bottom) - rowRect.top;
+    quickPopover.style.top = (clusterBottom + 18) + 'px';
+  }
+  // quick-popover is always position:absolute, positioned from
+  // .cta-row-dual (a sibling now, not a nested wrapper — see the HTML
+  // comment above .cta-row-dual for why nesting it caused a feedback
+  // loop that pushed the form far below the buttons). Since it's out of
+  // flow it floats OVER whatever's below the row unless something else
+  // reserves that space — padding-bottom on the row itself does that,
+  // measured the same way as top (the button cluster's real height) plus
+  // the popover's own real scrollHeight so it can't drift out of sync
+  // with the actual expanded form.
+  requestAnimationFrame(()=>{
+    ctaRowDual.style.paddingBottom = open ? (parseFloat(quickPopover.style.top) + quickPopover.scrollHeight) + 'px' : '0px';
+  });
   if(open){
     const firstInput = quickPopover.querySelector('input');
     // preventScroll:true (2026-09-04 fix) — plain .focus() made the browser
