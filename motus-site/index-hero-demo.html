@@ -709,7 +709,6 @@ a{color:inherit;}
   }
   .hero .cta-row-dual .btn-secondary{white-space:nowrap;}
   .hero .hero-trust-line{justify-content:center;}
-  .hero .hero-cyprus-line{margin-left:auto; margin-right:auto;}
 }
 .eyebrow{
   color:var(--accent);
@@ -1252,35 +1251,11 @@ section{
   color:var(--text);
 }
 .hero-trust-line-lead svg{width:18px; height:18px;}
-.hero-cyprus-line{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:20px;
-  padding:14px 18px;
-  border-left:3px solid var(--bronze);
-  background:var(--surface);
-  border-radius:0 4px 4px 0;
-  font-size:14px;
-  color:var(--text-muted);
-}
-.hero-cyprus-line a{
-  flex:none;
-  color:var(--ink);
-  background:var(--accent);
-  padding:8px 14px;
-  border-radius:3px;
-  text-decoration:none;
-  font-size:13px;
-  font-weight:600;
-  white-space:nowrap;
-  transition:filter .18s ease;
-}
-.hero-cyprus-line a:hover{filter:brightness(1.08);}
-@media (max-width:520px){
-  .hero-cyprus-line{flex-direction:column; align-items:flex-start;}
-  .hero-cyprus-line a{align-self:stretch; text-align:center;}
-}
+/* .hero-cyprus-line removed 2026-09-05, per owner's comment on the
+   published artifact — this "нужна машина прямо сейчас... Поиск на
+   Кипре" block duplicated exactly what "Оформить подбор" ->
+   "Подобрать автомобиль на Кипре" already covers now that that flow
+   exists (see .detailed-popover above). */
 
 @media (max-width:639px){
   .advantages-grid{grid-template-columns:1fr; gap:26px;}
@@ -2231,9 +2206,6 @@ section{
           <a href="order.html?intent=cyprus" class="detailed-popover-option" data-i18n="detailedOptionCyprus"></a>
         </div>
       </div>
-      <p class="hero-cyprus-line">
-        <span data-i18n="heroCyprusLead"></span><a href="order.html?intent=cyprus" data-i18n="heroCyprusCta"></a>
-      </p>
     </div>
     <div class="hero-media">
       <div class="hero-photo-main"><img src="images/hero-main.jpg" alt="Lexus UX, inspected and delivered by Motus" loading="eager"></div>
