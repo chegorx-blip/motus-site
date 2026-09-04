@@ -300,6 +300,14 @@ a{color:inherit;}
 @media (max-width:640px){
   .topbar-inner{padding:12px 16px;}
 }
+@media (max-width:420px){
+  /* A couple more px reclaimed from the right edge — the language globe
+     was still clipping past the viewport edge by ~2px after the gap and
+     logo shrinks above (measured live: padding-right was already 12px
+     from the 640px breakpoint, not 16px as first assumed — needed to go
+     lower still). */
+  .topbar-inner{padding-right:8px;}
+}
 .logo-mark{
   display:block;
   text-decoration:none;
@@ -312,6 +320,14 @@ a{color:inherit;}
 }
 @media (max-width:640px){
   .logo-mark svg{height:42px;}
+}
+@media (max-width:420px){
+  /* Slightly smaller still on the narrowest phones — with the phone
+     number kept as full text (per the CarsJapan Cyprus research) plus
+     messenger icons plus the language globe, the logo was the one
+     remaining element with slack (measured live: 148.5px at 42px-tall,
+     contributing to a header ~46px wider than the 390px viewport). */
+  .logo-mark svg{height:34px;}
 }
 .logo-dot{animation:beacon 2.6s ease-in-out infinite;}
 @keyframes beacon{
@@ -338,6 +354,9 @@ a{color:inherit;}
   .topbar-nav{display:none;} /* not enough room next to phone+WA/TG+CTA+lang — mobile .tabbar covers this */
 }
 .langswitch{
+  position:relative;
+}
+.langswitch-tabs{
   display:flex;
   gap:14px;
 }
@@ -359,12 +378,66 @@ a{color:inherit;}
   border-bottom-color:var(--bronze);
 }
 .langswitch button:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+.langswitch-compact{display:none;}
+@media (max-width:420px){
+  /* Compressed globe-icon + dropdown, replacing the 3-tab text switch
+     below this width — see the HTML comment above .langswitch for the
+     research this is based on (Booking.com's flag-icon control, Airbnb's
+     mobile globe icon; no top-tier site checked shows full EN/RU/EL text
+     tabs in a narrow mobile header). */
+  .langswitch-tabs{display:none;}
+  .langswitch-compact{display:block;}
+  .langswitch-toggle{
+    display:flex; align-items:center; gap:4px;
+    background:none; border:none; padding:4px 2px;
+    color:var(--stone); cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px; letter-spacing:0.1em;
+  }
+  .langswitch-toggle svg{
+    width:16px; height:16px;
+    stroke:currentColor; fill:none;
+    stroke-width:1.6; flex:none;
+  }
+  .langswitch-menu{
+    display:none;
+    position:absolute;
+    top:100%; right:0;
+    margin-top:8px;
+    background:var(--pine);
+    border:1px solid rgba(246,243,237,0.22);
+    border-radius:4px;
+    padding:4px;
+    flex-direction:column;
+    gap:2px;
+    z-index:20;
+  }
+  .langswitch-menu.open{display:flex;}
+  .langswitch-menu button{
+    padding:6px 12px;
+    text-align:left;
+    white-space:nowrap;
+    border-radius:3px;
+  }
+  .langswitch-menu button:hover{background:rgba(246,243,237,0.08);}
+}
 
 .topbar-right{
   display:flex;
   align-items:center;
   gap:18px;
   margin-left:auto;
+}
+@media (max-width:420px){
+  /* Tightened from 18px — the 3 gaps between phone/messengers/language
+     (54px total) were the last bit pushing the header past 390px even
+     after the logo and phone-number shrinks above (measured live: still
+     18px over at 408px with those alone). Placed after the base
+     .topbar-right rule (not inside the earlier @media(max-width:420px)
+     block) — same selector, same specificity, so source order decides,
+     and a max-width media rule earlier in the file was silently losing
+     to this one every time otherwise. */
+  .topbar-right{gap:10px;}
 }
 .header-phone{
   display:inline-flex;
@@ -1970,10 +2043,32 @@ section{
     </a>
   </div>
   <a href="order.html" class="topbar-cta" data-i18n="ctaOrder"></a>
+  <!-- Compressed to a globe-icon dropdown below 420px (2026-09-05) — live
+       research into premium global sites (Booking.com's actual flag-icon
+       language control, Airbnb's globe-icon-on-mobile pattern) found none
+       of them show full "EN/RU/EL"-style text tabs in a mobile header;
+       the icon+dropdown pattern is the one with real precedent. The full
+       text tabs (.langswitch-tabs) stay for wider screens where there's
+       room; #langswitchToggle + #langswitchMenu is the mobile-only
+       compact version, built from the same buttons so language-switching
+       logic doesn't need two implementations. -->
   <div class="langswitch" role="group" aria-label="Language">
-    <button type="button" data-lang="en" aria-pressed="false">EN</button>
-    <button type="button" data-lang="ru" aria-pressed="false">RU</button>
-    <button type="button" data-lang="el" aria-pressed="false">EL</button>
+    <div class="langswitch-tabs">
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+      <button type="button" data-lang="el" aria-pressed="false">EL</button>
+    </div>
+    <div class="langswitch-compact">
+      <button type="button" class="langswitch-toggle" id="langswitchToggle" aria-haspopup="true" aria-expanded="false" aria-label="Language">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+        <span id="langswitchCurrent">RU</span>
+      </button>
+      <div class="langswitch-menu" id="langswitchMenu">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="ru">RU</button>
+        <button type="button" data-lang="el">EL</button>
+      </div>
+    </div>
   </div>
   </div>
 </div>
@@ -2751,6 +2846,8 @@ function render(lang){
   document.querySelectorAll('.langswitch button').forEach(btn=>{
     btn.setAttribute('aria-pressed', btn.dataset.lang === lang ? 'true' : 'false');
   });
+  const langswitchCurrent = document.getElementById('langswitchCurrent');
+  if(langswitchCurrent) langswitchCurrent.textContent = lang.toUpperCase();
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
     const key = el.getAttribute('data-i18n-placeholder');
     if(dict.fields && dict.fields[key] !== undefined) el.placeholder = dict.fields[key];
@@ -2762,6 +2859,30 @@ function render(lang){
 document.querySelectorAll('.langswitch button').forEach(btn=>{
   btn.addEventListener('click', ()=> render(btn.dataset.lang));
 });
+
+// Mobile compact language menu (below 420px) — toggle open/closed, close
+// on outside click or after picking a language.
+const langswitchToggle = document.getElementById('langswitchToggle');
+const langswitchMenu = document.getElementById('langswitchMenu');
+if(langswitchToggle && langswitchMenu){
+  langswitchToggle.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const open = langswitchMenu.classList.toggle('open');
+    langswitchToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  langswitchMenu.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      langswitchMenu.classList.remove('open');
+      langswitchToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    if(langswitchMenu.classList.contains('open') && !e.target.closest('.langswitch-compact')){
+      langswitchMenu.classList.remove('open');
+      langswitchToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
 
 render(detectLang());
 
