@@ -621,6 +621,16 @@ h1.headline{
   opacity:0;
 }
 .cta-primary-group{display:flex; flex-direction:column; align-items:center; gap:6px; position:relative;}
+/* Reserves room below the buttons for the floating popover — the popover
+   is always position:absolute (see .quick-popover) so it never re-
+   inflates the flex row and shoves the second button sideways, but that
+   means it floats OVER whatever's below it unless something pushes that
+   content down instead. A CSS :has() version of this was tried first and
+   produced an unexplained wrong padding value live (233px instead of the
+   declared 260px) — dropped in favor of this JS-driven spacer, which
+   reads the popover's own real height so it can never drift out of sync
+   with it. */
+.quick-popover-spacer{height:0; transition:height .35s ease;}
 /* .cta-primary-hint removed 2026-09-04 — the hint sentence above the
    buttons was dropped along with the 3-tier stack it belonged to; none
    of the reference sites checked pad a two-button decision point with
@@ -646,27 +656,25 @@ h1.headline{
   overflow:hidden;
   opacity:0;
   transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease;
-  /* position:absolute while closed (2026-09-04 fix) — a static-width
-     540px popover, even at max-height:0, still forced its column-flex
-     parent (.cta-primary-group) to be 540px wide, which pushed the whole
-     two-button pair 77px right of the section's true center (confirmed
-     live: pair center at x=789 vs true center x=712 — the "Закажите
-     обратный звонок" button alone looked centered, but the second button
-     next to it read as shoved off to the right). Taking it out of flow
-     when closed removes it from that width calculation entirely; .open
-     switches it back to static so it lays out normally in the stack once
-     visible, and left:50%+translateX(-50%) keeps it centered under the
-     button pair while absolutely positioned. */
+  /* position:absolute ALWAYS, not just while closed (2026-09-04, second
+     pass) — the first version switched to position:static on .open so
+     the popover would push page content down, but that brought back the
+     exact bug it fixed: static re-inflates .cta-primary-group to the
+     popover's 540px width, shoving the second button 153.6px right
+     (confirmed live at every width from 1200-1440px — not a fluke of one
+     viewport). Absolute at all times means the popover floats over
+     whatever's below it instead of pushing it down; .hero-below-form
+     etc. get a fixed padding-bottom reservation instead so the floating
+     form doesn't visually cover real content. */
   position:absolute;
   top:100%;
   left:50%;
   transform:translateX(-50%);
   width:min(540px, 92vw);
+  z-index:5;
 }
 .quick-popover.open{
-  position:static;
-  transform:none;
-  max-height:220px;
+  max-height:260px;
   opacity:1;
   margin-top:18px;
 }
@@ -1970,6 +1978,7 @@ section{
             </form>
             <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
           </div>
+          <div class="quick-popover-spacer" id="quickPopoverSpacer" aria-hidden="true"></div>
         </div>
         <a href="order.html" class="btn btn-secondary" data-i18n="detailedLinkText"></a>
       </div>
@@ -2822,8 +2831,18 @@ chatFabPrompt.addEventListener('click', (e)=>{
 
 const quickPopover = document.getElementById('quickPopover');
 const quickFormToggle = document.getElementById('quickFormToggle');
+const quickPopoverSpacer = document.getElementById('quickPopoverSpacer');
 quickFormToggle.addEventListener('click', ()=>{
   const open = quickPopover.classList.toggle('open');
+  // quick-popover is always position:absolute (see its CSS) so it never
+  // re-inflates .cta-primary-group and shoves the second button sideways
+  // — but that means it floats OVER the content below it unless something
+  // else reserves that space. This spacer does that job, sized to the
+  // popover's own real scrollHeight (measured after the open class is
+  // applied, so it reflects the actual expanded form) rather than a
+  // guessed CSS constant that (tried first, via a :has() selector) came
+  // out wrong for reasons that weren't worth chasing further.
+  quickPopoverSpacer.style.height = open ? (quickPopover.scrollHeight + 18) + 'px' : '0px';
   if(open){
     const firstInput = quickPopover.querySelector('input');
     // preventScroll:true (2026-09-04 fix) — plain .focus() made the browser
