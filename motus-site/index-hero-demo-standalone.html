@@ -300,7 +300,7 @@ a{color:inherit;}
 @media (max-width:640px){
   .topbar-inner{padding:12px 16px;}
 }
-@media (max-width:420px){
+@media (max-width:480px){
   /* A couple more px reclaimed from the right edge — the language globe
      was still clipping past the viewport edge by ~2px after the gap and
      logo shrinks above (measured live: padding-right was already 12px
@@ -321,7 +321,7 @@ a{color:inherit;}
 @media (max-width:640px){
   .logo-mark svg{height:42px;}
 }
-@media (max-width:420px){
+@media (max-width:480px){
   /* Slightly smaller still on the narrowest phones — with the phone
      number kept as full text (per the CarsJapan Cyprus research) plus
      messenger icons plus the language globe, the logo was the one
@@ -379,7 +379,7 @@ a{color:inherit;}
 }
 .langswitch button:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
 .langswitch-compact{display:none;}
-@media (max-width:420px){
+@media (max-width:480px){
   /* Compressed globe-icon + dropdown, replacing the 3-tab text switch
      below this width — see the HTML comment above .langswitch for the
      research this is based on (Booking.com's flag-icon control, Airbnb's
@@ -428,7 +428,7 @@ a{color:inherit;}
   gap:18px;
   margin-left:auto;
 }
-@media (max-width:420px){
+@media (max-width:480px){
   /* Tightened from 18px — the 3 gaps between phone/messengers/language
      (54px total) were the last bit pushing the header past 390px even
      after the logo and phone-number shrinks above (measured live: still
@@ -475,7 +475,7 @@ a{color:inherit;}
 @media (max-width:900px){
   .header-phone{padding-right:10px; font-size:11px; gap:5px; white-space:nowrap;}
 }
-@media (max-width:420px){
+@media (max-width:480px){
   /* At the narrowest phone widths, keeping the phone number text AND the
      full 3-language switch AND full messenger badges in one row didn't
      fit without wrapping the phone number across 3 lines (confirmed
@@ -816,6 +816,47 @@ h1.headline{
   opacity:1;
   margin-top:18px;
 }
+/* "Оформить подбор" opens this instead of navigating straight to
+   order.html — same floating mechanics as .quick-popover (absolute,
+   JS-measured top, own padding-bottom reservation on the row) since that
+   approach is already proven live not to shift the sibling buttons or
+   drift out of sync. Two plain link options, so no form-height math is
+   needed — a fixed max-height comfortably covers 2 short rows. */
+.detailed-popover{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(320px, 92vw);
+  max-width:320px;
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  margin-top:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease;
+  z-index:5;
+}
+.detailed-popover.open{
+  max-height:160px;
+  opacity:1;
+  margin-top:18px;
+}
+.detailed-popover-option{
+  display:block;
+  padding:13px 18px;
+  border-radius:3px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--text);
+  text-decoration:none;
+  font-size:14px;
+  font-weight:600;
+  text-align:center;
+  transition:border-color .18s ease, color .18s ease;
+}
+.detailed-popover-option:hover{border-color:var(--accent); color:var(--accent);}
 .quick-popover-perks{
   /* Was inline-block, which sizes to its own content — with wrapped text
      that becomes the wrapped line's width, never the popover's actual
@@ -2130,9 +2171,18 @@ section{
            the whole button row (.cta-row-dual), positioned from that
            row's own top instead, so nothing it does can feed back into
            its own position. -->
+      <!-- "Оформить подбор" changed from a direct link to order.html into
+           a toggle that reveals two intent choices first (2026-09-05, per
+           owner's explicit request) — a visitor picks "Японии" or "Кипре"
+           before landing on the (longer) order form, rather than the form
+           deciding that for them. Reuses the exact same floating-popover
+           mechanics as #quickPopover (own JS-measured top/padding-bottom,
+           not CSS percentages) since that approach is already proven not
+           to shove sibling buttons around or drift out of sync with the
+           button cluster's real height. -->
       <div class="cta-row cta-row-dual" id="ctaRowDual">
         <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
-        <a href="order.html" class="btn btn-secondary" data-i18n="detailedLinkText"></a>
+        <button type="button" class="btn btn-secondary" id="detailedToggle" data-i18n="detailedLinkText"></button>
         <div class="quick-popover" id="quickPopover">
           <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
           <form class="quick-form" id="quickForm" novalidate>
@@ -2143,6 +2193,10 @@ section{
             <button type="submit" class="btn btn-primary" data-i18n="submitBtn"></button>
           </form>
           <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
+        </div>
+        <div class="detailed-popover" id="detailedPopover">
+          <a href="order.html" class="detailed-popover-option" data-i18n="detailedOptionJapan"></a>
+          <a href="order.html?intent=cyprus" class="detailed-popover-option" data-i18n="detailedOptionCyprus"></a>
         </div>
       </div>
       <p class="hero-cyprus-line">
@@ -2406,6 +2460,8 @@ const content = {
     cookieSavePrefs:"Save preferences",
     chatQuestionsLabel:"Still have questions?",
     detailedLinkText:"Arrange a search",
+    detailedOptionJapan:"Order a car from Japan",
+    detailedOptionCyprus:"Find a car in Cyprus",
     quickPerksLine:"Warranty · Service discount · All-in, turn-key price",
     tabCyprus:"Search in Cyprus",
     tabJapan:"Order from Japan",
@@ -2511,6 +2567,8 @@ const content = {
     cookieSavePrefs:"Сохранить настройки",
     chatQuestionsLabel:"Остались вопросы?",
     detailedLinkText:"Оформить подбор",
+    detailedOptionJapan:"Заказать автомобиль из Японии",
+    detailedOptionCyprus:"Подобрать автомобиль на Кипре",
     quickPerksLine:"Гарантия · Скидка на сервис · Цена под ключ, без доплат",
     tabCyprus:"Поиск на Кипре",
     tabJapan:"Заказ из Японии",
@@ -2616,6 +2674,8 @@ const content = {
     cookieSavePrefs:"Αποθήκευση προτιμήσεων",
     chatQuestionsLabel:"Έχετε ερωτήσεις;",
     detailedLinkText:"Οργανώστε την αναζήτηση",
+    detailedOptionJapan:"Παραγγελία αυτοκινήτου από την Ιαπωνία",
+    detailedOptionCyprus:"Αναζήτηση αυτοκινήτου στην Κύπρο",
     quickPerksLine:"Εγγύηση · Έκπτωση σέρβις · Τιμή all-in, χωρίς προσαυξήσεις",
     tabCyprus:"Αναζήτηση στην Κύπρο",
     tabJapan:"Παραγγελία από Ιαπωνία",
@@ -3106,6 +3166,55 @@ quickFormToggle.addEventListener('click', ()=>{
     }
   }
 });
+
+// "Оформить подбор" — reveals the Japan/Cyprus choice instead of linking
+// straight to order.html (2026-09-05, per owner's explicit request: a
+// visitor picks their path first, then lands on the matching order form).
+// Reuses the exact positioning/reservation approach proven above for
+// #quickPopover — same reasons apply (top must be JS-measured px, not a
+// CSS percentage; padding-bottom must be measured post-transition, not
+// guessed from a stylesheet constant).
+const detailedToggle = document.getElementById('detailedToggle');
+const detailedPopover = document.getElementById('detailedPopover');
+function measureClusterBottom(){
+  const secondBtn = ctaRowDual.querySelector('.btn-secondary');
+  const rowRect = ctaRowDual.getBoundingClientRect();
+  const btn1Rect = quickFormToggle.getBoundingClientRect();
+  const btn2Rect = secondBtn.getBoundingClientRect();
+  return Math.max(btn1Rect.bottom, btn2Rect.bottom) - rowRect.top;
+}
+function closeQuickPopover(){
+  if(quickPopover.classList.contains('open')){
+    quickPopover.classList.remove('open');
+    ctaRowDual.style.paddingBottom = '0px';
+  }
+}
+function closeDetailedPopover(){
+  if(detailedPopover.classList.contains('open')){
+    detailedPopover.classList.remove('open');
+    ctaRowDual.style.paddingBottom = '0px';
+  }
+}
+detailedToggle.addEventListener('click', ()=>{
+  closeQuickPopover(); // only one popover open at a time under the row
+  const open = detailedPopover.classList.toggle('open');
+  if(open){
+    detailedPopover.style.top = (measureClusterBottom() + 18) + 'px';
+    detailedPopover.addEventListener('transitionend', function onOpen(e){
+      if(e.propertyName !== 'max-height') return;
+      detailedPopover.removeEventListener('transitionend', onOpen);
+      if(detailedPopover.classList.contains('open')){
+        const clusterHeight = ctaRowDual.getBoundingClientRect().height;
+        ctaRowDual.style.paddingBottom = (parseFloat(detailedPopover.style.top) + detailedPopover.offsetHeight - clusterHeight + 20) + 'px';
+      }
+    });
+  } else {
+    ctaRowDual.style.paddingBottom = '0px';
+  }
+});
+// Opening the quick-callback popover should close this one too, so they
+// never show at the same time and fight over padding-bottom.
+quickFormToggle.addEventListener('click', closeDetailedPopover);
 
 const quickForm = document.getElementById('quickForm');
 const quickFormSuccess = document.getElementById('quickFormSuccess');
