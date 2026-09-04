@@ -184,13 +184,17 @@ def _build_task_list_text(entries: list[dict], empty_message: str) -> str:
 
 
 def _build_task_keyboard(entries: list[dict]) -> InlineKeyboardMarkup | None:
-    """Кнопки "Закрыть №N" под ещё не закрытыми задачами — номер совпадает с
-    номером в тексте (_build_task_list_text), несколько в ряд (см.
+    """Кнопки "№N" под ещё не закрытыми задачами — номер совпадает с номером
+    в тексте (_build_task_list_text), несколько в ряд (см.
     _TASK_BUTTONS_PER_ROW), а не одна колонка из одинаковых "Закрыто" —
     так кнопка находится по номеру задачи, не по счёту строк сверху вниз.
-    callback_data несёт только id записи (не номер — номер зависит от
-    порядка в конкретном списке и не годится как постоянный идентификатор),
-    см. adapters/memory_client.mark_thought_done."""
+
+    callback_data ведёт на ПОДТВЕРЖДЕНИЕ (task_confirm:), не сразу на
+    закрытие — пользователь попросил 2026-09-04 после случайного нажатия:
+    "хочу, чтобы спрашивал, ты уверен?". См. handle_task_confirm_button.
+    callback_data несёт id записи (не номер — номер зависит от порядка в
+    конкретном списке и не годится как постоянный идентификатор), см.
+    adapters/memory_client.mark_thought_done."""
     open_entries = [(i, e) for i, e in enumerate(entries, start=1) if not e["done"]]
     if not open_entries:
         return None
@@ -200,7 +204,7 @@ def _build_task_keyboard(entries: list[dict]) -> InlineKeyboardMarkup | None:
         chunk = open_entries[start : start + _TASK_BUTTONS_PER_ROW]
         rows.append(
             [
-                InlineKeyboardButton(f"№{i}", callback_data=f"task_done:{e['id']}")
+                InlineKeyboardButton(f"№{i}", callback_data=f"task_confirm:{e['id']}")
                 for i, e in chunk
             ]
         )
@@ -323,7 +327,7 @@ async def handle_text(
         keyboard = None
         if entry_id is not None:
             keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Закрыто", callback_data=f"task_done:{entry_id}")]]
+                [[InlineKeyboardButton("Закрыто", callback_data=f"task_confirm:{entry_id}")]]
             )
         await _reply_in_topic(update, context, f"{prefix}{reply}", topic, reply_markup=keyboard)
     elif message_type == "mail":
@@ -355,11 +359,12 @@ async def handle_choice_button(update: Update, context: ContextTypes.DEFAULT_TYP
     await query.edit_message_text(reply)
 
 
-def _button_label_for(keyboard: list[list], entry_id: str) -> str | None:
-    """Находит подпись нажатой кнопки (например "№3") по её callback_data —
-    нужна, чтобы всплывающее подтверждение назвало конкретную задачу, а не
-    просто "что-то закрыто", когда кнопок несколько (см. handle_task_done_button)."""
-    target = f"task_done:{entry_id}"
+def _button_label_for(keyboard: list[list], entry_id: str, prefix: str) -> str | None:
+    """Находит подпись кнопки (например "№3") по её callback_data (с данным
+    префиксом типа "task_confirm"/"task_done") — нужна, чтобы подтверждение
+    и тост называли конкретную задачу, а не просто "что-то", когда кнопок
+    несколько (см. handle_task_confirm_button/handle_task_done_button)."""
+    target = f"{prefix}:{entry_id}"
     for row in keyboard:
         for button in row:
             if button.callback_data == target:
@@ -367,25 +372,71 @@ def _button_label_for(keyboard: list[list], entry_id: str) -> str | None:
     return None
 
 
+# Сохранённая клавиатура сообщения ДО того, как пользователь нажал на
+# конкретный номер — чтобы кнопка "Отмена" могла её восстановить один в
+# один, не пересобирая список из файла заново (порядок/состав к моменту
+# отмены мог измениться, если пользователь параллельно что-то ещё закрыл).
+# Ключ — message_id, так что подходит и для списка задач, и для одиночной
+# свежей мысли одинаково.
+_SAVED_KEYBOARD_KEY = "task_saved_keyboards"
+
+
+async def handle_task_confirm_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Нажатие кнопки "№N" (или "Закрыто" для одиночной мысли) — ПОКА НЕ
+    закрывает задачу, а подменяет клавиатуру на подтверждение "Да, закрыть /
+    Отмена". Пользователь попросил это 2026-09-04 после случайного
+    закрытия задачи №7 (тестировал, попал не туда) — защита от случайных
+    нажатий."""
+    query = update.callback_query
+    await query.answer()
+    entry_id = query.data.split(":", 1)[1]
+    keyboard = query.message.reply_markup.inline_keyboard if query.message.reply_markup else []
+    label = _button_label_for(keyboard, entry_id, "task_confirm") or "эту задачу"
+
+    context.bot_data.setdefault(_SAVED_KEYBOARD_KEY, {})[query.message.message_id] = keyboard
+
+    confirm_markup = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(f"✅ Да, закрыть {label}", callback_data=f"task_done:{entry_id}"),
+                InlineKeyboardButton("↩️ Отмена", callback_data=f"task_cancel:{entry_id}"),
+            ]
+        ]
+    )
+    await query.edit_message_reply_markup(reply_markup=confirm_markup)
+
+
+async def handle_task_cancel_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Нажатие "Отмена" на экране подтверждения — возвращает клавиатуру,
+    сохранённую перед подтверждением (см. handle_task_confirm_button), без
+    похода в memory_inbox.md — ничего не менялось в файле, отменять там
+    нечего."""
+    query = update.callback_query
+    await query.answer("Отменено")
+    saved = context.bot_data.get(_SAVED_KEYBOARD_KEY, {}).pop(query.message.message_id, None)
+    new_markup = InlineKeyboardMarkup(saved) if saved else None
+    await query.edit_message_reply_markup(reply_markup=new_markup)
+
+
 async def handle_task_done_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Нажатие кнопки "Закрыть №N" под задачей в теме "Задачи". Запись
-    остаётся в memory_inbox.md, только помечается " ✅" в заголовке (см.
+    """Нажатие "✅ Да, закрыть" на экране подтверждения. Запись остаётся в
+    memory_inbox.md, только помечается " ✅" в заголовке (см.
     adapters/memory_client.mark_thought_done) — ничего не удаляется.
 
-    Два разных случая по числу кнопок в исходном сообщении:
+    Два разных случая по числу кнопок в сохранённой (до-подтверждения)
+    клавиатуре:
     - одна кнопка (свежая мысль, только что записанная) — дописываем "✅"
-      прямо в текст сообщения, кнопку убираем;
+      прямо в текст сообщения, клавиатуру убираем;
     - несколько кнопок (сообщение со списком задач, см. _build_task_keyboard)
       — список слишком длинный, чтобы просто дописывать в конец: вместо
       этого показываем короткий всплывающий тост "Задача №N закрыта" и
-      убираем ИМЕННО эту кнопку, остальные задачи и их кнопки остаются
-      нетронутыми (пользователь может закрыть ещё несколько без пересылки
-      списка заново)."""
+      убираем ИМЕННО эту кнопку из восстановленной клавиатуры, остальные
+      задачи остаются кликабельными."""
     query = update.callback_query
     entry_id = query.data.split(":", 1)[1]
-    keyboard = query.message.reply_markup.inline_keyboard if query.message.reply_markup else []
-    label = _button_label_for(keyboard, entry_id)
-    is_list_message = sum(len(row) for row in keyboard) > 1
+    saved_keyboard = context.bot_data.get(_SAVED_KEYBOARD_KEY, {}).pop(query.message.message_id, [])
+    label = _button_label_for(saved_keyboard, entry_id, "task_confirm")
+    is_list_message = sum(len(row) for row in saved_keyboard) > 1
 
     found = mark_thought_done(entry_id)
     if not found:
@@ -393,13 +444,13 @@ async def handle_task_done_button(update: Update, context: ContextTypes.DEFAULT_
         await query.edit_message_reply_markup(reply_markup=None)
         return
 
-    remaining_rows = [
-        [b for b in row if b.callback_data != f"task_done:{entry_id}"] for row in keyboard
-    ]
-    remaining_rows = [row for row in remaining_rows if row]
-    new_markup = InlineKeyboardMarkup(remaining_rows) if remaining_rows else None
-
     if is_list_message:
+        remaining_rows = [
+            [b for b in row if b.callback_data != f"task_confirm:{entry_id}"]
+            for row in saved_keyboard
+        ]
+        remaining_rows = [row for row in remaining_rows if row]
+        new_markup = InlineKeyboardMarkup(remaining_rows) if remaining_rows else None
         await query.answer(f"✅ Задача {label or ''} закрыта".strip())
         await query.edit_message_reply_markup(reply_markup=new_markup)
         return
