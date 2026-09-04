@@ -300,7 +300,14 @@ a{color:inherit;}
 @media (max-width:640px){
   .topbar-inner{padding:12px 16px;}
 }
-@media (max-width:480px){
+@media (max-width:600px){
+  /* Raised from 480px (2026-09-05, third pass) — 420px, then 480px, both
+     turned out narrower than the owner's own real device (Samsung Galaxy
+     S25 Ultra) CSS viewport width, confirmed live via a screenshot still
+     showing the uncompressed "EN RU EL" text tabs clipped off-screen at
+     480px. Large modern Android flagships can report CSS viewport widths
+     well past the 390-428px range a simulator tests by default, so this
+     goes conservatively high instead of chasing one more specific value. */
   /* A couple more px reclaimed from the right edge — the language globe
      was still clipping past the viewport edge by ~2px after the gap and
      logo shrinks above (measured live: padding-right was already 12px
@@ -321,7 +328,7 @@ a{color:inherit;}
 @media (max-width:640px){
   .logo-mark svg{height:42px;}
 }
-@media (max-width:480px){
+@media (max-width:600px){
   /* Slightly smaller still on the narrowest phones — with the phone
      number kept as full text (per the CarsJapan Cyprus research) plus
      messenger icons plus the language globe, the logo was the one
@@ -379,7 +386,7 @@ a{color:inherit;}
 }
 .langswitch button:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
 .langswitch-compact{display:none;}
-@media (max-width:480px){
+@media (max-width:600px){
   /* Compressed globe-icon + dropdown, replacing the 3-tab text switch
      below this width — see the HTML comment above .langswitch for the
      research this is based on (Booking.com's flag-icon control, Airbnb's
@@ -428,7 +435,7 @@ a{color:inherit;}
   gap:18px;
   margin-left:auto;
 }
-@media (max-width:480px){
+@media (max-width:600px){
   /* Tightened from 18px — the 3 gaps between phone/messengers/language
      (54px total) were the last bit pushing the header past 390px even
      after the logo and phone-number shrinks above (measured live: still
@@ -475,7 +482,7 @@ a{color:inherit;}
 @media (max-width:900px){
   .header-phone{padding-right:10px; font-size:11px; gap:5px; white-space:nowrap;}
 }
-@media (max-width:480px){
+@media (max-width:600px){
   /* At the narrowest phone widths, keeping the phone number text AND the
      full 3-language switch AND full messenger badges in one row didn't
      fit without wrapping the phone number across 3 lines (confirmed
@@ -488,15 +495,16 @@ a{color:inherit;}
   .langswitch{gap:6px; font-size:11px;}
   .langswitch button{padding:2px 3px;}
 }
-@media (max-width:480px){
-  /* On the narrowest phones the phone number text is already hidden
-     (above), leaving a lone call icon immediately followed by a vertical
-     divider bar — flagged live as reading like an unnecessary separator
-     between two things that belong in the same visual group (call +
-     messenger icons). Dropped the divider and tightened the gap so the
-     icon cluster reads as one unit instead of two separated by a stray
-     line, matching how compact mobile headers on premium sites group
-     contact icons together rather than dividing each one. */
+@media (max-width:600px){
+  /* Originally written for when the phone number text was hidden on
+     narrow screens, leaving a lone call icon immediately followed by a
+     vertical divider bar — flagged live as reading like an unnecessary
+     separator between two things that belong in the same visual group
+     (call + messenger icons). The number is shown as text at every width
+     now (see the CarsJapan Cyprus research elsewhere in this file), but
+     the divider is still visually redundant right after it, so this stays
+     — raised to match the other header breakpoints above (600px, not
+     480px — see their comments for why). */
   .header-phone{border-right:none; padding-right:8px;}
 }
 .header-contacts{
