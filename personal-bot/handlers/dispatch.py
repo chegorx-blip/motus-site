@@ -163,28 +163,48 @@ def _is_done_tasks_command(text: str) -> bool:
     return bool(_DONE_TASKS_RE.search(text))
 
 
+# Сколько кнопок-номеров помещать в один ряд клавиатуры — компромисс между
+# "не слишком узкие кнопки" и "не слишком длинный список рядов", подобрано
+# на глаз для обычного экрана телефона (7-8 задач помещаются в 2 ряда).
+_TASK_BUTTONS_PER_ROW = 5
+
+
 def _build_task_list_text(entries: list[dict], empty_message: str) -> str:
+    """Нумерует задачи (1., 2., ...) — тот же номер, что на кнопке в
+    _build_task_keyboard, чтобы можно было найти нужную кнопку по номеру, а
+    не считать строки/угадывать по одинаковым подписям "Закрыто" (жалоба
+    пользователя 2026-09-04: 7 неотличимых кнопок подряд)."""
     if not entries:
         return empty_message
     lines = []
-    for e in entries:
+    for i, e in enumerate(entries, start=1):
         mark = "✅ " if e["done"] else ""
-        lines.append(f"{mark}{e['timestamp']} — {e['summary']}")
+        lines.append(f"{mark}{i}. {e['timestamp']} — {e['summary']}")
     return "\n\n".join(lines)
 
 
 def _build_task_keyboard(entries: list[dict]) -> InlineKeyboardMarkup | None:
-    """Кнопка "Закрыто" под каждой ЕЩЁ НЕ закрытой задачей — своя кнопка на
-    свою запись, привязана к её id через callback_data (см.
-    adapters/memory_client.mark_thought_done). Telegram лимитирует
-    callback_data 64 байтами — "task_done:20260904-162230" укладывается с
-    большим запасом."""
-    rows = [
-        [InlineKeyboardButton("Закрыто", callback_data=f"task_done:{e['id']}")]
-        for e in entries
-        if not e["done"]
-    ]
-    return InlineKeyboardMarkup(rows) if rows else None
+    """Кнопки "Закрыть №N" под ещё не закрытыми задачами — номер совпадает с
+    номером в тексте (_build_task_list_text), несколько в ряд (см.
+    _TASK_BUTTONS_PER_ROW), а не одна колонка из одинаковых "Закрыто" —
+    так кнопка находится по номеру задачи, не по счёту строк сверху вниз.
+    callback_data несёт только id записи (не номер — номер зависит от
+    порядка в конкретном списке и не годится как постоянный идентификатор),
+    см. adapters/memory_client.mark_thought_done."""
+    open_entries = [(i, e) for i, e in enumerate(entries, start=1) if not e["done"]]
+    if not open_entries:
+        return None
+
+    rows = []
+    for start in range(0, len(open_entries), _TASK_BUTTONS_PER_ROW):
+        chunk = open_entries[start : start + _TASK_BUTTONS_PER_ROW]
+        rows.append(
+            [
+                InlineKeyboardButton(f"№{i}", callback_data=f"task_done:{e['id']}")
+                for i, e in chunk
+            ]
+        )
+    return InlineKeyboardMarkup(rows)
 
 
 async def _try_handle_pending(
@@ -335,19 +355,54 @@ async def handle_choice_button(update: Update, context: ContextTypes.DEFAULT_TYP
     await query.edit_message_text(reply)
 
 
+def _button_label_for(keyboard: list[list], entry_id: str) -> str | None:
+    """Находит подпись нажатой кнопки (например "№3") по её callback_data —
+    нужна, чтобы всплывающее подтверждение назвало конкретную задачу, а не
+    просто "что-то закрыто", когда кнопок несколько (см. handle_task_done_button)."""
+    target = f"task_done:{entry_id}"
+    for row in keyboard:
+        for button in row:
+            if button.callback_data == target:
+                return button.text
+    return None
+
+
 async def handle_task_done_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Нажатие кнопки "Закрыто" под мыслью/задачей в теме "Задачи". Запись
+    """Нажатие кнопки "Закрыть №N" под задачей в теме "Задачи". Запись
     остаётся в memory_inbox.md, только помечается " ✅" в заголовке (см.
     adapters/memory_client.mark_thought_done) — ничего не удаляется.
-    Сообщение в Telegram при этом просто теряет кнопку и получает пометку
-    в тексте, чтобы было видно сразу, без похода в файл."""
+
+    Два разных случая по числу кнопок в исходном сообщении:
+    - одна кнопка (свежая мысль, только что записанная) — дописываем "✅"
+      прямо в текст сообщения, кнопку убираем;
+    - несколько кнопок (сообщение со списком задач, см. _build_task_keyboard)
+      — список слишком длинный, чтобы просто дописывать в конец: вместо
+      этого показываем короткий всплывающий тост "Задача №N закрыта" и
+      убираем ИМЕННО эту кнопку, остальные задачи и их кнопки остаются
+      нетронутыми (пользователь может закрыть ещё несколько без пересылки
+      списка заново)."""
     query = update.callback_query
-    await query.answer()
     entry_id = query.data.split(":", 1)[1]
+    keyboard = query.message.reply_markup.inline_keyboard if query.message.reply_markup else []
+    label = _button_label_for(keyboard, entry_id)
+    is_list_message = sum(len(row) for row in keyboard) > 1
 
     found = mark_thought_done(entry_id)
     if not found:
+        await query.answer("Не нашёл эту запись — возможно, список устарел.")
         await query.edit_message_reply_markup(reply_markup=None)
         return
 
+    remaining_rows = [
+        [b for b in row if b.callback_data != f"task_done:{entry_id}"] for row in keyboard
+    ]
+    remaining_rows = [row for row in remaining_rows if row]
+    new_markup = InlineKeyboardMarkup(remaining_rows) if remaining_rows else None
+
+    if is_list_message:
+        await query.answer(f"✅ Задача {label or ''} закрыта".strip())
+        await query.edit_message_reply_markup(reply_markup=new_markup)
+        return
+
+    await query.answer()
     await query.edit_message_text(f"{query.message.text}\n\n✅ Отмечено выполненным.")
