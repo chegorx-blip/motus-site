@@ -29,6 +29,7 @@ import re
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
+from adapters.memory_client import list_done_thoughts, list_open_thoughts, mark_thought_done
 from classifier import classify
 from config import TOPIC_BY_MESSAGE_TYPE, TOPIC_BY_PROJECT, TOPIC_TASKS
 from handlers.balance import get_oracle_spend_this_month
@@ -139,6 +140,53 @@ def _is_push_command(text: str) -> bool:
     return bool(_PUSH_COMMAND_RE.search(text))
 
 
+# Команды показа списка задач — проверяем regex'ом по корню слова, тем же
+# приёмом, что и _is_push_command выше: надёжнее и быстрее, чем гонять через
+# LLM-классификатор то, что решается парой ключевых слов. "невыполнен"/
+# "открыт" — незакрытые задачи; "выполнен"/"закрыт" (без "не" перед ними) —
+# уже сделанные. Порядок проверки важен: сначала ищем явное "не"/"незакрыт"
+# перед корнем, иначе "покажи выполненные" ошибочно тоже подходило бы под
+# паттерн "выполнен".
+_OPEN_TASKS_RE = re.compile(
+    r"(незакрыт|невыполнен|не\s+закрыт|не\s+выполнен|открыт.{0,3}\s+задач)", re.IGNORECASE
+)
+_DONE_TASKS_RE = re.compile(r"(выполнен|закрыт.{0,3}\s+задач)", re.IGNORECASE)
+
+
+def _is_open_tasks_command(text: str) -> bool:
+    return bool(_OPEN_TASKS_RE.search(text))
+
+
+def _is_done_tasks_command(text: str) -> bool:
+    if _is_open_tasks_command(text):
+        return False
+    return bool(_DONE_TASKS_RE.search(text))
+
+
+def _build_task_list_text(entries: list[dict], empty_message: str) -> str:
+    if not entries:
+        return empty_message
+    lines = []
+    for e in entries:
+        mark = "✅ " if e["done"] else ""
+        lines.append(f"{mark}{e['timestamp']} — {e['summary']}")
+    return "\n\n".join(lines)
+
+
+def _build_task_keyboard(entries: list[dict]) -> InlineKeyboardMarkup | None:
+    """Кнопка "Закрыто" под каждой ЕЩЁ НЕ закрытой задачей — своя кнопка на
+    свою запись, привязана к её id через callback_data (см.
+    adapters/memory_client.mark_thought_done). Telegram лимитирует
+    callback_data 64 байтами — "task_done:20260904-162230" укладывается с
+    большим запасом."""
+    rows = [
+        [InlineKeyboardButton("Закрыто", callback_data=f"task_done:{e['id']}")]
+        for e in entries
+        if not e["done"]
+    ]
+    return InlineKeyboardMarkup(rows) if rows else None
+
+
 async def _try_handle_pending(
     update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, prefix: str
 ) -> bool:
@@ -189,6 +237,24 @@ async def handle_text(
     if await _try_handle_pending(update, context, text, prefix):
         return
 
+    # Списки задач — проверяем regex'ом ДО классификации через LLM (тот же
+    # приём, что _is_push_command): "покажи невыполненные"/"открытые
+    # задачи" и "покажи выполненные"/"закрытые задачи" не нуждаются в
+    # понимании смысла, только в ключевых словах.
+    if _is_open_tasks_command(text):
+        entries = list_open_thoughts()
+        reply_text = _build_task_list_text(entries, "Незакрытых задач нет 🎉")
+        await _reply_in_topic(
+            update, context, f"{prefix}{reply_text}", TOPIC_TASKS,
+            reply_markup=_build_task_keyboard(entries),
+        )
+        return
+    if _is_done_tasks_command(text):
+        entries = list_done_thoughts()
+        reply_text = _build_task_list_text(entries, "Выполненных задач пока нет.")
+        await _reply_in_topic(update, context, f"{prefix}{reply_text}", TOPIC_TASKS)
+        return
+
     result = classify(text)
     message_type = result.get("type", "unclear")
     topic = _topic_for(message_type, result.get("project", "none"))
@@ -230,8 +296,16 @@ async def handle_text(
             await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
     elif message_type == "thought":
         is_explicit_save = result.get("is_explicit_save", False) or _is_push_command(text)
-        reply = handle_thought(summary=result["summary"], is_explicit_save=is_explicit_save)
-        await _reply_in_topic(update, context, f"{prefix}{reply}", topic)
+        reply, entry_id = handle_thought(summary=result["summary"], is_explicit_save=is_explicit_save)
+        # Кнопка "Закрыто" только для черновых мыслей (entry_id не None) —
+        # explicit-save запись уже ушла в постоянную память отдельным
+        # файлом, вне системы статусов задач, см. handlers/thought.py.
+        keyboard = None
+        if entry_id is not None:
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("Закрыто", callback_data=f"task_done:{entry_id}")]]
+            )
+        await _reply_in_topic(update, context, f"{prefix}{reply}", topic, reply_markup=keyboard)
     elif message_type == "mail":
         reply = handle_mail_search(search_query=result["search_query"])
         await _reply_in_topic(update, context, f"{prefix}{reply}", topic, parse_mode="Markdown")
@@ -259,3 +333,21 @@ async def handle_choice_button(update: Update, context: ContextTypes.DEFAULT_TYP
     else:
         reply = _resolve_cancel_choice(user_data, choice)
     await query.edit_message_text(reply)
+
+
+async def handle_task_done_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Нажатие кнопки "Закрыто" под мыслью/задачей в теме "Задачи". Запись
+    остаётся в memory_inbox.md, только помечается " ✅" в заголовке (см.
+    adapters/memory_client.mark_thought_done) — ничего не удаляется.
+    Сообщение в Telegram при этом просто теряет кнопку и получает пометку
+    в тексте, чтобы было видно сразу, без похода в файл."""
+    query = update.callback_query
+    await query.answer()
+    entry_id = query.data.split(":", 1)[1]
+
+    found = mark_thought_done(entry_id)
+    if not found:
+        await query.edit_message_reply_markup(reply_markup=None)
+        return
+
+    await query.edit_message_text(f"{query.message.text}\n\n✅ Отмечено выполненным.")

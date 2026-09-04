@@ -16,6 +16,15 @@
   память". Создаёт полноценный memory-файл с frontmatter (тот же формат,
   что использует сам Claude Code) и добавляет строку-указатель в MEMORY.md,
   чтобы запись была видна сразу, без ожидания следующей сессии.
+
+Начиная с 2026-09-04 каждая запись в memory_inbox.md несёт свой ID в
+заголовке (см. _parse_entries) — нужен, чтобы кнопка "Закрыто" под мыслью в
+Telegram (см. handlers/dispatch.py) могла однозначно сослаться на ЭТУ
+конкретную запись через callback_data. Записи, сохранённые до этой даты
+(без ID в заголовке), read-функции ниже просто пропускают как невозможные
+разобрать — они никуда не делись, лежат в файле как есть, просто не
+попадают в /список открытых задач и не могут получить кнопку "Закрыто"
+задним числом. Пользователь был предупреждён, это не потеря данных.
 """
 
 import datetime
@@ -26,6 +35,13 @@ from config import CLAUDE_MEMORY_DIR
 
 _INBOX_FILENAME = "memory_inbox.md"
 _INDEX_FILENAME = "MEMORY.md"
+
+# Заголовок записи вида "## 2026-09-04 16:22 [20260904-162230]" — id в
+# квадратных скобках, отдельно от читаемого timestamp, чтобы файл
+# оставался человекочитаемым при открытии в Google Drive напрямую.
+_ENTRY_HEADER_RE = re.compile(
+    r"^## (?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}) \[(?P<id>\d{8}-\d{6})\](?P<done> ✅)?\s*$"
+)
 
 
 def _memory_dir() -> Path:
@@ -38,13 +54,90 @@ def _memory_dir() -> Path:
     return path
 
 
-def save_thought(summary: str) -> None:
-    """Дописывает мысль строкой в черновой инбокс — без создания memory-файла."""
+def save_thought(summary: str) -> str:
+    """Дописывает мысль строкой в черновой инбокс — без создания memory-файла.
+    Возвращает id записи (для кнопки "Закрыто", см. handlers/dispatch.py)."""
     inbox_path = _memory_dir() / _INBOX_FILENAME
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    entry = f"## {timestamp}\n{summary.strip()}\n\n"
+    now = datetime.datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M")
+    entry_id = now.strftime("%Y%m%d-%H%M%S")
+    entry = f"## {timestamp} [{entry_id}]\n{summary.strip()}\n\n"
     with inbox_path.open("a", encoding="utf-8") as f:
         f.write(entry)
+    return entry_id
+
+
+def _parse_entries() -> list[dict]:
+    """Разбирает memory_inbox.md на записи с ID (см. _ENTRY_HEADER_RE) —
+    записи старого формата (без ID, до 2026-09-04) пропускаются, см.
+    docstring модуля."""
+    inbox_path = _memory_dir() / _INBOX_FILENAME
+    if not inbox_path.is_file():
+        return []
+
+    text = inbox_path.read_text(encoding="utf-8")
+    lines = text.split("\n")
+
+    entries = []
+    current = None
+    body_lines: list[str] = []
+    for line in lines:
+        match = _ENTRY_HEADER_RE.match(line)
+        if match:
+            if current is not None:
+                current["summary"] = "\n".join(body_lines).strip()
+                entries.append(current)
+            current = {
+                "id": match.group("id"),
+                "timestamp": match.group("timestamp"),
+                "done": bool(match.group("done")),
+            }
+            body_lines = []
+        elif current is not None:
+            body_lines.append(line)
+    if current is not None:
+        current["summary"] = "\n".join(body_lines).strip()
+        entries.append(current)
+    return entries
+
+
+def list_open_thoughts() -> list[dict]:
+    """Все записи (нового формата, с ID) без пометки "выполнено", в порядке
+    добавления в файл (старые первыми)."""
+    return [e for e in _parse_entries() if not e["done"]]
+
+
+def list_done_thoughts() -> list[dict]:
+    """Все записи с пометкой "выполнено" — показываются пользователю только
+    по явному запросу, см. handlers/dispatch.py."""
+    return [e for e in _parse_entries() if e["done"]]
+
+
+def mark_thought_done(entry_id: str) -> bool:
+    """Помечает запись как выполненную ПРЯМО В ФАЙЛЕ — дописывает " ✅" в
+    конец её заголовка. Запись никуда не удаляется и не перемещается,
+    только эта одна строка меняется. Возвращает False, если записи с таким
+    id не нашлось (например, файл был вручную отредактирован)."""
+    inbox_path = _memory_dir() / _INBOX_FILENAME
+    if not inbox_path.is_file():
+        return False
+
+    text = inbox_path.read_text(encoding="utf-8")
+    lines = text.split("\n")
+    found = False
+    for i, line in enumerate(lines):
+        match = _ENTRY_HEADER_RE.match(line)
+        if match and match.group("id") == entry_id:
+            if not match.group("done"):
+                lines[i] = f"{line} ✅"
+            found = True
+            break
+
+    if not found:
+        return False
+
+    inbox_path.write_text("\n".join(lines), encoding="utf-8")
+    return True
 
 
 def _slugify(summary: str) -> str:
