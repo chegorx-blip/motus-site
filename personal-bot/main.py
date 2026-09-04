@@ -31,7 +31,9 @@ from handlers.dispatch import (
     handle_task_confirm_button,
     handle_task_done_button,
 )
+from handlers.expenses import handle_expense_category_button
 from handlers.mail_alerts import check_urgent_mail, handle_urgency_feedback, send_daily_mail_summary
+from handlers.photo import handle_photo
 from handlers.text import handle_text_message
 from handlers.voice import handle_voice
 
@@ -66,12 +68,14 @@ def owner_only(handler):
 def main() -> None:
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(MessageHandler(filters.VOICE, owner_only(handle_voice)))
+    app.add_handler(MessageHandler(filters.PHOTO, owner_only(handle_photo)))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, owner_only(handle_text_message)))
     app.add_handler(CallbackQueryHandler(owner_only(handle_choice_button), pattern=r"^choice:"))
     app.add_handler(CallbackQueryHandler(owner_only(handle_urgency_feedback), pattern=r"^urgency:"))
     app.add_handler(CallbackQueryHandler(owner_only(handle_task_confirm_button), pattern=r"^task_confirm:"))
     app.add_handler(CallbackQueryHandler(owner_only(handle_task_cancel_button), pattern=r"^task_cancel:"))
     app.add_handler(CallbackQueryHandler(owner_only(handle_task_done_button), pattern=r"^task_done:"))
+    app.add_handler(CallbackQueryHandler(owner_only(handle_expense_category_button), pattern=r"^expense_cat:"))
 
     # JobQueue требует, чтобы python-telegram-bot был установлен с extra
     # "job-queue" (см. requirements.txt) — без этого app.job_queue будет None.

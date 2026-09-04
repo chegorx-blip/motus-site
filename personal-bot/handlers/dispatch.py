@@ -39,6 +39,7 @@ from handlers.cancel_event import resolve_pending_choice as _resolve_cancel_choi
 from handlers.event import PENDING_KEY as _EVENT_DUP_PENDING_KEY
 from handlers.event import handle_event
 from handlers.event import resolve_pending_duplicate_check as _resolve_event_dup
+from handlers.expenses import handle_expenses_command, is_expenses_command
 from handlers.mail_search import handle_mail_search
 from handlers.reschedule_event import PENDING_KEY as _RESCHEDULE_PENDING_KEY
 from handlers.reschedule_event import handle_reschedule_event
@@ -277,6 +278,14 @@ async def handle_text(
         entries = list_done_thoughts()
         reply_text = _build_task_list_text(entries, "Выполненных задач пока нет.")
         await _reply_in_topic(update, context, f"{prefix}{reply_text}", TOPIC_TASKS)
+        return
+
+    # "покажи траты"/"сколько потратил" — та же логика, до классификации
+    # через LLM. Не пересекается с TOPIC_BY_MESSAGE_TYPE["balance"]
+    # (handlers/balance.py, Oracle Cloud) — это отдельная команда про чеки
+    # из темы "Финансы", см. handlers/expenses.py.
+    if is_expenses_command(text):
+        await handle_expenses_command(update, context, prefix)
         return
 
     result = classify(text)
