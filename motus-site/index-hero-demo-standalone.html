@@ -393,6 +393,17 @@ a{color:inherit;}
   .header-phone span{display:none;}
   .header-phone{padding-right:10px;}
 }
+@media (max-width:480px){
+  /* On the narrowest phones the phone number text is already hidden
+     (above), leaving a lone call icon immediately followed by a vertical
+     divider bar — flagged live as reading like an unnecessary separator
+     between two things that belong in the same visual group (call +
+     messenger icons). Dropped the divider and tightened the gap so the
+     icon cluster reads as one unit instead of two separated by a stray
+     line, matching how compact mobile headers on premium sites group
+     contact icons together rather than dividing each one. */
+  .header-phone{border-right:none; padding-right:8px;}
+}
 .header-contacts{
   display:flex;
   gap:8px;
@@ -2881,14 +2892,32 @@ quickFormToggle.addEventListener('click', ()=>{
   });
   if(open){
     const firstInput = quickPopover.querySelector('input');
-    // preventScroll:true (2026-09-04 fix) — plain .focus() made the browser
-    // auto-scroll the whole page ~540px down to bring the newly-revealed
-    // input into view, which visually read as "the second button jumped
-    // to the middle of nowhere" (confirmed live: window.scrollY went from
-    // 0 to 543px on click). The popover's own CSS transition already
-    // handles bringing it into view smoothly — the browser's forced jump
-    // was fighting that, not helping it.
-    if(firstInput) setTimeout(()=>firstInput.focus({preventScroll:true}), 300);
+    // Was focus({preventScroll:true}) — added 2026-09-04 to stop the page
+    // auto-scrolling ~540px on open, which back then visually read as the
+    // second button "jumping" (that bug is now fixed at its real source:
+    // the popover no longer lives inside a wrapper whose size affects
+    // button layout, see the CTA-row restructure above). preventScroll
+    // turned out to cause a worse problem on mobile: with no scroll at
+    // all, the on-screen keyboard covered all 4 form fields with no way
+    // to see which one was focused or that 3 more existed below it
+    // (reported live: "не вижу даже куда я пишу"). Switched to an
+    // explicit scrollIntoView with a bottom margin reservation instead of
+    // relying on either extreme — see quick-form input's scroll-margin-
+    // bottom, which this scrollIntoView call respects.
+    if(firstInput){
+      setTimeout(()=>{
+        firstInput.focus();
+        // block:'start' (not 'center') so the field lands near the TOP
+        // of whatever space is left above the keyboard, leaving the rest
+        // of the form visible below it instead of centering just the
+        // first field and pushing the other 3 fields under the keyboard
+        // — reported live as "не поймёшь, что ещё снизу три поля".
+        // Referenced by getElementById rather than the quickForm const
+        // below (declared later in the file) so this doesn't depend on
+        // script-load order.
+        document.getElementById('quickForm').scrollIntoView({behavior:'smooth', block:'start'});
+      }, 300);
+    }
   }
 });
 
