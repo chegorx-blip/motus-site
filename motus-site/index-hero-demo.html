@@ -432,32 +432,35 @@ a{color:inherit;}
 
 /* ---------- hero ---------- */
 .hero{
-  padding:56px 0 48px;
+  padding:0 0 48px;
 }
-@media (min-width:641px){
-  /* On desktop the hero photo is full-bleed and must start flush against
-     the header — the 56px top padding above was creating a visible gap of
-     empty paper-color background between the header and the photo (measured
-     live: ~57px at 1920px). Bottom padding stays; it applies to the content
-     band below the photo, not the photo itself. */
-  .hero{padding-top:0;}
-}
-/* Full-bleed hero photo — desktop/tablet only (2026-09-01 rebuild).
-   Pattern taken from ginzajdm.com's actual hero (checked live): the photo
-   carries ONLY eyebrow + headline, short, centered, never overlapping the
-   subject. Everything else (subhead, CTA, trust line, Cyprus fallback,
-   quick form) stays in normal flow below, on the regular pine background —
-   that's what keeps the long copy block from ever fighting the photo for
-   space. Mobile is untouched: original side-by-side .hero-media layout,
-   no photo duplication, no overlay text — so .hero-visual (and its own
-   eyebrow+h1, a duplicate of .hero-copy's h1) stays hidden there, and the
-   duplicate h1 inside .hero-copy stays hidden on desktop instead. */
-.hero-visual{display:none;}
-@media (min-width:641px){
-  .hero-copy > h1.headline{display:none;}
-  .hero-visual{
-    display:flex;
-    position:relative;
+/* The full-bleed photo must start flush against the header at every
+   width now that .hero-visual runs on mobile too (2026-09-05) — a
+   padding-top here left a gap of empty paper-color background between
+   the header and the photo (measured live: ~57px on desktop before this
+   was scoped to desktop-only, same gap reappeared on mobile once
+   .hero-visual was extended there). Bottom padding stays; it applies to
+   the content band below the photo, not the photo itself. */
+/* Full-bleed hero photo (2026-09-01 rebuild, extended to mobile
+   2026-09-05). Pattern taken from ginzajdm.com's actual hero (checked
+   live): the photo carries ONLY eyebrow + headline, short, centered,
+   never overlapping the subject. Everything else (subhead, CTA, trust
+   line, Cyprus fallback, quick form) stays in normal flow below, on the
+   regular pine background — that's what keeps the long copy block from
+   ever fighting the photo for space.
+   Mobile originally kept the old side-by-side .hero-media layout instead
+   — flagged live as reading like "no photo at all" on a phone, since
+   .hero-media sits far down the page (below the full headline/subhead/
+   trust-line block, confirmed live at y=1017px on a 390px-wide screen)
+   instead of filling the first screen the way it does on desktop. Now
+   .hero-visual runs at every width; .hero-copy > h1.headline (the
+   duplicate heading meant only for the old mobile layout) and the old
+   .hero-media block are hidden everywhere instead. */
+.hero-copy > h1.headline{display:none;}
+.hero-media{display:none;}
+.hero-visual{
+  display:flex;
+  position:relative;
     /* Was a flat height:min(600px,72vh) that didn't grow with viewport width,
        so on ultra-wide windows the source photo (1672x941, ~1.78:1) got
        stretched far past its own aspect ratio to fill the container and lost
@@ -547,8 +550,11 @@ a{color:inherit;}
   .hero.ready .hero-visual .headline-line:nth-child(2){animation-delay:.42s;}
   .hero.ready .hero-visual .headline-line:nth-child(3){animation-delay:.64s;}
   .hero.ready .hero-visual h1.headline{animation:none; opacity:1;}
-  .hero .hero-media{display:none;} /* old side-by-side photo frame, replaced by .hero-visual above */
-
+/* Everything below here (grid collapse, centered copy band, side-by-side
+   CTA row) stays desktop/tablet-only — .hero-visual above is now full-
+   width at every breakpoint, but the copy band under it still needs the
+   narrower centered treatment only once there's room for it. */
+@media (min-width:641px){
   /* Center the copy band below the photo — the old left-aligned column made
      sense in the two-column layout it came from, but reads off-balance under
      a full-width centered photo/headline above it. */
@@ -735,6 +741,11 @@ h1.headline{
   font-family:'IBM Plex Sans',sans-serif;
   font-size:14px;
   width:100%;
+  /* Keeps a gap below the field when the mobile keyboard's own
+     scroll-into-view fires on focus, so the field a visitor is typing in
+     doesn't end up flush against the keyboard's top edge — reported live
+     as "не вижу даже куда я пишу" (can't see where I'm typing). */
+  scroll-margin-bottom:80px;
 }
 .quick-form input::placeholder{color:var(--text-muted); opacity:0.75;}
 .quick-form input:focus{outline:none; border-color:var(--accent);}
@@ -898,17 +909,17 @@ section{
   background:var(--paper);
   border-bottom:1px solid var(--border);
 }
-/* Header consolidation (2026-09-02): two stacked full-width bars before the
-   photo read as heavy on wide screens (confirmed live at 1920px) — with
-   only 2 nav links, a single-row header (logo + nav + contacts + CTA, the
-   pattern used by Cloudflare/Lassco-style minimal navbars) fits comfortably
-   with room to spare. Nav links move INTO .topbar-nav (desktop only) and
-   this standalone .tabbar becomes mobile-only, where the topbar is already
-   packed and there's no room to add two more links to one row. */
+/* Header consolidation (2026-09-02, revised 2026-09-05): originally kept
+   as a mobile-only standalone bar since the packed topbar had no room for
+   nav links there. Owner flagged live that the two stacked bars (topbar +
+   tabbar, ~110px combined, confirmed live) read as one navigation bar too
+   many on a phone screen — this is a single-page site, a visitor scrolls
+   to reach these sections anyway, so the standalone bar isn't worth the
+   vertical space it costs on the smallest screens. Now hidden everywhere;
+   .topbar-nav's own mobile hiding rule (display:none below 900px) still
+   applies, so the "Почему именно мы"/"Способы оплаты" links simply aren't
+   shown as a separate nav element on mobile at all. */
 .tabbar{display:none;}
-@media (max-width:640px){
-  .tabbar{display:block;}
-}
 .tabbar-inner{
   max-width:none;
   margin:0;
@@ -1918,15 +1929,6 @@ section{
 </div>
 </div>
 
-<div class="tabbar">
-<div class="wrap-wide tabbar-inner">
-  <nav class="tabbar-nav">
-    <a href="#about" data-i18n="navWhy"></a>
-    <a href="#payment" data-i18n="navPayment"></a>
-  </nav>
-</div>
-</div>
-
 <section class="hero" id="hero">
   <div class="hero-visual">
     <div class="hero-bg" aria-hidden="true"><img src="images/hero-fullbleed.jpg" alt=""></div>
@@ -2312,7 +2314,7 @@ const content = {
     routeRequest:"Ваша заявка на подбор авто",
     routeVerified:"Поиск и проверка",
     routeKeys:"Ключи у вас",
-    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км на автомобили из Японии",
+    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км на автомобили из Японии",
     heroCyprusLead:"Если ничего из этого не подходит — нужна машина прямо сейчас, или подбор из Японии не ваш вариант — идём навстречу и ищем авто на месте, на Кипре.",
     heroCyprusCta:"Поиск на Кипре",
     processEyebrow:"Как это работает",
