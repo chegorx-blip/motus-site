@@ -2851,16 +2851,49 @@ quickFormToggle.addEventListener('click', ()=>{
 
 const quickForm = document.getElementById('quickForm');
 const quickFormSuccess = document.getElementById('quickFormSuccess');
+// Same Apps Script Web App as order.html's detailed form — see that file's
+// comment for the deployment/spreadsheet this is bound to. Was a demo-only
+// stub (2026-09-03 fix) that just showed a fake success message and threw
+// the lead away; now POSTs into the same CRM pipeline, tagged source:"hero
+// quick form" so the sheet can tell a quick lead from the detailed one.
+const QUICK_FORM_CRM_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyi-msy1byt3bCdlntUw_9kikOylxlxtqBddF9pdKSkYSkxBykNwk_0zJZF-f7i6giS/exec';
 quickForm.addEventListener('submit', (e)=>{
   e.preventDefault();
   if(!quickForm.checkValidity()){
     quickForm.reportValidity();
     return;
   }
-  // Demo-only: production version should POST straight into the same
-  // "Заявки" / "Заявки Кипр" pipeline as the detailed form, tagged as a quick lead.
-  quickForm.classList.add('submitted');
-  quickFormSuccess.classList.add('visible');
+
+  const formData = new FormData(quickForm);
+  const payload = { intent: 'japan', source: 'hero quick form' };
+  for(const [name, value] of formData.entries()){
+    if(name === 'qName') payload.name = value;
+    else if(name === 'qContact') payload.contact = value;
+    else if(name === 'qModel') payload.model = value;
+  }
+
+  const submitBtn = quickForm.querySelector('button[type="submit"]');
+  if(submitBtn) submitBtn.disabled = true;
+
+  fetch(QUICK_FORM_CRM_WEBHOOK_URL, {
+    method: 'POST',
+    // text/plain avoids a CORS preflight Apps Script Web Apps can't answer;
+    // doPost still reads e.postData.contents as this raw JSON string.
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  })
+    .catch(err=>{
+      // Fire-and-forget: Apps Script sends no CORS headers back, so a
+      // network/CORS error here doesn't mean the server-side write failed.
+      // Same tradeoff order.html's form makes — the real signal is the row
+      // appearing in the Sheet.
+      console.warn('CRM webhook request may not have completed cleanly:', err);
+    })
+    .finally(()=>{
+      quickForm.classList.add('submitted');
+      quickFormSuccess.classList.add('visible');
+      if(submitBtn) submitBtn.disabled = false;
+    });
 });
 </script>
 
