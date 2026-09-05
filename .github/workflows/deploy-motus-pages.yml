@@ -1,0 +1,41 @@
+name: Deploy motus-site to GitHub Pages
+
+# Publishes the contents of motus-site/ (index-hero-demo.html, order.html,
+# images/, etc.) as a real live site on every push to main that touches
+# that folder — so every page/link (order.html, order.html?intent=cyprus,
+# etc.) actually works, unlike the single-file Artifact preview which has
+# no other pages to link to.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'motus-site/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload motus-site as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: motus-site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
