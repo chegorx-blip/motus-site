@@ -318,6 +318,10 @@ a{color:inherit;}
      from the 640px breakpoint, not 16px as first assumed — needed to go
      lower still). */
   .topbar-inner{padding-right:8px;}
+  /* Logo moved closer to the left edge per owner's explicit request —
+     was 16px in from the 640px breakpoint, tightened further on the
+     narrowest phones. */
+  .topbar-inner{padding-left:10px;}
 }
 .logo-mark{
   display:block;
@@ -414,6 +418,17 @@ a{color:inherit;}
     color:var(--stone); cursor:pointer;
     font-family:'IBM Plex Mono',monospace;
     font-size:10px; letter-spacing:0.1em;
+    /* white-space:nowrap on the toggle itself, not just the label span
+       (2026-09-05) — reported live as "РУ" clipping on one specific
+       Android device/browser but not others, and not reproducing in
+       testing here, which points at a font-rendering difference (a
+       Cyrillic fallback font measuring wider than IBM Plex Mono on that
+       device) rather than a layout bug this session could catch by
+       simulating viewport widths. Guaranteeing the label never wraps or
+       gets clipped regardless of which font actually renders it is more
+       robust than chasing an exact px width that depends on a font this
+       session can't control matching what a real device falls back to. */
+    white-space:nowrap;
   }
   .langswitch-toggle svg{
     width:16px; height:16px;
@@ -2149,7 +2164,12 @@ section{
   <div class="wrap wrap-wide hero-grid">
     <div class="hero-copy">
       <h1 class="headline" data-i18n="h1"></h1>
-      <p class="subhead" data-i18n="sub"></p>
+      <!-- .subhead ("Каждый автомобиль проверяется до передачи ключей —
+           первая диагностика за наш счёт") removed 2026-09-05, per
+           owner's text-audit request — it repeated the same "we check
+           everything" idea already carried by the eyebrow ("ПРОВЕРЕНО")
+           and the headline itself ("Проверенные автомобили..."), pure
+           duplication rather than new information. -->
       <p class="hero-trust-line hero-trust-line-lead">
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
         <span data-i18n="heroWarranty"></span>
