@@ -2318,9 +2318,11 @@ quickForm.addEventListener('submit', (e)=>{
   quickFormSuccess.classList.add('visible');
 });
 
-// Disables bfcache for this page — see index-hero-demo.html's identical
-// fix comment for the full reasoning.
-window.addEventListener('unload', ()=>{});
+// Forces a real reload when shown from bfcache — see index-hero-demo.html's
+// identical fix comment for the full reasoning.
+window.addEventListener('pageshow', (e)=>{
+  if(e.persisted) location.reload();
+});
 </script>
 
 <!-- Vercel Web Analytics + Speed Insights (free, no cookie banner needed — collects no personal data) -->

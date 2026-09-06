@@ -808,7 +808,21 @@ section{
   margin-bottom:36px;
   max-width:420px;
 }
+/* Hidden entirely 2026-09-06, per owner's explicit request — the visitor
+   already chose Japan vs Cyprus on the home page (either "Заказать
+   автомобиль из Японии" or "Подобрать автомобиль на Кипре" in the
+   detailed-popover), so offering the same choice again here as a
+   switchable tab is confusing/redundant ("зачем нам там 2 кнопки?").
+   The tab BUTTONS and their click handlers are kept in the DOM/JS
+   untouched (display:none only) rather than removed — requestIntent's
+   value and renderFormGroups() still depend on exactly one tab carrying
+   .active and firing a synthetic .click() from the ?intent= URL param
+   handler below; hiding rather than deleting keeps that machinery intact
+   with the smallest, safest change. */
 .request-tabs{
+  display:none;
+}
+.request-tabs-original-styles-unused{
   display:flex;
   gap:0;
   border:1px solid rgba(246,243,237,0.28);
@@ -2055,11 +2069,13 @@ requestForm.addEventListener('submit', (e)=>{
     });
 });
 
-// Disables bfcache for this page — see index-hero-demo.html's identical
-// fix comment for the full reasoning (owner report: navigating Back from
-// here to the home page showed a stale cached version, stable repro on
-// both Android Chrome and iOS Safari).
-window.addEventListener('unload', ()=>{});
+// Forces a real reload when shown from bfcache — see index-hero-demo.html's
+// identical fix comment for the full reasoning (the previous unload-
+// listener attempt here didn't work; modern Chrome ignores it for this
+// purpose specifically).
+window.addEventListener('pageshow', (e)=>{
+  if(e.persisted) location.reload();
+});
 </script>
 
 <!-- Vercel Web Analytics + Speed Insights (free, no cookie banner needed — collects no personal data) -->

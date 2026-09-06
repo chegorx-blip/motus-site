@@ -165,12 +165,22 @@ a{color:inherit;}
 
 .hero-grid{
   display:grid;
-  grid-template-columns:1fr;
+  /* minmax(0,1fr) instead of a bare 1fr (2026-09-06) — a grid track's
+     content-based minimum size isn't guaranteed to respect the track's
+     own available width in every browser/device-pixel-ratio combination,
+     confirmed live: the mobile hero-copy column measured ~7.8px WIDER
+     than its own parent's padding-box on a real phone (owner report: CTA
+     buttons and the warranty card visibly off-center, right margin
+     smaller than left). minmax(0, 1fr) is the standard fix for a grid
+     track overflowing its container — it caps the track's minimum size
+     at 0 instead of an implicit auto/min-content minimum that can exceed
+     the available space. */
+  grid-template-columns:minmax(0,1fr);
   gap:36px;
   align-items:center;
 }
 @media (min-width:860px){
-  .hero-grid{grid-template-columns:1.05fr 0.95fr; gap:48px;}
+  .hero-grid{grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr); gap:48px;}
 }
 .hero-media{
   position:relative;
@@ -3446,21 +3456,26 @@ quickForm.addEventListener('submit', (e)=>{
     });
 });
 
-// Disables the back-forward cache (bfcache) for this page (2026-09-06,
-// owner report, stable repro on both Android Chrome and iOS Safari after
-// a fresh deploy — not a one-off local cache from earlier testing as
-// first assumed): a real HTTP Cache-Control header was checked and is
-// fine (Age: 0, correct Last-Modified on every load — GitHub Pages isn't
-// serving a stale file), so the stale-page symptom on browser Back is
-// specifically bfcache — the browser restoring an in-memory snapshot of
-// the page as it looked before navigating away, instead of reloading it.
-// A no-op 'unload' listener is the standard, deliberate way to opt a page
-// out of bfcache eligibility in every major browser; the tradeoff is
-// slightly slower Back navigation (a real reload instead of an instant
-// in-memory restore), which the owner accepted given how disruptive the
-// stale page looked (old copy, duplicate header) — see
-// feedback_motus_recurring_design_patterns.md in project memory.
-window.addEventListener('unload', ()=>{});
+// Forces a real reload when this page is shown from bfcache (2026-09-06 —
+// the owner confirmed the previous fix here, a no-op 'unload' listener,
+// did NOT work: the stale-page symptom on browser Back persisted after
+// that deploy). Root cause of that failure: modern Chrome (since 2023)
+// deliberately IGNORES a bare unload listener for bfcache-eligibility
+// purposes specifically to let more pages qualify for bfcache — that
+// trick stopped working as a way to opt out. The reliable current
+// approach is checking event.persisted on 'pageshow': it's true only
+// when the browser restored this exact page from its in-memory snapshot
+// (a real fresh navigation always fires false), so this reloads only in
+// that one case — a normal first visit is completely unaffected, no
+// unconditional reload tax on the common case. GitHub Pages doesn't let
+// this repo set a Cache-Control: no-store response header (no server
+// config on plain Pages), so this JS-level check is the correct fallback
+// standing in for that header. Real HTTP caching was already confirmed
+// fine via curl (Age: 0, correct Last-Modified) — this is purely about
+// the browser's own in-memory page cache, not a server/CDN issue.
+window.addEventListener('pageshow', (e)=>{
+  if(e.persisted) location.reload();
+});
 </script>
 
 <!-- Vercel Web Analytics + Speed Insights (free, no cookie banner needed — collects no personal data) -->
