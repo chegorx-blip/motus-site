@@ -1304,6 +1304,17 @@ section{
   color:var(--text);
 }
 .hero-trust-line-lead svg{width:18px; height:18px;}
+/* Highlight for the measurable part of the warranty claim ("1 год / 15 000
+   км") — bold + brand accent color + a touch larger, per real-brand
+   research (BMW CPO bolds the whole warranty line; Lexus L/Certified goes
+   further with a large, airy number). Kept inline (not a jump to a huge
+   display size) since this sits inside a compact bordered line, not a
+   dedicated stats block. */
+.hero-trust-highlight{
+  color:var(--accent);
+  font-weight:700;
+  font-size:1.08em;
+}
 /* Slow pulse added 2026-09-06 per owner's explicit request ("сделай чтобы
    он тоже медленно моргал") — reuses the exact same beaconOpacity keyframe/
    duration as .logo-dot and .route-stop-dot.start so every "beacon" element
@@ -2227,9 +2238,16 @@ section{
            everything" idea already carried by the eyebrow ("ПРОВЕРЕНО")
            and the headline itself ("Проверенные автомобили..."), pure
            duplication rather than new information. -->
+      <!-- Split into 3 i18n keys (prefix/highlight/suffix) instead of one
+           heroWarranty string, 2026-09-06, per real-brand research (BMW
+           CPO, Lexus L/Certified): premium sites emphasize the *measurable*
+           benefit — term + mileage — not the label word "Гарантия" itself
+           or the whole sentence. [data-i18n] renders via textContent, not
+           innerHTML, so the bold part needs its own element rather than
+           HTML baked into one translated string. -->
       <p class="hero-trust-line hero-trust-line-lead">
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
-        <span data-i18n="heroWarranty"></span>
+        <span><span data-i18n="heroWarrantyPrefix"></span> <strong class="hero-trust-highlight" data-i18n="heroWarrantyHighlight"></strong><span data-i18n="heroWarrantySuffix"></span></span>
       </p>
       <!-- CTA cluster rebuilt 2026-09-04 per owner's request + live research
            into how real premium sites (Range Rover ru-am/ru-kz, UBS,
@@ -2512,7 +2530,9 @@ const content = {
     routeRequest:"Your car request",
     routeVerified:"Search & verification",
     routeKeys:"Keys in your hand",
-    heroWarranty:"Engine & gearbox warranty — 1 year / 15,000 km. Turn-key price, no add-ons.",
+    heroWarrantyPrefix:"Engine & gearbox warranty —",
+    heroWarrantyHighlight:"1 year / 15,000 km",
+    heroWarrantySuffix:". Turn-key price, no add-ons.",
     heroCyprusLead:"If none of this fits — you need a car right now, or a Japan import isn't your thing — we'll meet you halfway and source one locally, in Cyprus.",
     heroCyprusCta:"Search in Cyprus",
     processEyebrow:"How it works",
@@ -2620,7 +2640,9 @@ const content = {
     routeRequest:"Ваша заявка на подбор авто",
     routeVerified:"Поиск и проверка",
     routeKeys:"Ключи у вас",
-    heroWarranty:"Гарантия на ДВС и АКПП — 1 год / 15 000 км. Цена под ключ, без доплат.",
+    heroWarrantyPrefix:"Гарантия на ДВС и АКПП —",
+    heroWarrantyHighlight:"1 год / 15 000 км",
+    heroWarrantySuffix:". Цена под ключ, без доплат.",
     heroCyprusLead:"Если ничего из этого не подходит — нужна машина прямо сейчас, или подбор из Японии не ваш вариант — идём навстречу и ищем авто на месте, на Кипре.",
     heroCyprusCta:"Поиск на Кипре",
     processEyebrow:"Как это работает",
@@ -2728,7 +2750,9 @@ const content = {
     routeRequest:"Το αίτημά σας για αυτοκίνητο",
     routeVerified:"Αναζήτηση & έλεγχος",
     routeKeys:"Τα κλειδιά σας",
-    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου — 1 έτος / 15.000 χλμ. Τιμή all-in, χωρίς προσαυξήσεις.",
+    heroWarrantyPrefix:"Εγγύηση κινητήρα/κιβωτίου —",
+    heroWarrantyHighlight:"1 έτος / 15.000 χλμ",
+    heroWarrantySuffix:". Τιμή all-in, χωρίς προσαυξήσεις.",
     heroCyprusLead:"Αν τίποτα από τα παραπάνω δεν σας ταιριάζει — χρειάζεστε αυτοκίνητο τώρα, ή η εισαγωγή από την Ιαπωνία δεν είναι για εσάς — σας συναντάμε στη μέση και βρίσκουμε ένα τοπικά, στην Κύπρο.",
     heroCyprusCta:"Αναζήτηση στην Κύπρο",
     processEyebrow:"Πώς λειτουργεί",
