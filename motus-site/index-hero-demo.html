@@ -1304,6 +1304,15 @@ section{
   color:var(--text);
 }
 .hero-trust-line-lead svg{width:18px; height:18px;}
+/* Slow pulse added 2026-09-06 per owner's explicit request ("сделай чтобы
+   он тоже медленно моргал") — reuses the exact same beaconOpacity keyframe/
+   duration as .logo-dot and .route-stop-dot.start so every "beacon" element
+   on the page pulses in the same rhythm, not a one-off animation invented
+   just for this icon. */
+.hero-trust-line-lead svg{animation:beaconOpacity 3.4s ease-in-out infinite; animation-delay:0s;}
+@media (prefers-reduced-motion: reduce){
+  .hero-trust-line-lead svg{animation:none;}
+}
 /* .hero-cyprus-line removed 2026-09-05, per owner's comment on the
    published artifact — this "нужна машина прямо сейчас... Поиск на
    Кипре" block duplicated exactly what "Оформить подбор" ->
@@ -2503,7 +2512,7 @@ const content = {
     routeRequest:"Your car request",
     routeVerified:"Search & verification",
     routeKeys:"Keys in your hand",
-    heroWarranty:"1-year / 15,000 km engine & gearbox warranty — turn-key price, no add-ons",
+    heroWarranty:"Engine & gearbox warranty — 1 year / 15,000 km. Turn-key price, no add-ons.",
     heroCyprusLead:"If none of this fits — you need a car right now, or a Japan import isn't your thing — we'll meet you halfway and source one locally, in Cyprus.",
     heroCyprusCta:"Search in Cyprus",
     processEyebrow:"How it works",
@@ -2611,7 +2620,7 @@ const content = {
     routeRequest:"Ваша заявка на подбор авто",
     routeVerified:"Поиск и проверка",
     routeKeys:"Ключи у вас",
-    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км — цена под ключ, без доплат",
+    heroWarranty:"Гарантия на ДВС и АКПП — 1 год / 15 000 км. Цена под ключ, без доплат.",
     heroCyprusLead:"Если ничего из этого не подходит — нужна машина прямо сейчас, или подбор из Японии не ваш вариант — идём навстречу и ищем авто на месте, на Кипре.",
     heroCyprusCta:"Поиск на Кипре",
     processEyebrow:"Как это работает",
@@ -2719,7 +2728,7 @@ const content = {
     routeRequest:"Το αίτημά σας για αυτοκίνητο",
     routeVerified:"Αναζήτηση & έλεγχος",
     routeKeys:"Τα κλειδιά σας",
-    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ — τιμή all-in, χωρίς προσαυξήσεις",
+    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου — 1 έτος / 15.000 χλμ. Τιμή all-in, χωρίς προσαυξήσεις.",
     heroCyprusLead:"Αν τίποτα από τα παραπάνω δεν σας ταιριάζει — χρειάζεστε αυτοκίνητο τώρα, ή η εισαγωγή από την Ιαπωνία δεν είναι για εσάς — σας συναντάμε στη μέση και βρίσκουμε ένα τοπικά, στην Κύπρο.",
     heroCyprusCta:"Αναζήτηση στην Κύπρο",
     processEyebrow:"Πώς λειτουργεί",
