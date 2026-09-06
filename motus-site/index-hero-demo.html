@@ -247,20 +247,31 @@ a{color:inherit;}
   color:var(--text-muted); white-space:nowrap;
 }
 .route-stop-dot{width:8px;height:8px;border-radius:50%; flex:none;}
-/* Kept in sync with .logo-dot's own beacon animation (2026-09-05, per
-   owner's explicit request to make the two pulse together) — same
-   duration, timing function and explicit animation-delay:0s so both
-   dots' cycles start at the exact same moment on page load. */
-.route-stop-dot.start{background:var(--bronze); animation:beaconOpacity 3.4s ease-in-out infinite; animation-delay:0s;}
+/* Route-strip's 3 markers now blink in sequence (dot -> shield -> key ->
+   repeat), 2026-09-06 per owner's explicit request, instead of only the
+   dot pulsing on its own while the shield/key sat static. One shared
+   9s cycle (3x the original 3.4s single-dot beacon, so each marker still
+   gets a similarly slow, deliberate dim) split into 3 even phases via
+   animation-delay — each marker uses the exact same keyframe (dim to 0
+   opacity and back) as the site's other beacons (.logo-dot, .final's
+   route-dot, the warranty shield), just staggered instead of started at
+   the same instant, so this reads as one connected wave down the route
+   rather than 3 unrelated blinking dots. */
+.route-stop-dot.start{background:var(--bronze); animation:routeWave 9s ease-in-out infinite; animation-delay:0s;}
 .route-stop-dot.end{background:var(--bg); border:1.5px solid var(--bronze); box-sizing:border-box;}
-@keyframes beaconOpacity{
-  0%,100%{opacity:1;}
-  50%{opacity:0;}
+@keyframes routeWave{
+  0%,11%,100%{opacity:1;}
+  5.5%{opacity:0;}
 }
 @media (prefers-reduced-motion: reduce){
   .route-stop-dot.start{animation:none;}
 }
 .route-stop-icon{width:15px;height:15px; flex:none; stroke:var(--text-muted); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;}
+.route-stop-icon-shield{animation:routeWave 9s ease-in-out infinite; animation-delay:3s;}
+.route-stop-icon-key{animation:routeWave 9s ease-in-out infinite; animation-delay:6s;}
+@media (prefers-reduced-motion: reduce){
+  .route-stop-icon-shield, .route-stop-icon-key{animation:none;}
+}
 .route-seg{
   flex:1 1 28px; min-width:16px; height:1px;
   background:var(--line);
@@ -890,9 +901,26 @@ h1.headline{
   font-size:14px;
   font-weight:600;
   text-align:center;
-  transition:border-color .18s ease, color .18s ease;
+  transition:border-color .18s ease, color .18s ease, opacity .3s ease, transform .3s ease;
 }
 .detailed-popover-option:hover{border-color:var(--accent); color:var(--accent);}
+/* The two options now appear one after the other instead of both at once
+   (2026-09-06, owner's explicit request) — Japan first with no delay,
+   Cyprus fading/sliding in shortly after, so a visitor's eye is guided to
+   read them in order rather than absorbing both simultaneously. Own
+   opacity/transform starts hidden and only animates in once the parent
+   popover has .open (its own reveal already handles the outer card's
+   slide-down) — nesting the delay here means each option's timing is
+   independent of the popover's own max-height/opacity transition. */
+.detailed-popover-option{opacity:0; transform:translateY(6px);}
+.detailed-popover.open .detailed-popover-option:nth-child(1){
+  transition-delay:.05s;
+  opacity:1; transform:translateY(0);
+}
+.detailed-popover.open .detailed-popover-option:nth-child(2){
+  transition-delay:.3s;
+  opacity:1; transform:translateY(0);
+}
 .quick-popover-perks{
   /* Was inline-block, which sizes to its own content — with wrapped text
      that becomes the wrapped line's width, never the popover's actual
@@ -1048,12 +1076,17 @@ svg[fill="currentColor"]{stroke:none !important; fill:currentColor !important;}
    premium site with two hero CTAs uses a brand-colored outline for the
    secondary button, never plain gray — gray reads as "disabled" against
    a primary-color-filled button, not as a deliberate secondary choice. */
+/* Changed from an outline-only button to a solid bronze fill by default
+   (2026-09-06, owner's explicit request) — the outline read as visibly
+   weaker than .btn-primary's solid fill at rest, filling in only on
+   hover/tap; the owner wants both buttons equally prominent from the
+   start, not one looking secondary until touched. */
 .btn-secondary{
-  background:transparent;
-  color:var(--accent);
+  background:var(--accent);
+  color:var(--ink);
   border-color:var(--accent);
 }
-.btn-secondary:hover{background:var(--accent); color:var(--text-on-panel);}
+.btn-secondary:hover{filter:brightness(1.08);}
 
 .hero.ready .eyebrow{animation:rise .6s ease .05s forwards;}
 .hero.ready .headline{animation:rise .6s ease .16s forwards;}
@@ -2220,12 +2253,12 @@ section{
     </div>
     <span class="route-seg"></span>
     <div class="route-stop">
-      <svg class="route-stop-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+      <svg class="route-stop-icon route-stop-icon-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
       <span class="route-stop-label" data-i18n="routeVerified"></span>
     </div>
     <span class="route-seg"></span>
     <div class="route-stop">
-      <svg class="route-stop-icon" viewBox="0 0 24 24"><path d="M2.6 17.4a2 2 0 0 0-.6 1.4V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r="1"/></svg>
+      <svg class="route-stop-icon route-stop-icon-key" viewBox="0 0 24 24"><path d="M2.6 17.4a2 2 0 0 0-.6 1.4V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r="1"/></svg>
       <span class="route-stop-label" data-i18n="routeKeys"></span>
     </div>
   </div>
