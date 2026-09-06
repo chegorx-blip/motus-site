@@ -1057,6 +1057,19 @@ section{
   flex-direction:column;
   gap:8px;
   align-items:flex-end;
+  /* max-height:0 + transition was already fixed on index-hero-demo.html
+     (2026-09-05) but this page was never brought in sync — it kept the
+     menu permanently visible/taking up flex-row space even while
+     "closed", pushing .chatfab-prompt ~124px away from the toggle button
+     instead of the intended 10px gap (owner report/screenshot,
+     2026-09-06: "посмотри как оно высоко находится от иконки"). See
+     index-hero-demo.html's identical rule for the full history. */
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .25s ease;
+}
+.chatfab.open .chatfab-menu{
+  max-height:200px;
 }
 .chatfab-menu-label{
   color:var(--stone);
@@ -1318,7 +1331,9 @@ section{
 <body>
 <div class="topbar">
 <div class="wrap-wide topbar-inner">
-  <a href="index.html" class="logo-mark" aria-label="Motus"><svg viewBox="0 0 2366 669" aria-hidden="true"><defs><linearGradient id="motusChrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.28" stop-color="#c8ced2"/><stop offset="0.48" stop-color="#5c676d"/><stop offset="0.58" stop-color="#eef1f2"/><stop offset="0.82" stop-color="#98a1a6"/><stop offset="1" stop-color="#f4f6f7"/></linearGradient></defs><path d="M 241.3 478.2 C 241.6 476.7 242.6 470.7 243.6 464.8 L 245.4 454.0 L 280.2 454.0 C 304.2 454.0 315.0 453.7 315.0 452.9 C 315.0 451.7 366.7 155.6 367.5 152.3 L 368.0 150.0 L 403.4 150.0 L 438.7 150.0 L 469.5 217.5 C 486.4 254.7 500.6 285.3 501.0 285.5 C 501.4 285.7 503.9 283.1 506.6 279.7 C 509.3 276.3 533.5 245.7 560.4 211.8 L 609.3 150.0 L 642.8 150.0 L 676.2 150.0 L 675.6 153.2 C 671.9 173.5 623.0 451.8 623.0 452.7 C 623.0 453.7 636.8 454.0 692.8 454.0 L 762.6 454.0 L 758.2 449.2 C 743.4 433.4 734.1 412.8 730.9 389.2 C 729.3 377.4 730.4 353.2 733.0 340.7 C 746.5 276.8 794.8 228.1 855.5 217.4 C 868.6 215.1 893.1 215.0 905.5 217.3 C 951.9 225.7 982.0 256.2 989.6 302.5 C 991.8 315.9 991.0 341.3 988.0 355.3 C 980.2 392.0 959.8 425.9 932.4 448.0 L 924.9 454.0 L 1001.9 454.0 L 1079.0 454.0 L 1075.6 448.8 C 1066.6 434.5 1062.9 415.7 1065.0 394.5 C 1065.8 386.2 1099.9 188.0 1102.5 176.5 C 1102.9 174.7 1109.0 172.4 1141.3 161.7 C 1162.4 154.7 1180.1 149.0 1180.6 149.0 C 1181.4 149.0 1171.2 209.7 1168.5 220.7 L 1168.0 223.0 L 1209.3 223.2 L 1250.6 223.5 L 1246.8 244.5 C 1244.7 256.1 1242.8 266.1 1242.5 266.8 C 1242.2 267.7 1233.0 268.0 1201.5 268.0 C 1170.0 268.0 1160.8 268.3 1160.5 269.2 C 1159.1 273.1 1140.9 378.1 1140.4 385.2 C 1139.1 401.3 1143.0 414.1 1151.2 421.5 C 1165.0 433.9 1186.8 433.9 1215.1 421.6 C 1216.8 420.9 1216.7 421.9 1211.5 450.8 L 1210.9 454.0 L 1271.0 454.0 L 1331.1 454.0 L 1327.1 448.8 C 1319.8 439.0 1314.5 426.3 1311.9 412.0 C 1310.3 403.4 1310.3 379.9 1311.9 368.0 C 1313.1 359.3 1335.3 230.4 1336.5 225.3 L 1337.0 223.0 L 1374.0 223.0 C 1394.4 223.0 1411.0 223.2 1411.0 223.5 C 1411.0 223.8 1405.1 256.8 1398.0 296.8 C 1390.8 336.8 1384.4 374.4 1383.8 380.3 C 1381.3 404.3 1387.1 418.8 1402.0 425.9 C 1406.9 428.2 1408.7 428.5 1418.5 428.5 C 1428.4 428.5 1430.1 428.2 1435.4 425.7 C 1447.5 420.0 1455.2 411.1 1460.1 396.5 C 1461.8 391.7 1465.7 372.8 1470.0 348.5 C 1473.9 326.5 1480.5 289.4 1484.6 266.0 C 1488.8 242.6 1492.3 223.4 1492.4 223.2 C 1492.6 223.1 1505.5 223.1 1521.1 223.2 L 1549.6 223.5 L 1535.9 301.2 C 1528.3 344.0 1521.0 383.5 1519.6 389.0 C 1513.3 413.6 1502.3 434.5 1488.5 448.3 L 1482.8 454.0 L 1539.8 454.0 L 1596.8 454.0 L 1597.3 451.8 C 1597.6 450.5 1599.5 440.5 1601.5 429.5 C 1603.5 418.5 1605.4 408.7 1605.8 407.8 C 1606.4 406.4 1607.6 406.8 1614.4 411.1 C 1657.6 437.8 1697.6 440.0 1704.0 416.1 C 1704.7 413.5 1704.9 409.7 1704.5 407.1 C 1702.9 396.0 1694.8 387.3 1668.6 368.1 C 1632.9 342.1 1622.4 327.3 1621.2 301.4 C 1620.6 287.3 1622.5 278.2 1628.6 266.0 C 1638.3 246.5 1658.7 230.5 1683.8 222.6 C 1713.7 213.2 1750.2 214.5 1779.5 225.9 C 1783.9 227.6 1788.1 229.4 1788.8 229.9 C 1789.9 230.5 1789.4 234.7 1786.5 251.6 C 1784.5 263.1 1782.7 272.7 1782.4 272.9 C 1782.2 273.1 1776.6 271.0 1769.9 268.1 C 1752.0 260.5 1745.6 258.9 1730.3 258.3 C 1718.9 257.8 1716.3 258.0 1710.3 259.8 C 1701.8 262.4 1695.8 267.3 1693.4 273.5 C 1688.6 286.2 1697.9 299.1 1726.0 318.5 C 1743.4 330.5 1757.8 344.2 1763.8 354.5 C 1781.7 384.9 1777.0 422.0 1752.2 448.3 L 1746.7 454.0 L 1991.3 454.0 C 2186.4 454.0 2236.0 454.3 2236.0 455.2 C 2236.0 455.9 2235.1 461.7 2234.0 468.0 C 2232.9 474.3 2232.0 479.8 2232.0 480.2 C 2232.0 480.7 1851.4 481.0 1386.1 481.0 L 540.3 481.0 L 542.5 468.2 C 543.8 461.2 545.1 454.8 545.4 454.0 C 546.3 451.5 577.1 274.6 576.8 273.3 C 576.6 272.6 554.9 299.7 528.5 333.4 C 502.1 367.2 480.2 394.5 479.8 394.2 C 479.4 393.8 467.1 367.2 452.5 335.1 C 437.9 303.0 425.4 275.7 424.7 274.4 C 423.6 272.3 422.9 275.1 419.1 296.8 C 416.8 310.4 410.4 346.7 405.0 377.5 C 399.6 408.3 393.5 443.4 391.5 455.5 C 389.5 467.6 387.7 478.3 387.4 479.2 C 386.9 480.9 382.5 481.0 313.8 481.0 L 240.8 481.0 L 241.3 478.2 Z M 858.1 437.4 C 877.9 431.6 895.2 410.0 905.4 378.4 C 911.0 360.8 913.1 347.3 913.7 325.0 C 914.1 307.9 913.9 304.3 912.2 295.6 C 907.3 272.2 895.5 258.3 879.0 256.4 C 844.0 252.4 813.6 296.4 807.9 359.5 C 804.9 392.8 810.8 418.3 824.5 430.8 C 827.5 433.6 831.9 436.5 834.2 437.3 C 839.9 439.3 851.3 439.4 858.1 437.4 Z " fill="url(#motusChrome)" fill-rule="evenodd"/><path class="logo-dot" d="M 184.0 489.7 C 179.1 488.1 170.7 479.5 169.2 474.4 C 166.4 465.0 168.4 457.5 175.5 450.5 C 180.6 445.3 185.7 443.0 192.0 443.0 C 198.3 443.0 203.4 445.3 208.5 450.5 C 218.7 460.6 218.7 473.4 208.5 483.5 C 201.5 490.6 193.3 492.6 184.0 489.7 Z " fill="#B4894E" fill-rule="evenodd"/></svg></a>
+  <!-- Was href="index.html" — the old, inactive version of the site, same
+       mistake as the "← Motus" link above and its real cause. -->
+  <a href="index-hero-demo.html" class="logo-mark" aria-label="Motus"><svg viewBox="0 0 2366 669" aria-hidden="true"><defs><linearGradient id="motusChrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.28" stop-color="#c8ced2"/><stop offset="0.48" stop-color="#5c676d"/><stop offset="0.58" stop-color="#eef1f2"/><stop offset="0.82" stop-color="#98a1a6"/><stop offset="1" stop-color="#f4f6f7"/></linearGradient></defs><path d="M 241.3 478.2 C 241.6 476.7 242.6 470.7 243.6 464.8 L 245.4 454.0 L 280.2 454.0 C 304.2 454.0 315.0 453.7 315.0 452.9 C 315.0 451.7 366.7 155.6 367.5 152.3 L 368.0 150.0 L 403.4 150.0 L 438.7 150.0 L 469.5 217.5 C 486.4 254.7 500.6 285.3 501.0 285.5 C 501.4 285.7 503.9 283.1 506.6 279.7 C 509.3 276.3 533.5 245.7 560.4 211.8 L 609.3 150.0 L 642.8 150.0 L 676.2 150.0 L 675.6 153.2 C 671.9 173.5 623.0 451.8 623.0 452.7 C 623.0 453.7 636.8 454.0 692.8 454.0 L 762.6 454.0 L 758.2 449.2 C 743.4 433.4 734.1 412.8 730.9 389.2 C 729.3 377.4 730.4 353.2 733.0 340.7 C 746.5 276.8 794.8 228.1 855.5 217.4 C 868.6 215.1 893.1 215.0 905.5 217.3 C 951.9 225.7 982.0 256.2 989.6 302.5 C 991.8 315.9 991.0 341.3 988.0 355.3 C 980.2 392.0 959.8 425.9 932.4 448.0 L 924.9 454.0 L 1001.9 454.0 L 1079.0 454.0 L 1075.6 448.8 C 1066.6 434.5 1062.9 415.7 1065.0 394.5 C 1065.8 386.2 1099.9 188.0 1102.5 176.5 C 1102.9 174.7 1109.0 172.4 1141.3 161.7 C 1162.4 154.7 1180.1 149.0 1180.6 149.0 C 1181.4 149.0 1171.2 209.7 1168.5 220.7 L 1168.0 223.0 L 1209.3 223.2 L 1250.6 223.5 L 1246.8 244.5 C 1244.7 256.1 1242.8 266.1 1242.5 266.8 C 1242.2 267.7 1233.0 268.0 1201.5 268.0 C 1170.0 268.0 1160.8 268.3 1160.5 269.2 C 1159.1 273.1 1140.9 378.1 1140.4 385.2 C 1139.1 401.3 1143.0 414.1 1151.2 421.5 C 1165.0 433.9 1186.8 433.9 1215.1 421.6 C 1216.8 420.9 1216.7 421.9 1211.5 450.8 L 1210.9 454.0 L 1271.0 454.0 L 1331.1 454.0 L 1327.1 448.8 C 1319.8 439.0 1314.5 426.3 1311.9 412.0 C 1310.3 403.4 1310.3 379.9 1311.9 368.0 C 1313.1 359.3 1335.3 230.4 1336.5 225.3 L 1337.0 223.0 L 1374.0 223.0 C 1394.4 223.0 1411.0 223.2 1411.0 223.5 C 1411.0 223.8 1405.1 256.8 1398.0 296.8 C 1390.8 336.8 1384.4 374.4 1383.8 380.3 C 1381.3 404.3 1387.1 418.8 1402.0 425.9 C 1406.9 428.2 1408.7 428.5 1418.5 428.5 C 1428.4 428.5 1430.1 428.2 1435.4 425.7 C 1447.5 420.0 1455.2 411.1 1460.1 396.5 C 1461.8 391.7 1465.7 372.8 1470.0 348.5 C 1473.9 326.5 1480.5 289.4 1484.6 266.0 C 1488.8 242.6 1492.3 223.4 1492.4 223.2 C 1492.6 223.1 1505.5 223.1 1521.1 223.2 L 1549.6 223.5 L 1535.9 301.2 C 1528.3 344.0 1521.0 383.5 1519.6 389.0 C 1513.3 413.6 1502.3 434.5 1488.5 448.3 L 1482.8 454.0 L 1539.8 454.0 L 1596.8 454.0 L 1597.3 451.8 C 1597.6 450.5 1599.5 440.5 1601.5 429.5 C 1603.5 418.5 1605.4 408.7 1605.8 407.8 C 1606.4 406.4 1607.6 406.8 1614.4 411.1 C 1657.6 437.8 1697.6 440.0 1704.0 416.1 C 1704.7 413.5 1704.9 409.7 1704.5 407.1 C 1702.9 396.0 1694.8 387.3 1668.6 368.1 C 1632.9 342.1 1622.4 327.3 1621.2 301.4 C 1620.6 287.3 1622.5 278.2 1628.6 266.0 C 1638.3 246.5 1658.7 230.5 1683.8 222.6 C 1713.7 213.2 1750.2 214.5 1779.5 225.9 C 1783.9 227.6 1788.1 229.4 1788.8 229.9 C 1789.9 230.5 1789.4 234.7 1786.5 251.6 C 1784.5 263.1 1782.7 272.7 1782.4 272.9 C 1782.2 273.1 1776.6 271.0 1769.9 268.1 C 1752.0 260.5 1745.6 258.9 1730.3 258.3 C 1718.9 257.8 1716.3 258.0 1710.3 259.8 C 1701.8 262.4 1695.8 267.3 1693.4 273.5 C 1688.6 286.2 1697.9 299.1 1726.0 318.5 C 1743.4 330.5 1757.8 344.2 1763.8 354.5 C 1781.7 384.9 1777.0 422.0 1752.2 448.3 L 1746.7 454.0 L 1991.3 454.0 C 2186.4 454.0 2236.0 454.3 2236.0 455.2 C 2236.0 455.9 2235.1 461.7 2234.0 468.0 C 2232.9 474.3 2232.0 479.8 2232.0 480.2 C 2232.0 480.7 1851.4 481.0 1386.1 481.0 L 540.3 481.0 L 542.5 468.2 C 543.8 461.2 545.1 454.8 545.4 454.0 C 546.3 451.5 577.1 274.6 576.8 273.3 C 576.6 272.6 554.9 299.7 528.5 333.4 C 502.1 367.2 480.2 394.5 479.8 394.2 C 479.4 393.8 467.1 367.2 452.5 335.1 C 437.9 303.0 425.4 275.7 424.7 274.4 C 423.6 272.3 422.9 275.1 419.1 296.8 C 416.8 310.4 410.4 346.7 405.0 377.5 C 399.6 408.3 393.5 443.4 391.5 455.5 C 389.5 467.6 387.7 478.3 387.4 479.2 C 386.9 480.9 382.5 481.0 313.8 481.0 L 240.8 481.0 L 241.3 478.2 Z M 858.1 437.4 C 877.9 431.6 895.2 410.0 905.4 378.4 C 911.0 360.8 913.1 347.3 913.7 325.0 C 914.1 307.9 913.9 304.3 912.2 295.6 C 907.3 272.2 895.5 258.3 879.0 256.4 C 844.0 252.4 813.6 296.4 807.9 359.5 C 804.9 392.8 810.8 418.3 824.5 430.8 C 827.5 433.6 831.9 436.5 834.2 437.3 C 839.9 439.3 851.3 439.4 858.1 437.4 Z " fill="url(#motusChrome)" fill-rule="evenodd"/><path class="logo-dot" d="M 184.0 489.7 C 179.1 488.1 170.7 479.5 169.2 474.4 C 166.4 465.0 168.4 457.5 175.5 450.5 C 180.6 445.3 185.7 443.0 192.0 443.0 C 198.3 443.0 203.4 445.3 208.5 450.5 C 218.7 460.6 218.7 473.4 208.5 483.5 C 201.5 490.6 193.3 492.6 184.0 489.7 Z " fill="#B4894E" fill-rule="evenodd"/></svg></a>
   <nav class="topbar-nav">
     <a href="index.html#about" data-i18n="navWhy"></a>
     <a href="index.html#payment" data-i18n="navPayment"></a>
@@ -1352,12 +1367,28 @@ section{
 
 <main class="order-main">
   <div class="wrap">
-    <a href="index.html" class="order-back-link" data-i18n="orderBackLink"></a>
+    <!-- Was href="index.html" — the OLD, unrelated version of the site
+         (no hero redesign, none of this session's fixes) — not
+         index-hero-demo.html, the actual active page every CTA on the
+         site links here FROM. Owner reported "← Motus" taking them to
+         "a completely old version" — this was the real cause, not a
+         bfcache/back-button issue as first assumed (confirmed live:
+         owner uses this on-page link, not the browser's own Back
+         gesture, which explains why the pageshow/bfcache fix attempted
+         earlier never had any effect on this symptom). -->
+    <a href="index-hero-demo.html" class="order-back-link" data-i18n="orderBackLink"></a>
     <!-- route-mark (dot+line) removed from the order-form card 2026-09-06,
          per owner's explicit request — decorative marker above the form
          title wasn't wanted here. -->
     <div class="order-card" id="requestModal">
-      <h1 class="order-card-title" id="requestModalTitle" data-i18n="requestModalTitle"></h1>
+      <!-- No data-i18n attribute here on purpose — this title's real text
+           always comes from renderFormGroups() (requestModalTitleJapan/
+           requestModalTitleCyprus depending on intent), which runs right
+           after render()'s own data-i18n pass and would overwrite a
+           data-i18n value anyway. Keeping data-i18n here too would just
+           be dead weight that misleads whoever reads this next into
+           thinking a plain requestModalTitle key drives this element. -->
+      <h1 class="order-card-title" id="requestModalTitle"></h1>
 
       <div class="request-tabs" role="tablist">
         <button type="button" class="request-tab active" id="tabJapanBtn" data-intent="japan" role="tab" aria-selected="true" data-i18n="tabJapan"></button>
@@ -1365,14 +1396,15 @@ section{
       </div>
 
       <div class="request-perks" id="requestPerks">
+        <!-- "Гибкая оплата"/perksPayment removed from the Cyprus group
+             2026-09-06, per owner's explicit request — installment/
+             flexible-payment terms apply to a Japan-auction purchase,
+             not to sourcing a car locally on Cyprus; showing it here
+             implied a promise that doesn't actually apply. -->
         <div class="request-perk-group" data-group="cyprus">
           <div class="request-perk">
             <span class="mono" data-i18n="perksCyBonusLabel"></span>
             <span data-i18n="perksCyBonus"></span>
-          </div>
-          <div class="request-perk">
-            <span class="mono" data-i18n="perksPaymentLabel"></span>
-            <span data-i18n="perksPayment"></span>
           </div>
         </div>
         <div class="request-perk-group active" data-group="japan">
@@ -1520,13 +1552,14 @@ const content = {
     finalContact:"@motus_cy · +357 95588595",
     contactsTitle:"Contact us",
     chatToggleLabel:"Chat with us",
-    chatPrompt:"Need a car? Ask us — quick reply.",
+    chatPrompt:"Need help choosing a car?",
     chatQuestionsLabel:"Still have questions?",
     detailedLinkText:"Already decided? Place your order →",
     quickPerksLine:"Warranty · Service discount · All-in, turn-key price",
     tabCyprus:"Search in Cyprus",
     tabJapan:"Order from Japan",
-    requestModalTitle:"Find your car",
+    requestModalTitleJapan:"Order a car from Japan",
+    requestModalTitleCyprus:"Find a car in Cyprus",
     submitBtn:"Send request",
     successMsg:"Thanks — we've got it. We usually reply within minutes on Telegram or WhatsApp.",
     consent0:"I have read and understood AUTOEXPERT's commission, processing and warranty terms",
@@ -1602,13 +1635,14 @@ const content = {
     finalContact:"@motus_cy · +357 95588595",
     contactsTitle:"Связаться с нами",
     chatToggleLabel:"Написать нам",
-    chatPrompt:"Нужна машина? Спросите — ответим быстро.",
+    chatPrompt:"Помочь с выбором авто?",
     chatQuestionsLabel:"Остались вопросы?",
     detailedLinkText:"Уже решили? Оформите заказ →",
     quickPerksLine:"Гарантия · Скидка на сервис · Цена под ключ, без доплат",
     tabCyprus:"Поиск на Кипре",
     tabJapan:"Заказ из Японии",
-    requestModalTitle:"Найти автомобиль",
+    requestModalTitleJapan:"Заказать автомобиль из Японии",
+    requestModalTitleCyprus:"Найти автомобиль на Кипре",
     submitBtn:"Отправить заявку",
     successMsg:"Спасибо — заявка получена. Обычно отвечаем в течение нескольких минут в Telegram или WhatsApp.",
     consent0:"Я ознакомлен(а) с условиями комиссии, оформления и гарантийной программой AUTOEXPERT",
@@ -1684,13 +1718,12 @@ const content = {
     finalContact:"@motus_cy · +357 95588595",
     contactsTitle:"Επικοινωνήστε μαζί μας",
     chatToggleLabel:"Μιλήστε μαζί μας",
-    chatPrompt:"Χρειάζεστε αυτοκίνητο; Ρωτήστε μας.",
+    chatPrompt:"Βοήθεια στην επιλογή αυτοκινήτου;",
     chatQuestionsLabel:"Έχετε ερωτήσεις;",
     detailedLinkText:"Έχετε αποφασίσει; Κάντε την παραγγελία σας →",
     quickPerksLine:"Εγγύηση · Έκπτωση σέρβις · Τιμή all-in, χωρίς προσαυξήσεις",
     tabCyprus:"Αναζήτηση στην Κύπρο",
     tabJapan:"Παραγγελία από Ιαπωνία",
-    requestModalTitle:"Βρείτε το αυτοκίνητό σας",
     submitBtn:"Αποστολή αιτήματος",
     successMsg:"Ευχαριστούμε — το λάβαμε. Απαντάμε συνήθως μέσα σε λίγα λεπτά στο Telegram ή WhatsApp.",
     consent0:"Έχω διαβάσει και κατανοήσει τους όρους προμήθειας, διεκπεραίωσης και εγγύησης της AUTOEXPERT",
@@ -1866,6 +1899,18 @@ function fieldEl(field, strings){
 }
 
 function renderFormGroups(lang, intent){
+  // Title now reflects the visitor's already-made choice (2026-09-06,
+  // owner's explicit request) — "Найти автомобиль" was a generic
+  // leftover from when the tabs on this page let the visitor switch
+  // between Japan/Cyprus here; now that the choice is made on the home
+  // page before ever reaching this page (see #ctaBlock's detailed-popover
+  // in index-hero-demo.html) and the tabs are hidden, the title should
+  // say which one plainly rather than staying deliberately vague.
+  const titleEl = document.getElementById('requestModalTitle');
+  if(titleEl){
+    const dict = content[lang];
+    titleEl.textContent = intent === 'cyprus' ? dict.requestModalTitleCyprus : dict.requestModalTitleJapan;
+  }
   const container = document.getElementById('requestGroups');
   if(!container) return;
   const strings = content[lang].fields;
