@@ -889,7 +889,14 @@ h1.headline{
    value whenever the popover closes so re-opening always replays the
    draw-in from scratch instead of showing an already-full line. */
 .detailed-popover .route-mark{width:100%; max-width:220px; margin:0 auto 14px;}
+/* .route-line's default stroke (translucent near-white, rgba(246,243,237,
+   0.35)) was tuned for the dark pine .final background — invisible on
+   this popover's light paper background, same class of bug already fixed
+   once for .advantages (see that rule above). Confirmed live via Playwright
+   (2026-09-06): dashoffset really did reach 0, the line was just the same
+   color as the background. */
 .detailed-popover .route-line{
+  stroke:var(--border);
   stroke-dasharray:200; stroke-dashoffset:200;
   transition:stroke-dashoffset 1.1s ease .15s;
 }
