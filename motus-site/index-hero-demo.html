@@ -792,7 +792,18 @@ h1.headline{
    row instead means top:100% resolves against the row's own fixed
    height (just the two buttons, ~50px), which never changes regardless
    of what the popover or its spacer do. */
-.hero .cta-row-dual{transition:padding-bottom .35s ease;}
+/* padding-bottom's own transition made slightly FASTER than the popover's
+   max-height transition (.3s vs .35s) instead of matching it exactly
+   (2026-09-06, live report + screenshot: text below still briefly
+   overlapped the newly-revealed options even with padding-bottom set in
+   the same tick as "open") — two CSS transitions with identical declared
+   durations aren't guaranteed to paint in perfect lockstep frame-by-frame
+   on a real device, and any lag leaves the reserved space trailing the
+   popover's actual visible growth for a frame or two, which is exactly
+   what an overlap looks like. Finishing padding-bottom's growth slightly
+   EARLY means the space is always reserved at least as fast as the
+   popover visibly grows, never behind it. */
+.hero .cta-row-dual{transition:padding-bottom .3s ease;}
 .quick-popover{
   /* Widened from 460px (2026-09-03): the perks line ("Гарантия · Скидка
      на сервис · Цена под ключ, без доплат") needs ~496px including its
@@ -3356,24 +3367,16 @@ quickFormToggle.addEventListener('click', ()=>{
       setTimeout(()=>{
         firstInput.focus();
         const formEl = document.getElementById('quickForm');
-        // Verifies the scroll actually landed where intended and nudges it
-        // again if not — belt-and-suspenders on top of the resize-quiet
-        // wait above, since a live report ("Имя" still hidden, "надо
-        // скролить вверх") showed the scroll can still land short on some
-        // real devices even after that fix. Checked once, ~400ms after the
-        // smooth scroll starts (long enough for a short scroll — a form
-        // that's already near-visible — to finish; scrollIntoView's own
-        // duration isn't fixed/queryable, so this is a reasonable wait,
-        // not a guaranteed-exact one).
-        const scrollFormIntoView = ()=>{
-          formEl.scrollIntoView({behavior:'smooth', block:'start'});
-          setTimeout(()=>{
-            const rect = formEl.getBoundingClientRect();
-            if(rect.top < 0 || rect.top > 40){
-              window.scrollBy({top: rect.top - 24, behavior:'smooth'});
-            }
-          }, 400);
-        };
+        // The "verify and nudge with scrollBy" correction tried here
+        // (2026-09-06, same session) was itself buggy — its sign was wrong
+        // whenever the scroll landed even slightly high (a negative
+        // rect.top made the correction scroll further up, not down),
+        // which overshot the page past the whole form on a real device
+        // (owner report: only the submit button and the text BELOW the
+        // form were visible — the auto-scroll had gone too far). Reverted
+        // to the plain scrollIntoView call; the resize-quiet wait above is
+        // what actually matters for landing on the right target size.
+        const scrollFormIntoView = ()=> formEl.scrollIntoView({behavior:'smooth', block:'start'});
         // A fixed setTimeout-then-scrollIntoView call (the previous
         // version of this fix) scrolled against whatever the viewport
         // was BEFORE the on-screen keyboard finished sliding up — on a
