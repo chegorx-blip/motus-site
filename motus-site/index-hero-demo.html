@@ -1967,17 +1967,24 @@ section{
   .cookie-modal-actions{flex-direction:column-reverse; align-items:stretch; gap:12px;}
 }
 
+/* Solid white card instead of var(--surface)/var(--border) (2026-09-06,
+   owner's explicit request + real-widget research: Intercom, Crisp and
+   HubSpot's own chat bubbles all use a fully opaque white card with a
+   visible drop shadow, never a translucent tint of the page background —
+   the previous var(--surface) fill resolved to a translucent dark-green
+   tone that blended into the page instead of reading as a separate
+   floating UI element ("блёклое пятно", per the owner's screenshot). */
 .chatfab-prompt{
   max-width:210px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:3px;
-  padding:12px 26px 12px 12px;
+  background:#fff;
+  border:none;
+  border-radius:14px;
+  padding:12px 26px 12px 14px;
   font-size:12.5px;
   line-height:1.45;
-  color:var(--text);
+  color:#14201A;
   position:relative;
-  box-shadow:0 8px 24px rgba(20,32,26,0.18);
+  box-shadow:0 8px 24px rgba(0,0,0,0.22);
   opacity:0;
   transform:translateY(8px);
   pointer-events:none;
@@ -2002,11 +2009,11 @@ section{
   position:absolute; top:4px; right:4px;
   width:22px;height:22px;
   border:none; background:none; cursor:pointer;
-  color:var(--text-muted);
+  color:#8A9A93;
   font-size:16px; line-height:1;
   display:flex; align-items:center; justify-content:center;
 }
-.chatfab-prompt-close:hover{color:var(--text);}
+.chatfab-prompt-close:hover{color:#14201A;}
 @media (prefers-reduced-motion: reduce){
   .chatfab-prompt{transition:none !important;}
 }
