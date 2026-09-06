@@ -3293,9 +3293,23 @@ quickFormToggle.addEventListener('click', ()=>{
   // stylesheet's max-height:260px constant instead avoided that race but
   // over-reserved, since the form's real content (4 fields + submit
   // button) is shorter than the 260px cap — left an empty ~100px gap.
-  // Waiting for the transition to actually finish and reading the real
-  // settled height fixes both: no race, no guessing.
+  // Reserve space for the popover's full CSS max-height (340px) up front,
+  // in the same tick as adding "open" — not only after transitionend —
+  // so padding-bottom grows in sync with the popover's own max-height
+  // transition (both .35s) instead of staying at 0 while the form visibly
+  // overlaps the text below it, then snapping the layout down once fully
+  // open (owner report, 2026-09-06: text gets covered by the new content
+  // for the ~0.35s of the reveal, "выглядит некрасиво"). 340px is a safe
+  // upper bound — the real form is shorter (~318px) — so this slightly
+  // OVER-reserves during the animation, which is harmless (a tiny gap for
+  // 0.35s) versus the old under-reservation, which was a visible overlap
+  // bug. transitionend still fires afterward to correct down to the exact
+  // settled height, same reasoning as before (real content height isn't
+  // knowable until the transition actually finishes).
   if(open){
+    const clusterHeight = ctaRowDual.getBoundingClientRect().height;
+    const openMaxHeight = 340; // must match .quick-popover.open's max-height in CSS
+    ctaRowDual.style.paddingBottom = (parseFloat(quickPopover.style.top) + openMaxHeight - clusterHeight + 20) + 'px';
     quickPopover.addEventListener('transitionend', function onOpen(e){
       if(e.propertyName !== 'max-height') return;
       quickPopover.removeEventListener('transitionend', onOpen);
@@ -3310,7 +3324,6 @@ quickFormToggle.addEventListener('click', ()=>{
         // cluster's own height, leaving a visible empty gap below the
         // form). Subtracting the row's pre-padding height cancels that
         // double-count.
-        const clusterHeight = ctaRowDual.getBoundingClientRect().height;
         ctaRowDual.style.paddingBottom = (parseFloat(quickPopover.style.top) + quickPopover.offsetHeight - clusterHeight + 20) + 'px';
       }
     });
@@ -3426,15 +3439,22 @@ detailedToggle.addEventListener('click', ()=>{
   }
   const open = detailedPopover.classList.toggle('open');
   if(open){
-    detailedPopover.style.top = (measureClusterBottom() + 18) + 'px';
-    detailedPopover.addEventListener('transitionend', function onOpen(e){
-      if(e.propertyName !== 'max-height') return;
-      detailedPopover.removeEventListener('transitionend', onOpen);
-      if(detailedPopover.classList.contains('open')){
-        const clusterHeight = ctaRowDual.getBoundingClientRect().height;
-        ctaRowDual.style.paddingBottom = (parseFloat(detailedPopover.style.top) + detailedPopover.offsetHeight - clusterHeight + 20) + 'px';
-      }
-    });
+    const top = measureClusterBottom() + 18;
+    detailedPopover.style.top = top + 'px';
+    // Reserve the space for the popover's FULL open height immediately,
+    // in the same tick as adding "open" — not after transitionend — so
+    // .cta-row-dual's padding-bottom grows in sync with the popover's own
+    // max-height transition (both .35s) instead of staying at 0 until the
+    // animation finishes and then jumping in one frame. The old
+    // wait-for-transitionend approach caused exactly the bug the owner
+    // reported: the two new options overlapped the text below them for
+    // the whole ~0.35s of the reveal, then snapped the layout down only
+    // once fully open. max-height:200px (the CSS .open value) is a fixed
+    // constant, so the final height is already known up front — no need
+    // to wait and measure the settled DOM.
+    const clusterHeight = ctaRowDual.getBoundingClientRect().height;
+    const openMaxHeight = 200; // must match .detailed-popover.open's max-height in CSS
+    ctaRowDual.style.paddingBottom = (top + openMaxHeight - clusterHeight + 20) + 'px';
   } else {
     ctaRowDual.style.paddingBottom = '0px';
   }
