@@ -1120,6 +1120,9 @@ section{
   font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
   color:var(--ink); background:var(--bronze); padding:8px 16px; border-radius:4px; text-decoration:none;
   transition:filter .2s ease; white-space:nowrap;
+  /* Reset button-specific defaults now that this is a <button>, not an <a>
+     (2026-09-06 — needs JS to open the popover, a link can't do that) */
+  border:none; cursor:pointer; line-height:normal;
 }
 .topbar-cta:hover{filter:brightness(1.08);}
 @media (max-width:640px){ .topbar-cta{display:none;} }
@@ -2125,7 +2128,12 @@ section{
       <span>TG</span>
     </a>
   </div>
-  <a href="order.html" class="topbar-cta" data-i18n="ctaOrder"></a>
+  <!-- Was a plain link straight to order.html (Japan-only) — inconsistent
+       with the identically-labeled hero button, which opens the Japan/
+       Cyprus choice popover first (2026-09-05 restructure). Changed to a
+       button that scrolls to the hero and triggers that same popover,
+       2026-09-06, so both "Оформить подбор" entry points behave the same. -->
+  <button type="button" class="topbar-cta" id="topbarCta" data-i18n="ctaOrder"></button>
   <!-- Compressed to a globe-icon dropdown below 420px (2026-09-05) — live
        research into premium global sites (Booking.com's actual flag-icon
        language control, Airbnb's globe-icon-on-mobile pattern) found none
@@ -3311,6 +3319,39 @@ detailedToggle.addEventListener('click', ()=>{
 // Opening the quick-callback popover should close this one too, so they
 // never show at the same time and fight over padding-bottom.
 quickFormToggle.addEventListener('click', closeDetailedPopover);
+
+// Topbar's "Оформить подбор" button (2026-09-06) — scrolls to the hero
+// and opens the exact same Japan/Cyprus popover as the hero's own button,
+// rather than duplicating the popover markup/logic a second time in the
+// topbar. Waits for the scroll to actually finish before opening, since
+// opening immediately would measure #ctaRowDual's position mid-scroll and
+// place the popover in the wrong spot.
+const topbarCta = document.getElementById('topbarCta');
+if(topbarCta){
+  topbarCta.addEventListener('click', ()=>{
+    const heroSection = document.getElementById('hero');
+    if(!heroSection){ detailedToggle.click(); return; }
+    let settled = false;
+    const openAfterScroll = ()=>{
+      if(settled) return;
+      settled = true;
+      window.removeEventListener('scroll', onScroll);
+      if(!detailedPopover.classList.contains('open')) detailedToggle.click();
+    };
+    let lastY = window.scrollY;
+    const onScroll = ()=>{
+      // scrollend isn't supported everywhere yet — fall back to "position
+      // stopped changing" via rAF polling instead of a fixed timeout guess.
+      requestAnimationFrame(()=>{
+        if(window.scrollY === lastY) openAfterScroll();
+        lastY = window.scrollY;
+      });
+    };
+    window.addEventListener('scroll', onScroll);
+    heroSection.scrollIntoView({behavior:'smooth', block:'start'});
+    setTimeout(openAfterScroll, 900); // safety net if scroll events stop firing early
+  });
+}
 
 const quickForm = document.getElementById('quickForm');
 const quickFormSuccess = document.getElementById('quickFormSuccess');
