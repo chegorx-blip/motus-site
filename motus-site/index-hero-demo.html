@@ -877,10 +877,23 @@ h1.headline{
   z-index:5;
 }
 .detailed-popover.open{
-  max-height:160px;
+  max-height:200px;
   opacity:1;
   margin-top:18px;
 }
+/* Route-mark inside the popover reuses the exact same dot+line SVG as
+   .final's "Сел и поехал" one (owner's explicit request, 2026-09-06) —
+   same classes, same beacon/draw-in animation — but draws in on popover
+   OPEN rather than on scroll-reveal, since this element only exists
+   inside a toggled popover. stroke-dashoffset is reset to the dasharray
+   value whenever the popover closes so re-opening always replays the
+   draw-in from scratch instead of showing an already-full line. */
+.detailed-popover .route-mark{width:100%; max-width:220px; margin:0 auto 14px;}
+.detailed-popover .route-line{
+  stroke-dasharray:200; stroke-dashoffset:200;
+  transition:stroke-dashoffset 1.1s ease .15s;
+}
+.detailed-popover.open .route-line{stroke-dashoffset:0;}
 .detailed-popover-option{
   display:block;
   padding:13px 18px;
@@ -1030,12 +1043,17 @@ svg[fill="currentColor"]{stroke:none !important; fill:currentColor !important;}
   color:var(--text-on-panel);
 }
 .btn-primary:hover{filter:brightness(1.12);}
+/* Border color changed from neutral --border to the brand accent
+   (2026-09-06) per real-competitor research (Volvo/Range Rover): every
+   premium site with two hero CTAs uses a brand-colored outline for the
+   secondary button, never plain gray — gray reads as "disabled" against
+   a primary-color-filled button, not as a deliberate secondary choice. */
 .btn-secondary{
   background:transparent;
-  color:var(--text);
-  border-color:var(--border);
+  color:var(--accent);
+  border-color:var(--accent);
 }
-.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.btn-secondary:hover{background:var(--accent); color:var(--text-on-panel);}
 
 .hero.ready .eyebrow{animation:rise .6s ease .05s forwards;}
 .hero.ready .headline{animation:rise .6s ease .16s forwards;}
@@ -2224,6 +2242,12 @@ section{
           <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
         </div>
         <div class="detailed-popover" id="detailedPopover">
+          <div class="route-mark" aria-hidden="true">
+            <svg viewBox="0 0 220 16" preserveAspectRatio="none">
+              <circle class="route-dot" cx="6" cy="8" r="3"/>
+              <line class="route-line" x1="14" y1="8" x2="220" y2="8"/>
+            </svg>
+          </div>
           <a href="order.html" class="detailed-popover-option" data-i18n="detailedOptionJapan"></a>
           <a href="order.html?intent=cyprus" class="detailed-popover-option" data-i18n="detailedOptionCyprus"></a>
         </div>
@@ -3247,12 +3271,28 @@ function closeQuickPopover(){
 }
 function closeDetailedPopover(){
   if(detailedPopover.classList.contains('open')){
+    // Force the route-line's draw-in to replay from scratch next open
+    // instead of instantly appearing full — see .detailed-popover .route-line
+    // CSS comment. Reflow (offsetHeight) between removing and re-adding the
+    // "open" class-driven transition target is not needed here because the
+    // class itself is what's toggled on next open, restarting the transition.
+    const line = detailedPopover.querySelector('.route-line');
+    if(line) line.style.transition = 'none';
     detailedPopover.classList.remove('open');
     ctaRowDual.style.paddingBottom = '0px';
   }
 }
 detailedToggle.addEventListener('click', ()=>{
   closeQuickPopover(); // only one popover open at a time under the row
+  const line = detailedPopover.querySelector('.route-line');
+  if(line && line.style.transition === 'none'){
+    // Force layout so the browser commits the transition:none + offset:200
+    // reset from the previous close before we re-enable the transition and
+    // add "open" — otherwise the browser can coalesce both changes into one
+    // frame and skip straight to the final state, no visible draw-in.
+    void detailedPopover.offsetHeight;
+    line.style.transition = '';
+  }
   const open = detailedPopover.classList.toggle('open');
   if(open){
     detailedPopover.style.top = (measureClusterBottom() + 18) + 'px';
