@@ -717,7 +717,6 @@ a{color:inherit;}
      contact icons mixed in) — see the HTML comment above .cta-row-dual
      for the full research note. */
   .hero .cta-row-dual{
-    position:relative;
     flex-direction:row;
     flex-wrap:nowrap;
     justify-content:center;
@@ -792,18 +791,22 @@ h1.headline{
    row instead means top:100% resolves against the row's own fixed
    height (just the two buttons, ~50px), which never changes regardless
    of what the popover or its spacer do. */
-/* padding-bottom's own transition made slightly FASTER than the popover's
-   max-height transition (.3s vs .35s) instead of matching it exactly
-   (2026-09-06, live report + screenshot: text below still briefly
-   overlapped the newly-revealed options even with padding-bottom set in
-   the same tick as "open") — two CSS transitions with identical declared
-   durations aren't guaranteed to paint in perfect lockstep frame-by-frame
-   on a real device, and any lag leaves the reserved space trailing the
-   popover's actual visible growth for a frame or two, which is exactly
-   what an overlap looks like. Finishing padding-bottom's growth slightly
-   EARLY means the space is always reserved at least as fast as the
-   popover visibly grows, never behind it. */
-.hero .cta-row-dual{transition:padding-bottom .3s ease;}
+/* Both popovers rebuilt 2026-09-06 to remove position:absolute + JS-
+   measured top/padding-bottom entirely — see the HTML comment above
+   #ctaBlock for the full reasoning. They're now plain block-level
+   children of .cta-block, centered in-flow, so max-height growing on
+   .open is a REAL layout change the browser reflows on every paint —
+   nothing below can ever be behind schedule relative to it, because
+   there's only one property (this element's own height) driving the
+   layout, not two separately-animated properties trying to stay in sync. */
+.cta-block{display:flex; flex-direction:column; align-items:center; width:100%;}
+/* .cta-row-dual (the button row) needs an explicit width now that it's a
+   flex ITEM inside .cta-block's column instead of the popovers' own
+   positioning parent — without this it shrinks to fit its own two
+   buttons' content width, misaligning it from the full-width popovers
+   stacked below it whenever the buttons are narrower than the popovers'
+   540px/320px widths (desktop side-by-side layout). */
+.cta-block > .cta-row-dual{width:100%;}
 .quick-popover{
   /* Widened from 460px (2026-09-03): the perks line ("Гарантия · Скидка
      на сервис · Цена под ключ, без доплат") needs ~496px including its
@@ -814,46 +817,13 @@ h1.headline{
      circularly sizing itself to the *wrapped* text's line width, never
      reaching the space it needed to unwrap. An explicit width breaks that
      loop; min() keeps it from overflowing narrower viewports. */
-  /* 100% here would resolve against .cta-primary-group, a column-flex
-     parent whose own width comes FROM its widest child — a circular
-     dependency that (confirmed live) left the popover stuck at its old
-     ~497px content-driven size despite this rule. 92vw as the shrink
-     fallback breaks that loop by sizing off the viewport instead. */
+  width:min(540px, 92vw);
   max-width:540px;
   margin-top:0;
   max-height:0;
   overflow:hidden;
   opacity:0;
   transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease;
-  /* position:absolute ALWAYS, not just while closed (2026-09-04, second
-     pass) — the first version switched to position:static on .open so
-     the popover would push page content down, but that brought back the
-     exact bug it fixed: static re-inflates .cta-primary-group to the
-     popover's 540px width, shoving the second button 153.6px right
-     (confirmed live at every width from 1200-1440px — not a fluke of one
-     viewport). Absolute at all times means the popover floats over
-     whatever's below it instead of pushing it down; .hero-below-form
-     etc. get a fixed padding-bottom reservation instead so the floating
-     form doesn't visually cover real content. */
-  /* top is set in px by JS on open, NOT a percentage (2026-09-05 fix,
-     third pass) — top:100% kept resolving against whatever ancestor's
-     *full* box (including its own padding-bottom) the popover happened
-     to live in, and since the padding reserved for the popover lived on
-     that very ancestor, every fix so far fed back into itself: reserve
-     space -> ancestor grows -> top:100% grows -> popover drifts further
-     down. A JS-measured top can't be affected by anything the popover or
-     its spacing does. It also has to be JS (not one fixed CSS px value)
-     because the row's real height differs by layout — desktop has both
-     buttons on one line (~50px tall), mobile wraps them onto two lines
-     (~116px tall since .cta-row-dual has no nowrap override below 641px)
-     — a single hardcoded value put the form on top of the second button
-     on mobile. */
-  position:absolute;
-  top:64px;
-  left:50%;
-  transform:translateX(-50%);
-  width:min(540px, 92vw);
-  z-index:5;
 }
 .quick-popover.open{
   /* Was 260px, a guess that turned out 58px short of the form's real
@@ -866,20 +836,9 @@ h1.headline{
   margin-top:18px;
 }
 /* "Оформить подбор" opens this instead of navigating straight to
-   order.html — same floating mechanics as .quick-popover (absolute,
-   JS-measured top, own padding-bottom reservation on the row) since that
-   approach is already proven live not to shift the sibling buttons or
-   drift out of sync. Two plain link options, so no form-height math is
-   needed — a fixed max-height comfortably covers 2 short rows. */
+   order.html. Two plain link options, so no form-height math is needed —
+   a fixed max-height comfortably covers 2 short rows. */
 .detailed-popover{
-  position:absolute;
-  left:50%;
-  /* translateX handles horizontal centering always; translateY is the part
-     that animates (owner's explicit request, 2026-09-06: the two new
-     options "должны быть заметны" on open, not just silently expand) —
-     combined in one transform since a second transform property would
-     just overwrite the first, not stack with it. */
-  transform:translateX(-50%) translateY(-8px);
   width:min(320px, 92vw);
   max-width:320px;
   max-height:0;
@@ -889,14 +848,20 @@ h1.headline{
   display:flex;
   flex-direction:column;
   gap:8px;
+  /* translateY is the part that animates (owner's explicit request,
+     2026-09-06: the two new options "должны быть заметны" on open, not
+     just silently expand). No translateX needed anymore for centering —
+     .cta-block's align-items:center does that now that this is a normal
+     flow child, not an absolutely-positioned element needing its own
+     horizontal centering trick. */
+  transform:translateY(-8px);
   transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease, transform .35s ease;
-  z-index:5;
 }
 .detailed-popover.open{
   max-height:200px;
   opacity:1;
   margin-top:18px;
-  transform:translateX(-50%) translateY(0);
+  transform:translateY(0);
 }
 /* Route-mark inside the popover reuses the exact same dot+line SVG as
    .final's "Сел и поехал" one (owner's explicit request, 2026-09-06) —
@@ -2329,9 +2294,31 @@ section{
            not CSS percentages) since that approach is already proven not
            to shove sibling buttons around or drift out of sync with the
            button cluster's real height. -->
+      <!-- Rebuilt 2026-09-06 to remove the whole class of overlap bugs
+           the previous position:absolute + JS-measured-padding-bottom
+           approach kept producing (route-mark relocation, animation-
+           timing races — every fix narrowed the window but never closed
+           it, because two independently-animated properties trying to
+           grow in lockstep can't be perfectly synced frame-by-frame on a
+           real device, no matter how the durations are tuned). Both
+           popovers are now plain block-level siblings of the button row
+           inside this wrapper, in NORMAL DOCUMENT FLOW (no position:
+           absolute, no JS top/padding-bottom math at all) — the browser
+           itself guarantees whatever sits below always reflows in the
+           same paint as the popover's own height change, which is what
+           "never overlaps" actually requires. The only reason the earlier
+           attempt at this (noted in old comments below) broke was static
+           positioning being applied to the popover while it was still a
+           flex ITEM inside the same row as the buttons, which stretched
+           that row to the popover's width. Fixed here by giving the
+           popovers their own wrapper (.cta-block) OUTSIDE the buttons'
+           flex row (.cta-row-dual) instead — the row stays exactly the
+           flex container it always was, sized only by its two buttons. -->
+      <div class="cta-block" id="ctaBlock">
       <div class="cta-row cta-row-dual" id="ctaRowDual">
         <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
         <button type="button" class="btn btn-secondary" id="detailedToggle" data-i18n="detailedLinkText"></button>
+      </div>
         <div class="quick-popover" id="quickPopover">
           <!-- .quick-popover-perks line removed 2026-09-06 (owner's
                text-audit request) — it repeated "Гарантия" a second time
@@ -3282,73 +3269,14 @@ quickFormToggle.addEventListener('click', ()=>{
     void quickPopover.offsetHeight;
     routeLine.style.transition = '';
   }
+  // No top/padding-bottom math needed anymore (2026-09-06 rebuild) —
+  // .quick-popover is a normal block-flow child of .cta-block now, so
+  // toggling "open" (which just grows its own max-height) is a real
+  // layout change the browser reflows on its own, in the same paint,
+  // every time. See the HTML comment above #ctaBlock for why the previous
+  // position:absolute + JS-measured approach couldn't fully close this
+  // class of bug no matter how the transition timings were tuned.
   const open = quickPopover.classList.toggle('open');
-  if(open){
-    // Row height differs by layout (desktop: both buttons on one line,
-    // ~50px; mobile: wrapped onto two lines, ~116px — .cta-row-dual has
-    // no nowrap override below 641px). Measuring the two buttons' own
-    // bottom edges (not the row, which the popover isn't nested in
-    // anymore) gives the real "bottom of the button cluster" regardless
-    // of which layout is active, so top can't end up mid-button on
-    // either one.
-    const secondBtn = ctaRowDual.querySelector('.btn-secondary');
-    const rowRect = ctaRowDual.getBoundingClientRect();
-    const btn1Rect = quickFormToggle.getBoundingClientRect();
-    const btn2Rect = secondBtn.getBoundingClientRect();
-    const clusterBottom = Math.max(btn1Rect.bottom, btn2Rect.bottom) - rowRect.top;
-    quickPopover.style.top = (clusterBottom + 18) + 'px';
-  }
-  // quick-popover is always position:absolute, positioned from
-  // .cta-row-dual (a sibling now, not a nested wrapper — see the HTML
-  // comment above .cta-row-dual for why nesting it caused a feedback
-  // loop that pushed the form far below the buttons). Since it's out of
-  // flow it floats OVER whatever's below the row unless something else
-  // reserves that space — padding-bottom on the row itself does that.
-  //
-  // Getting the reserved amount right took two wrong tries: reading
-  // offsetHeight/scrollHeight right after toggling .open caught the CSS
-  // max-height transition (.35s) mid-animation, under-reserving space and
-  // letting the form overlap "Поиск на Кипре" below it. Using the
-  // stylesheet's max-height:260px constant instead avoided that race but
-  // over-reserved, since the form's real content (4 fields + submit
-  // button) is shorter than the 260px cap — left an empty ~100px gap.
-  // Reserve space for the popover's full CSS max-height (340px) up front,
-  // in the same tick as adding "open" — not only after transitionend —
-  // so padding-bottom grows in sync with the popover's own max-height
-  // transition (both .35s) instead of staying at 0 while the form visibly
-  // overlaps the text below it, then snapping the layout down once fully
-  // open (owner report, 2026-09-06: text gets covered by the new content
-  // for the ~0.35s of the reveal, "выглядит некрасиво"). 340px is a safe
-  // upper bound — the real form is shorter (~318px) — so this slightly
-  // OVER-reserves during the animation, which is harmless (a tiny gap for
-  // 0.35s) versus the old under-reservation, which was a visible overlap
-  // bug. transitionend still fires afterward to correct down to the exact
-  // settled height, same reasoning as before (real content height isn't
-  // knowable until the transition actually finishes).
-  if(open){
-    const clusterHeight = ctaRowDual.getBoundingClientRect().height;
-    const openMaxHeight = 340; // must match .quick-popover.open's max-height in CSS
-    ctaRowDual.style.paddingBottom = (parseFloat(quickPopover.style.top) + openMaxHeight - clusterHeight + 20) + 'px';
-    quickPopover.addEventListener('transitionend', function onOpen(e){
-      if(e.propertyName !== 'max-height') return;
-      quickPopover.removeEventListener('transitionend', onOpen);
-      if(quickPopover.classList.contains('open')){
-        // padding-bottom is extra space ADDED AFTER the row's own content
-        // (the button cluster), so it must cover only the part of the
-        // popover that extends past the row's own bottom edge — NOT
-        // top + height, which double-counts the button-cluster height:
-        // that height is already the row's natural size before any
-        // padding is added (confirmed live: with top+height, row.bottom
-        // ended up 116px past popover.bottom, exactly the button
-        // cluster's own height, leaving a visible empty gap below the
-        // form). Subtracting the row's pre-padding height cancels that
-        // double-count.
-        ctaRowDual.style.paddingBottom = (parseFloat(quickPopover.style.top) + quickPopover.offsetHeight - clusterHeight + 20) + 'px';
-      }
-    });
-  } else {
-    ctaRowDual.style.paddingBottom = '0px';
-  }
   if(open){
     const firstInput = quickPopover.querySelector('input');
     // Was focus({preventScroll:true}) — added 2026-09-04 to stop the page
@@ -3441,19 +3369,8 @@ quickFormToggle.addEventListener('click', ()=>{
 // "Оформить подбор" — reveals the Japan/Cyprus choice instead of linking
 // straight to order.html (2026-09-05, per owner's explicit request: a
 // visitor picks their path first, then lands on the matching order form).
-// Reuses the exact positioning/reservation approach proven above for
-// #quickPopover — same reasons apply (top must be JS-measured px, not a
-// CSS percentage; padding-bottom must be measured post-transition, not
-// guessed from a stylesheet constant).
 const detailedToggle = document.getElementById('detailedToggle');
 const detailedPopover = document.getElementById('detailedPopover');
-function measureClusterBottom(){
-  const secondBtn = ctaRowDual.querySelector('.btn-secondary');
-  const rowRect = ctaRowDual.getBoundingClientRect();
-  const btn1Rect = quickFormToggle.getBoundingClientRect();
-  const btn2Rect = secondBtn.getBoundingClientRect();
-  return Math.max(btn1Rect.bottom, btn2Rect.bottom) - rowRect.top;
-}
 function closeQuickPopover(){
   if(quickPopover.classList.contains('open')){
     // Force the route-line's draw-in to replay from scratch next open
@@ -3464,14 +3381,10 @@ function closeQuickPopover(){
     const line = quickPopover.querySelector('.route-line');
     if(line) line.style.transition = 'none';
     quickPopover.classList.remove('open');
-    ctaRowDual.style.paddingBottom = '0px';
   }
 }
 function closeDetailedPopover(){
-  if(detailedPopover.classList.contains('open')){
-    detailedPopover.classList.remove('open');
-    ctaRowDual.style.paddingBottom = '0px';
-  }
+  detailedPopover.classList.remove('open');
 }
 detailedToggle.addEventListener('click', ()=>{
   closeQuickPopover(); // only one popover open at a time under the row
@@ -3484,27 +3397,11 @@ detailedToggle.addEventListener('click', ()=>{
     void detailedPopover.offsetHeight;
     line.style.transition = '';
   }
-  const open = detailedPopover.classList.toggle('open');
-  if(open){
-    const top = measureClusterBottom() + 18;
-    detailedPopover.style.top = top + 'px';
-    // Reserve the space for the popover's FULL open height immediately,
-    // in the same tick as adding "open" — not after transitionend — so
-    // .cta-row-dual's padding-bottom grows in sync with the popover's own
-    // max-height transition (both .35s) instead of staying at 0 until the
-    // animation finishes and then jumping in one frame. The old
-    // wait-for-transitionend approach caused exactly the bug the owner
-    // reported: the two new options overlapped the text below them for
-    // the whole ~0.35s of the reveal, then snapped the layout down only
-    // once fully open. max-height:200px (the CSS .open value) is a fixed
-    // constant, so the final height is already known up front — no need
-    // to wait and measure the settled DOM.
-    const clusterHeight = ctaRowDual.getBoundingClientRect().height;
-    const openMaxHeight = 200; // must match .detailed-popover.open's max-height in CSS
-    ctaRowDual.style.paddingBottom = (top + openMaxHeight - clusterHeight + 20) + 'px';
-  } else {
-    ctaRowDual.style.paddingBottom = '0px';
-  }
+  // No top/padding-bottom math needed anymore (2026-09-06 rebuild) — see
+  // the HTML comment above #ctaBlock. Toggling "open" just grows this
+  // element's own max-height in normal document flow, which the browser
+  // reflows on its own in the same paint every time.
+  detailedPopover.classList.toggle('open');
 });
 // Opening the quick-callback popover should close this one too, so they
 // never show at the same time and fight over padding-bottom.
