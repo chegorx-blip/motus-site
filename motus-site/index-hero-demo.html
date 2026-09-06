@@ -2235,7 +2235,15 @@ section{
 
 <section class="hero" id="hero">
   <div class="hero-visual">
-    <div class="hero-bg" aria-hidden="true"><img src="images/hero-fullbleed.jpg" alt=""></div>
+    <!-- decoding="async" added 2026-09-06 as a general first-scroll-jank
+         mitigation (owner report: page always stutters on the very first
+         scroll gesture right after load) — this is the heaviest image on
+         the page (~300KB JPEG) and without it the browser can decode it
+         synchronously on the main thread during initial paint, which can
+         eat the first touch gesture on a slow phone. Not a confirmed root
+         cause (couldn't reproduce/profile on the owner's real device),
+         but a safe standard optimization regardless. -->
+    <div class="hero-bg" aria-hidden="true"><img src="images/hero-fullbleed.jpg" alt="" decoding="async"></div>
     <div class="wrap wrap-wide">
       <p class="eyebrow mono" data-i18n="eyebrow"></p>
       <h1 class="headline" id="heroHeadlineDesktop"></h1>
@@ -2367,8 +2375,8 @@ section{
       </div>
     </div>
     <div class="hero-media">
-      <div class="hero-photo-main"><img src="images/hero-main.jpg" alt="Lexus UX, inspected and delivered by Motus" loading="eager"></div>
-      <div class="hero-photo-accent"><img src="images/hero-accent.jpg" alt="Detail check before delivery" loading="lazy"></div>
+      <div class="hero-photo-main"><img src="images/hero-main.jpg" alt="Lexus UX, inspected and delivered by Motus" loading="eager" decoding="async"></div>
+      <div class="hero-photo-accent"><img src="images/hero-accent.jpg" alt="Detail check before delivery" loading="lazy" decoding="async"></div>
     </div>
   </div>
 </section>
