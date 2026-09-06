@@ -901,10 +901,18 @@ h1.headline{
    pine background .final uses — the earlier comment assuming "same dark
    background as .final" was wrong. Same class of bug as .advantages'
    route-line, same fix (darker stroke via --border). */
+/* Delay raised from .15s to .4s (2026-09-06, owner report: "линия не
+   анимированная") — the popover's own max-height grows for .35s, and
+   this route-mark sits at the very TOP of the popover, so with the old
+   .15s delay roughly a third of the line's 1.1s draw-in ran while it was
+   still clipped by max-height:overflow:hidden — by the time it became
+   visible it looked mostly-drawn-already instead of animating from the
+   dot. Starting the draw-in only after the container has fully expanded
+   means the whole animation is visible, not just its tail. */
 .quick-popover .route-line{
   stroke:var(--border);
   stroke-dasharray:200; stroke-dashoffset:200;
-  transition:stroke-dashoffset 1.1s ease .15s;
+  transition:stroke-dashoffset 1.1s ease .4s;
 }
 .quick-popover.open .route-line{stroke-dashoffset:0;}
 .detailed-popover-option{
@@ -958,6 +966,13 @@ h1.headline{
      218px) and ~14px too narrow for "Какая машина? (необязательно)"
      (measured 213px), so both got visibly clipped. */
   max-width:540px;
+  /* scrollIntoView({block:'start'}) on this element (see the keyboard-open
+     JS below) puts its top flush with the viewport's top edge — zero
+     margin — which on a real device left the first field's top border
+     right at the very edge, effectively cut off (owner report, 2026-09-06:
+     "первая строка формы съедается"). This margin gives scrollIntoView
+     breathing room to stop at instead of the literal top pixel. */
+  scroll-margin-top:24px;
 }
 .quick-form input{
   grid-column:span 1;

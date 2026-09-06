@@ -1339,13 +1339,10 @@ section{
 <main class="order-main">
   <div class="wrap">
     <a href="index.html" class="order-back-link" data-i18n="orderBackLink"></a>
+    <!-- route-mark (dot+line) removed from the order-form card 2026-09-06,
+         per owner's explicit request — decorative marker above the form
+         title wasn't wanted here. -->
     <div class="order-card" id="requestModal">
-      <div class="route-mark route-mark-static" aria-hidden="true">
-        <svg viewBox="0 0 100 16">
-          <circle class="route-dot" cx="6" cy="8" r="3"/>
-          <line class="route-line" x1="14" y1="8" x2="100" y2="8"/>
-        </svg>
-      </div>
       <h1 class="order-card-title" id="requestModalTitle" data-i18n="requestModalTitle"></h1>
 
       <div class="request-tabs" role="tablist">
