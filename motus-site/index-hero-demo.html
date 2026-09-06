@@ -3356,7 +3356,24 @@ quickFormToggle.addEventListener('click', ()=>{
       setTimeout(()=>{
         firstInput.focus();
         const formEl = document.getElementById('quickForm');
-        const scrollFormIntoView = ()=> formEl.scrollIntoView({behavior:'smooth', block:'start'});
+        // Verifies the scroll actually landed where intended and nudges it
+        // again if not — belt-and-suspenders on top of the resize-quiet
+        // wait above, since a live report ("Имя" still hidden, "надо
+        // скролить вверх") showed the scroll can still land short on some
+        // real devices even after that fix. Checked once, ~400ms after the
+        // smooth scroll starts (long enough for a short scroll — a form
+        // that's already near-visible — to finish; scrollIntoView's own
+        // duration isn't fixed/queryable, so this is a reasonable wait,
+        // not a guaranteed-exact one).
+        const scrollFormIntoView = ()=>{
+          formEl.scrollIntoView({behavior:'smooth', block:'start'});
+          setTimeout(()=>{
+            const rect = formEl.getBoundingClientRect();
+            if(rect.top < 0 || rect.top > 40){
+              window.scrollBy({top: rect.top - 24, behavior:'smooth'});
+            }
+          }, 400);
+        };
         // A fixed setTimeout-then-scrollIntoView call (the previous
         // version of this fix) scrolled against whatever the viewport
         // was BEFORE the on-screen keyboard finished sliding up — on a
@@ -3373,12 +3390,30 @@ quickFormToggle.addEventListener('click', ()=>{
         // back to the plain scrollIntoView call (still better than
         // nothing) on browsers without visualViewport support.
         if(window.visualViewport){
+          // Was "scroll on the FIRST resize event" — wrong on real devices
+          // whose keyboard resizes the viewport in more than one step (seen
+          // live, owner screenshot: a Google Password Manager suggestion
+          // bar sits above the keyboard, adding its own resize step; some
+          // Android keyboards also animate their own height in stages).
+          // Scrolling on that first, still-mid-animation event scrolls
+          // against a viewport size that isn't final yet, landing short
+          // (owner report: "поле имя оно закрыто, чтобы попасть на него
+          // надо скролить вверх" — the scroll happened, just against the
+          // wrong target height). Now waits for resize events to actually
+          // STOP firing (150ms of quiet) before scrolling, so it always
+          // acts on the final settled viewport size regardless of how many
+          // steps the keyboard's animation took.
           let alreadyScrolled = false;
+          let quietTimer = null;
           const onViewportResize = ()=>{
             if(alreadyScrolled) return;
-            alreadyScrolled = true;
-            window.visualViewport.removeEventListener('resize', onViewportResize);
-            scrollFormIntoView();
+            if(quietTimer) clearTimeout(quietTimer);
+            quietTimer = setTimeout(()=>{
+              if(alreadyScrolled) return;
+              alreadyScrolled = true;
+              window.visualViewport.removeEventListener('resize', onViewportResize);
+              scrollFormIntoView();
+            }, 150);
           };
           window.visualViewport.addEventListener('resize', onViewportResize);
           // Safety net: some browsers/keyboards don't fire resize (e.g.
@@ -3388,6 +3423,7 @@ quickFormToggle.addEventListener('click', ()=>{
           setTimeout(()=>{
             if(alreadyScrolled) return;
             alreadyScrolled = true;
+            if(quietTimer) clearTimeout(quietTimer);
             window.visualViewport.removeEventListener('resize', onViewportResize);
             scrollFormIntoView();
           }, 500);
