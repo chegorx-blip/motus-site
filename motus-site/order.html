@@ -1393,9 +1393,16 @@ section{
             <input type="checkbox" name="consent0">
             <span data-i18n="consent0"></span>
           </label>
+          <!-- Privacy Policy link added next to the consent checkbox
+               (2026-09-06) — previously the checkbox existed but had
+               nothing to link to (no Privacy Policy page existed at all).
+               Kept as a separate <a>, not baked into the i18n string,
+               because the i18n renderer sets textContent (not innerHTML)
+               for [data-i18n] elements — an HTML string there would show
+               as literal "<a href=...>" text, not a real link. -->
           <label class="request-checkbox">
             <input type="checkbox" name="consent1" required>
-            <span data-i18n="consent1"></span>
+            <span><span data-i18n="consent1"></span> — <a href="privacy.html" target="_blank" rel="noopener" data-i18n="privacyLinkText"></a></span>
           </label>
           <label class="request-checkbox">
             <input type="checkbox" name="consent2" required>
@@ -1510,6 +1517,7 @@ const content = {
     successMsg:"Thanks — we've got it. We usually reply within minutes on Telegram or WhatsApp.",
     consent0:"I have read and understood AUTOEXPERT's commission, processing and warranty terms",
     consent1:"I consent to personal data processing",
+    privacyLinkText:"Privacy Policy",
     consent2:"I confirm the accuracy of this data and agree to the service terms",
     perksHonestLabel:"One honest price",
     perksHonest:"We quote the final price of the car in Cyprus upfront — no hidden markups, no surprises after the auction",
@@ -1591,6 +1599,7 @@ const content = {
     successMsg:"Спасибо — заявка получена. Обычно отвечаем в течение нескольких минут в Telegram или WhatsApp.",
     consent0:"Я ознакомлен(а) с условиями комиссии, оформления и гарантийной программой AUTOEXPERT",
     consent1:"Согласен(на) на обработку персональных данных",
+    privacyLinkText:"Политика конфиденциальности",
     consent2:"Подтверждаю достоверность данных и соглашаюсь с условиями сервиса",
     perksHonestLabel:"Одна честная цена",
     perksHonest:"Называем итоговую цену автомобиля на Кипре сразу — без скрытых доплат и сюрпризов после аукциона",
@@ -1672,6 +1681,7 @@ const content = {
     successMsg:"Ευχαριστούμε — το λάβαμε. Απαντάμε συνήθως μέσα σε λίγα λεπτά στο Telegram ή WhatsApp.",
     consent0:"Έχω διαβάσει και κατανοήσει τους όρους προμήθειας, διεκπεραίωσης και εγγύησης της AUTOEXPERT",
     consent1:"Συναινώ στην επεξεργασία προσωπικών δεδομένων",
+    privacyLinkText:"Πολιτική Απορρήτου",
     consent2:"Επιβεβαιώνω την ακρίβεια των δεδομένων και συμφωνώ με τους όρους υπηρεσίας",
     perksHonestLabel:"Μία τίμια τιμή",
     perksHonest:"Σας δίνουμε την τελική τιμή του αυτοκινήτου στην Κύπρο εξαρχής — χωρίς κρυφές προσαυξήσεις ή εκπλήξεις μετά τη δημοπρασία",

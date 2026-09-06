@@ -1008,6 +1008,14 @@ h1.headline{
 }
 .quick-form-success.visible{display:block;}
 .quick-form.submitted{display:none;}
+.quick-form-privacy-note{
+  grid-column:1/-1;
+  font-size:11px;
+  line-height:1.5;
+  color:var(--text-muted);
+  margin:2px 0 4px;
+}
+.quick-form-privacy-note a{color:var(--accent);}
 
 /* .hero-below-form / .detailed-link / .hero-talk removed 2026-09-04 —
    the hero CTA cluster no longer uses a messenger-icon row (those icons
@@ -2245,6 +2253,18 @@ section{
             <input type="text" name="qLastName" required data-i18n-placeholder="quickLastName">
             <input type="text" name="qContact" required data-i18n-placeholder="quickContact">
             <input type="text" name="qModel" data-i18n-placeholder="quickModel">
+            <!-- Privacy note added 2026-09-06 — this quick form previously
+                 had no consent/privacy mention at all, unlike order.html's
+                 checkbox. Kept as a plain disclaimer line rather than a
+                 required checkbox: real-competitor research (CarsJapan.cy,
+                 DriveClick.cy — both Cyprus car-import sites) shows this is
+                 the local-market norm for a short "call us back" form whose
+                 only purpose is replying to that one enquiry (GDPR Art.
+                 6(1)(b), not consent-based processing) — a full checkbox is
+                 reserved for order.html's form, which feeds the CRM for
+                 ongoing follow-up. Not a legal opinion — flagged for the
+                 owner to confirm with an actual lawyer/accountant. -->
+            <p class="quick-form-privacy-note"><span data-i18n="quickPrivacyNote"></span> <a href="privacy.html" target="_blank" rel="noopener" data-i18n="privacyLinkText"></a></p>
             <button type="submit" class="btn btn-primary" data-i18n="submitBtn"></button>
           </form>
           <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
@@ -2526,6 +2546,8 @@ const content = {
     requestModalTitle:"Find your car",
     submitBtn:"Submit",
     successMsg:"Thanks — we've got it. We usually reply within minutes on Telegram or WhatsApp.",
+    quickPrivacyNote:"We only use these details to call you back about this request. See our",
+    privacyLinkText:"Privacy Policy",
     consent0:"I have read and understood Motus's commission, processing and warranty terms",
     consent1:"I consent to personal data processing",
     consent2:"I confirm the accuracy of this data and agree to the service terms",
@@ -2633,6 +2655,8 @@ const content = {
     requestModalTitle:"Найти автомобиль",
     submitBtn:"Отправить",
     successMsg:"Спасибо — заявка получена. Обычно отвечаем в течение нескольких минут в Telegram или WhatsApp.",
+    quickPrivacyNote:"Используем эти данные только чтобы перезвонить по этой заявке. Подробнее —",
+    privacyLinkText:"Политика конфиденциальности",
     consent0:"Я ознакомлен(а) с условиями комиссии, оформления и гарантийной программой Motus",
     consent1:"Согласен(на) на обработку персональных данных",
     consent2:"Подтверждаю достоверность данных и соглашаюсь с условиями сервиса",
@@ -2740,6 +2764,8 @@ const content = {
     requestModalTitle:"Βρείτε το αυτοκίνητό σας",
     submitBtn:"Αποστολή",
     successMsg:"Ευχαριστούμε — το λάβαμε. Απαντάμε συνήθως μέσα σε λίγα λεπτά στο Telegram ή WhatsApp.",
+    quickPrivacyNote:"Χρησιμοποιούμε αυτά τα στοιχεία μόνο για να σας καλέσουμε σχετικά με αυτό το αίτημα. Δείτε την",
+    privacyLinkText:"Πολιτική Απορρήτου",
     consent0:"Έχω διαβάσει και κατανοήσει τους όρους προμήθειας, διεκπεραίωσης και εγγύησης της Motus",
     consent1:"Συναινώ στην επεξεργασία προσωπικών δεδομένων",
     consent2:"Επιβεβαιώνω την ακρίβεια των δεδομένων και συμφωνώ με τους όρους υπηρεσίας",
