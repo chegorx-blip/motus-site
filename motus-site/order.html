@@ -2054,6 +2054,12 @@ requestForm.addEventListener('submit', (e)=>{
       if(submitBtn) submitBtn.disabled = false;
     });
 });
+
+// Disables bfcache for this page — see index-hero-demo.html's identical
+// fix comment for the full reasoning (owner report: navigating Back from
+// here to the home page showed a stale cached version, stable repro on
+// both Android Chrome and iOS Safari).
+window.addEventListener('unload', ()=>{});
 </script>
 
 <!-- Vercel Web Analytics + Speed Insights (free, no cookie banner needed — collects no personal data) -->

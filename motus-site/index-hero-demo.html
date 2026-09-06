@@ -863,34 +863,12 @@ h1.headline{
   margin-top:18px;
   transform:translateY(0);
 }
-/* Route-mark inside the popover reuses the exact same dot+line SVG as
-   .final's "Сел и поехал" one (owner's explicit request, 2026-09-06) —
-   same classes, same beacon/draw-in animation — but draws in on popover
-   OPEN rather than on scroll-reveal, since this element only exists
-   inside a toggled popover. stroke-dashoffset is reset to the dasharray
-   value whenever the popover closes so re-opening always replays the
-   draw-in from scratch instead of showing an already-full line. */
-.quick-popover .route-mark{width:100%; max-width:220px; margin:0 0 14px;}
-/* Corrected 2026-09-06 (live-verified via Playwright, real phone
-   screenshot showed the line barely visible): this popover actually sits
-   on the light paper background at this point in the page, not the dark
-   pine background .final uses — the earlier comment assuming "same dark
-   background as .final" was wrong. Same class of bug as .advantages'
-   route-line, same fix (darker stroke via --border). */
-/* Delay raised from .15s to .4s (2026-09-06, owner report: "линия не
-   анимированная") — the popover's own max-height grows for .35s, and
-   this route-mark sits at the very TOP of the popover, so with the old
-   .15s delay roughly a third of the line's 1.1s draw-in ran while it was
-   still clipped by max-height:overflow:hidden — by the time it became
-   visible it looked mostly-drawn-already instead of animating from the
-   dot. Starting the draw-in only after the container has fully expanded
-   means the whole animation is visible, not just its tail. */
-.quick-popover .route-line{
-  stroke:var(--border);
-  stroke-dasharray:200; stroke-dashoffset:200;
-  transition:stroke-dashoffset 1.1s ease .4s;
-}
-.quick-popover.open .route-line{stroke-dashoffset:0;}
+/* .quick-popover's route-mark (dot+line) was added, then re-tuned twice
+   for visibility/timing bugs, then removed entirely 2026-09-06 per the
+   owner's repeated explicit request — no dot/line in this form, in any
+   state. Left this note instead of just deleting silently: the CSS rules
+   that styled it are gone from here now; don't re-add them without a
+   fresh explicit request. */
 .detailed-popover-option{
   display:block;
   padding:13px 18px;
@@ -2326,19 +2304,14 @@ section{
                above the buttons. The one non-duplicate idea it carried
                ("turn-key price, no add-ons") was folded into heroWarranty
                itself instead of kept as a separate text block. -->
-          <!-- route-mark moved HERE 2026-09-06 (owner's explicit correction)
-               — it belongs on the quick-callback form popover, not on the
-               Japan/Cyprus choice popover it was mistakenly added to in the
-               previous round. Same dot+line SVG/CSS pattern as .final's
-               "Сел и поехал" one; JS below (quickFormToggle's click
-               handler) replays its draw-in every time this popover opens,
-               same replay mechanic already proven on the other popover. -->
-          <div class="route-mark" aria-hidden="true">
-            <svg viewBox="0 0 220 16" preserveAspectRatio="none">
-              <circle class="route-dot" cx="6" cy="8" r="3"/>
-              <line class="route-line" x1="14" y1="8" x2="220" y2="8"/>
-            </svg>
-          </div>
+          <!-- route-mark (dot+line) removed from here entirely 2026-09-06,
+               per owner's explicit repeated request ("уже четвертый раз
+               прошу убрать") — was moved onto this popover once before per
+               an earlier, different request; owner has now said plainly
+               this form should have no dot/line at all, in any state. Do
+               not re-add a route-mark anywhere in either CTA popover
+               unless the owner explicitly asks again with a screenshot
+               confirming the exact spot. -->
           <form class="quick-form" id="quickForm" novalidate>
             <input type="text" name="qFirstName" required data-i18n-placeholder="quickFirstName">
             <input type="text" name="qLastName" required data-i18n-placeholder="quickLastName">
@@ -3260,15 +3233,6 @@ const quickPopover = document.getElementById('quickPopover');
 const quickFormToggle = document.getElementById('quickFormToggle');
 const ctaRowDual = document.getElementById('ctaRowDual');
 quickFormToggle.addEventListener('click', ()=>{
-  const routeLine = quickPopover.querySelector('.route-line');
-  if(routeLine && routeLine.style.transition === 'none'){
-    // Force layout so the browser commits the transition:none + offset:200
-    // reset from the previous close before we re-enable the transition and
-    // add "open" — otherwise the browser can coalesce both changes into one
-    // frame and skip straight to the final state, no visible draw-in.
-    void quickPopover.offsetHeight;
-    routeLine.style.transition = '';
-  }
   // No top/padding-bottom math needed anymore (2026-09-06 rebuild) —
   // .quick-popover is a normal block-flow child of .cta-block now, so
   // toggling "open" (which just grows its own max-height) is a real
@@ -3372,16 +3336,7 @@ quickFormToggle.addEventListener('click', ()=>{
 const detailedToggle = document.getElementById('detailedToggle');
 const detailedPopover = document.getElementById('detailedPopover');
 function closeQuickPopover(){
-  if(quickPopover.classList.contains('open')){
-    // Force the route-line's draw-in to replay from scratch next open
-    // instead of instantly appearing full — see .quick-popover .route-line
-    // CSS comment. Reflow (offsetHeight) between removing and re-adding the
-    // "open" class-driven transition target is not needed here because the
-    // class itself is what's toggled on next open, restarting the transition.
-    const line = quickPopover.querySelector('.route-line');
-    if(line) line.style.transition = 'none';
-    quickPopover.classList.remove('open');
-  }
+  quickPopover.classList.remove('open');
 }
 function closeDetailedPopover(){
   detailedPopover.classList.remove('open');
@@ -3490,6 +3445,22 @@ quickForm.addEventListener('submit', (e)=>{
       if(submitBtn) submitBtn.disabled = false;
     });
 });
+
+// Disables the back-forward cache (bfcache) for this page (2026-09-06,
+// owner report, stable repro on both Android Chrome and iOS Safari after
+// a fresh deploy — not a one-off local cache from earlier testing as
+// first assumed): a real HTTP Cache-Control header was checked and is
+// fine (Age: 0, correct Last-Modified on every load — GitHub Pages isn't
+// serving a stale file), so the stale-page symptom on browser Back is
+// specifically bfcache — the browser restoring an in-memory snapshot of
+// the page as it looked before navigating away, instead of reloading it.
+// A no-op 'unload' listener is the standard, deliberate way to opt a page
+// out of bfcache eligibility in every major browser; the tradeoff is
+// slightly slower Back navigation (a real reload instead of an instant
+// in-memory restore), which the owner accepted given how disruptive the
+// stale page looked (old copy, duplicate header) — see
+// feedback_motus_recurring_design_patterns.md in project memory.
+window.addEventListener('unload', ()=>{});
 </script>
 
 <!-- Vercel Web Analytics + Speed Insights (free, no cookie banner needed — collects no personal data) -->
