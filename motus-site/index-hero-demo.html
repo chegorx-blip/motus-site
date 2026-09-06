@@ -245,7 +245,7 @@ a{color:inherit;}
 .route-stop-dot.end{background:var(--bg); border:1.5px solid var(--bronze); box-sizing:border-box;}
 @keyframes beaconOpacity{
   0%,100%{opacity:1;}
-  50%{opacity:0.25;}
+  50%{opacity:0;}
 }
 @media (prefers-reduced-motion: reduce){
   .route-stop-dot.start{animation:none;}
@@ -359,7 +359,7 @@ a{color:inherit;}
 .logo-dot{animation:beacon 3.4s ease-in-out infinite; animation-delay:0s;}
 @keyframes beacon{
   0%,100%{fill-opacity:1;}
-  50%{fill-opacity:0.25;}
+  50%{fill-opacity:0;}
 }
 /* nav links moved from the standalone .tabbar into the topbar itself
    (desktop only — see .tabbar consolidation note above) */
@@ -863,7 +863,12 @@ h1.headline{
 .detailed-popover{
   position:absolute;
   left:50%;
-  transform:translateX(-50%);
+  /* translateX handles horizontal centering always; translateY is the part
+     that animates (owner's explicit request, 2026-09-06: the two new
+     options "должны быть заметны" on open, not just silently expand) —
+     combined in one transform since a second transform property would
+     just overwrite the first, not stack with it. */
+  transform:translateX(-50%) translateY(-8px);
   width:min(320px, 92vw);
   max-width:320px;
   max-height:0;
@@ -873,13 +878,14 @@ h1.headline{
   display:flex;
   flex-direction:column;
   gap:8px;
-  transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease;
+  transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease, transform .35s ease;
   z-index:5;
 }
 .detailed-popover.open{
   max-height:200px;
   opacity:1;
   margin-top:18px;
+  transform:translateX(-50%) translateY(0);
 }
 /* Route-mark inside the popover reuses the exact same dot+line SVG as
    .final's "Сел и поехал" one (owner's explicit request, 2026-09-06) —
@@ -888,19 +894,17 @@ h1.headline{
    inside a toggled popover. stroke-dashoffset is reset to the dasharray
    value whenever the popover closes so re-opening always replays the
    draw-in from scratch instead of showing an already-full line. */
-.detailed-popover .route-mark{width:100%; max-width:220px; margin:0 auto 14px;}
-/* .route-line's default stroke (translucent near-white, rgba(246,243,237,
-   0.35)) was tuned for the dark pine .final background — invisible on
-   this popover's light paper background, same class of bug already fixed
-   once for .advantages (see that rule above). Confirmed live via Playwright
-   (2026-09-06): dashoffset really did reach 0, the line was just the same
-   color as the background. */
-.detailed-popover .route-line{
-  stroke:var(--border);
+.quick-popover .route-mark{width:100%; max-width:220px; margin:0 0 14px;}
+/* This popover sits directly on the dark pine hero background (no surface
+   color of its own), same context as .final's route-mark — so the default
+   translucent-near-white stroke (tuned for exactly that background) is
+   used as-is here, unlike .advantages/the old detailed-popover placement
+   which needed a darker stroke for their light backgrounds. */
+.quick-popover .route-line{
   stroke-dasharray:200; stroke-dashoffset:200;
   transition:stroke-dashoffset 1.1s ease .15s;
 }
-.detailed-popover.open .route-line{stroke-dashoffset:0;}
+.quick-popover.open .route-line{stroke-dashoffset:0;}
 .detailed-popover-option{
   display:block;
   padding:13px 18px;
@@ -2292,6 +2296,19 @@ section{
                above the buttons. The one non-duplicate idea it carried
                ("turn-key price, no add-ons") was folded into heroWarranty
                itself instead of kept as a separate text block. -->
+          <!-- route-mark moved HERE 2026-09-06 (owner's explicit correction)
+               — it belongs on the quick-callback form popover, not on the
+               Japan/Cyprus choice popover it was mistakenly added to in the
+               previous round. Same dot+line SVG/CSS pattern as .final's
+               "Сел и поехал" one; JS below (quickFormToggle's click
+               handler) replays its draw-in every time this popover opens,
+               same replay mechanic already proven on the other popover. -->
+          <div class="route-mark" aria-hidden="true">
+            <svg viewBox="0 0 220 16" preserveAspectRatio="none">
+              <circle class="route-dot" cx="6" cy="8" r="3"/>
+              <line class="route-line" x1="14" y1="8" x2="220" y2="8"/>
+            </svg>
+          </div>
           <form class="quick-form" id="quickForm" novalidate>
             <input type="text" name="qFirstName" required data-i18n-placeholder="quickFirstName">
             <input type="text" name="qLastName" required data-i18n-placeholder="quickLastName">
@@ -2313,13 +2330,13 @@ section{
           </form>
           <div class="quick-form-success" id="quickFormSuccess" data-i18n="successMsg"></div>
         </div>
+        <!-- route-mark (dot+line) removed from here 2026-09-06 per owner's
+             explicit correction — it belongs on the quick-form popover
+             (below, "Закажите обратный звонок"), not on this Japan/Cyprus
+             choice popover. Owner wants the two options here to read as
+             two clear buttons the visitor notices immediately, not
+             preceded by a decorative marker. -->
         <div class="detailed-popover" id="detailedPopover">
-          <div class="route-mark" aria-hidden="true">
-            <svg viewBox="0 0 220 16" preserveAspectRatio="none">
-              <circle class="route-dot" cx="6" cy="8" r="3"/>
-              <line class="route-line" x1="14" y1="8" x2="220" y2="8"/>
-            </svg>
-          </div>
           <a href="order.html" class="detailed-popover-option" data-i18n="detailedOptionJapan"></a>
           <a href="order.html?intent=cyprus" class="detailed-popover-option" data-i18n="detailedOptionCyprus"></a>
         </div>
@@ -3213,6 +3230,15 @@ const quickPopover = document.getElementById('quickPopover');
 const quickFormToggle = document.getElementById('quickFormToggle');
 const ctaRowDual = document.getElementById('ctaRowDual');
 quickFormToggle.addEventListener('click', ()=>{
+  const routeLine = quickPopover.querySelector('.route-line');
+  if(routeLine && routeLine.style.transition === 'none'){
+    // Force layout so the browser commits the transition:none + offset:200
+    // reset from the previous close before we re-enable the transition and
+    // add "open" — otherwise the browser can coalesce both changes into one
+    // frame and skip straight to the final state, no visible draw-in.
+    void quickPopover.offsetHeight;
+    routeLine.style.transition = '';
+  }
   const open = quickPopover.classList.toggle('open');
   if(open){
     // Row height differs by layout (desktop: both buttons on one line,
@@ -3346,19 +3372,19 @@ function measureClusterBottom(){
 }
 function closeQuickPopover(){
   if(quickPopover.classList.contains('open')){
+    // Force the route-line's draw-in to replay from scratch next open
+    // instead of instantly appearing full — see .quick-popover .route-line
+    // CSS comment. Reflow (offsetHeight) between removing and re-adding the
+    // "open" class-driven transition target is not needed here because the
+    // class itself is what's toggled on next open, restarting the transition.
+    const line = quickPopover.querySelector('.route-line');
+    if(line) line.style.transition = 'none';
     quickPopover.classList.remove('open');
     ctaRowDual.style.paddingBottom = '0px';
   }
 }
 function closeDetailedPopover(){
   if(detailedPopover.classList.contains('open')){
-    // Force the route-line's draw-in to replay from scratch next open
-    // instead of instantly appearing full — see .detailed-popover .route-line
-    // CSS comment. Reflow (offsetHeight) between removing and re-adding the
-    // "open" class-driven transition target is not needed here because the
-    // class itself is what's toggled on next open, restarting the transition.
-    const line = detailedPopover.querySelector('.route-line');
-    if(line) line.style.transition = 'none';
     detailedPopover.classList.remove('open');
     ctaRowDual.style.paddingBottom = '0px';
   }
