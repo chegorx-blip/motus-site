@@ -34,6 +34,7 @@ from handlers.dispatch import (
 from handlers.expenses import handle_expense_category_button
 from handlers.mail_alerts import check_urgent_mail, handle_urgency_feedback, send_daily_mail_summary
 from handlers.photo import handle_photo
+from handlers.subscriptions import check_subscription_reminders, handle_subscription_period_button
 from handlers.text import handle_text_message
 from handlers.voice import handle_voice
 
@@ -42,6 +43,9 @@ from handlers.voice import handle_voice
 # handlers/mail_alerts.py) — так тот файл остаётся самодостаточным.
 _URGENT_CHECK_INTERVAL_SECONDS = 30 * 60
 _DAILY_SUMMARY_TIME = datetime.time(hour=8, minute=0)
+# Чуть позже дневной почтовой сводки — не принципиально, просто чтобы не
+# толпились в одну секунду.
+_SUBSCRIPTION_CHECK_TIME = datetime.time(hour=8, minute=5)
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
@@ -76,11 +80,13 @@ def main() -> None:
     app.add_handler(CallbackQueryHandler(owner_only(handle_task_cancel_button), pattern=r"^task_cancel:"))
     app.add_handler(CallbackQueryHandler(owner_only(handle_task_done_button), pattern=r"^task_done:"))
     app.add_handler(CallbackQueryHandler(owner_only(handle_expense_category_button), pattern=r"^expense_cat:"))
+    app.add_handler(CallbackQueryHandler(owner_only(handle_subscription_period_button), pattern=r"^sub_period:"))
 
     # JobQueue требует, чтобы python-telegram-bot был установлен с extra
     # "job-queue" (см. requirements.txt) — без этого app.job_queue будет None.
     app.job_queue.run_repeating(check_urgent_mail, interval=_URGENT_CHECK_INTERVAL_SECONDS, first=10)
     app.job_queue.run_daily(send_daily_mail_summary, time=_DAILY_SUMMARY_TIME)
+    app.job_queue.run_daily(check_subscription_reminders, time=_SUBSCRIPTION_CHECK_TIME)
 
     logger.info("Бот запущен, жду сообщений...")
     app.run_polling()

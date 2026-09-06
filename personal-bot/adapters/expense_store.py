@@ -16,14 +16,27 @@
     "currency": "EUR",
     "category": "none",                # "autoexpert" / "motus" / "none" (личное)
     "is_subscription": true,
-    "raw_summary": "..."               # короткое пояснение от Vision — на
+    "raw_summary": "...",              # короткое пояснение от Vision — на
                                         # случай, если сумму/сервис распознал
                                         # неточно, пользователь видит источник
+    "next_billing_date": "2026-10-06",  # YYYY-MM-DD или None — только для
+                                        # is_subscription=true, см.
+                                        # handlers/subscriptions.py
+    "reminded_for_date": null          # подстраховка от повторного
+                                        # напоминания о той же дате, если
+                                        # фоновая проверка сработает дважды
+                                        # в один день до того, как основной
+                                        # механизм (сдвиг даты сразу после
+                                        # напоминания) успеет сработать
 }
 
 category можно поправить кнопками после сохранения (см. handlers/photo.py) —
 правки уходят в adapters/expense_rules.py, тот же паттерн, что уже работает
 для срочности почты (adapters/urgency_rules.py).
+
+Напоминания о подписках (next_billing_date/reminded_for_date) — см.
+handlers/subscriptions.py, фоновая проверка через JobQueue.run_daily в
+main.py, тот же механизм, что send_daily_mail_summary для почты.
 """
 
 import datetime
@@ -74,9 +87,13 @@ def save_expense(
     category: str,
     is_subscription: bool,
     raw_summary: str,
+    next_billing_date: str | None = None,
 ) -> str:
     """Сохраняет новую трату, возвращает её id (для кнопок исправления
-    категории, см. handlers/photo.py)."""
+    категории/периода подписки, см. handlers/photo.py). next_billing_date —
+    только если Vision реально нашёл явную дату на чеке (см.
+    adapters/receipt_vision.py) — обычно её там нет, тогда None и
+    handlers/photo.py предложит кнопки выбора периода отдельно."""
     now = datetime.datetime.now()
     entry_id = now.strftime("%Y%m%d-%H%M%S")
     expenses = _load()
@@ -90,6 +107,8 @@ def save_expense(
             "category": category,
             "is_subscription": is_subscription,
             "raw_summary": raw_summary,
+            "next_billing_date": next_billing_date,
+            "reminded_for_date": None,
         }
     )
     _save(expenses)
@@ -117,3 +136,54 @@ def set_expense_category(entry_id: str, category: str) -> dict | None:
             _save(expenses)
             return e
     return None
+
+
+def set_expense_next_billing_date(entry_id: str, next_billing_date: str) -> dict | None:
+    """Устанавливает дату следующего списания вручную — либо после выбора
+    периода кнопкой (см. handlers/subscriptions.py, дата чека + месяц/год),
+    либо когда напоминание сработало и дата сдвигается на следующий период.
+    Сбрасывает reminded_for_date (новая дата ещё не была напоминанием),
+    возвращает обновлённую запись целиком, None если id не нашёлся."""
+    expenses = _load()
+    for e in expenses:
+        if e["id"] == entry_id:
+            e["next_billing_date"] = next_billing_date
+            e["reminded_for_date"] = None
+            _save(expenses)
+            return e
+    return None
+
+
+def mark_reminded(entry_id: str, for_date: str) -> None:
+    """Подстраховка от двойного напоминания о той же дате — см. docstring
+    поля reminded_for_date выше. Вызывать ДО set_expense_next_billing_date,
+    иначе она сама сбросит это поле в None."""
+    expenses = _load()
+    for e in expenses:
+        if e["id"] == entry_id:
+            e["reminded_for_date"] = for_date
+            _save(expenses)
+            return
+
+
+def list_due_subscriptions(within_days: int) -> list[dict]:
+    """Подписки (is_subscription=true) с известной next_billing_date,
+    попадающей в ближайшие within_days дней (включая "уже сегодня/прошло" —
+    полезно, если бот был выключен в момент, когда должен был напомнить).
+    handlers/subscriptions.check_subscription_reminders сдвигает
+    next_billing_date сразу после напоминания — именно это (не отдельный
+    reminded_for_date) не даёт напомнить о той же дате дважды."""
+    today = datetime.date.today()
+    horizon = today + datetime.timedelta(days=within_days)
+    due = []
+    for e in _load():
+        date_str = e.get("next_billing_date")
+        if not date_str or not e.get("is_subscription"):
+            continue
+        try:
+            billing_date = datetime.date.fromisoformat(date_str)
+        except ValueError:
+            continue
+        if billing_date <= horizon and e.get("reminded_for_date") != date_str:
+            due.append(e)
+    return due

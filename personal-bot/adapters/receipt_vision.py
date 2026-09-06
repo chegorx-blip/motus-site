@@ -36,6 +36,11 @@ _SYSTEM_PROMPT_TEMPLATE = """\
 (есть слова "subscription", "renews", "ежемесячно", "auto-renew" и т.п. — или \
 сервис общеизвестно подписочный, например Google One/Netflix/Apple iCloud), \
 false — если это разовая покупка/счёт.
+- next_billing_date: ТОЛЬКО если is_subscription=true И на изображении ЕСТЬ \
+явная дата следующего списания/продления ("renews on", "next billing date", \
+"следующее списание" и т.п.) — формат YYYY-MM-DD. Если такой явной даты нет \
+(большинство чеков показывают только дату ТЕКУЩЕГО платежа, не следующего) — \
+оставь пустой строкой, ничего не придумывай и не вычисляй сам.
 - category: к какому проекту относится трата — "autoexpert" (автосервис \
 AutoExpert — запчасти, оборудование, поставщики для сервиса), "motus" \
 (бизнес-проект Motus — импорт машин, реклама, CRM), или "none" (личное). \
@@ -56,6 +61,7 @@ _SCHEMA = {
         "amount": {"type": "number"},
         "currency": {"type": "string"},
         "is_subscription": {"type": "boolean"},
+        "next_billing_date": {"type": "string"},
         "category": {"type": "string", "enum": ["autoexpert", "motus", "none"]},
         "summary": {"type": "string"},
     },
@@ -65,6 +71,7 @@ _SCHEMA = {
         "amount",
         "currency",
         "is_subscription",
+        "next_billing_date",
         "category",
         "summary",
     ],
@@ -84,8 +91,8 @@ def analyze_receipt(image_path: str) -> dict:
     Принимает путь к скачанному файлу фото (см. handlers/photo.py), возвращает
     словарь вида:
     {"is_receipt": true, "service": "Google One", "amount": 4.99,
-     "currency": "EUR", "is_subscription": true, "category": "none",
-     "summary": "Оплата подписки Google One"}
+     "currency": "EUR", "is_subscription": true, "next_billing_date": "",
+     "category": "none", "summary": "Оплата подписки Google One"}
     """
     ext = image_path[image_path.rfind(".") :].lower()
     media_type = _MEDIA_TYPE_BY_EXT.get(ext, "image/jpeg")

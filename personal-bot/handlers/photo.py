@@ -21,6 +21,7 @@ from telegram.ext import ContextTypes
 from adapters.expense_store import save_expense
 from adapters.receipt_vision import analyze_receipt
 from config import TOPIC_FINANCE
+from handlers.subscriptions import build_period_keyboard
 
 _CATEGORY_LABELS = {"none": "Личное", "autoexpert": "AutoExpert", "motus": "Motus"}
 
@@ -62,6 +63,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
         return
 
+    next_billing_date = result.get("next_billing_date") or None
     entry_id = save_expense(
         service=result["service"],
         amount=result["amount"],
@@ -69,6 +71,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         category=result["category"],
         is_subscription=result["is_subscription"],
         raw_summary=result["summary"],
+        next_billing_date=next_billing_date,
     )
 
     sub_mark = " 🔁 подписка" if result["is_subscription"] else ""
@@ -78,9 +81,27 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"{result['summary']}\n"
         f"Категория: {label}"
     )
+    if next_billing_date:
+        text += f"\nСледующее списание: {next_billing_date}"
+
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         message_thread_id=TOPIC_FINANCE,
         text=text,
         reply_markup=build_category_keyboard(entry_id, result["category"]),
     )
+
+    # Дата продления с чека НЕ считывалась (обычный случай, см.
+    # adapters/receipt_vision.py) — отдельным сообщением спрашиваем период,
+    # чтобы напоминания (handlers/subscriptions.py) вообще заработали для
+    # этой подписки. Отдельное сообщение, не те же кнопки — категория и
+    # период это два независимых решения, совмещать в одной клавиатуре
+    # означало бы либо слишком много кнопок разом, либо не всегда понятно,
+    # к чему относится нажатие.
+    if result["is_subscription"] and not next_billing_date:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            message_thread_id=TOPIC_FINANCE,
+            text="🔁 На чеке нет даты следующего списания — как часто повторяется эта подписка?",
+            reply_markup=build_period_keyboard(entry_id),
+        )
