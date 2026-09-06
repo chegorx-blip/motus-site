@@ -2129,7 +2129,12 @@ section{
     <a href="#payment" data-i18n="navPayment"></a>
   </nav>
   <div class="topbar-right">
-  <a class="header-phone" href="tel:+35795588595" target="_top">
+  <!-- target="_top" removed (2026-09-06, owner report: "tap doesn't dial")
+       — it has no meaningful effect on a same-page tel: link and can make
+       some mobile/WebView browsers treat it as a frame-navigation request
+       instead of handing off to the system dialer. mailto:/tel: links
+       should carry no target attribute at all. -->
+  <a class="header-phone" href="tel:+35795588595">
     <svg viewBox="0 0 24 24"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
     <span>+357 95 5885 95</span>
   </a>
@@ -2254,7 +2259,12 @@ section{
         <button type="button" class="btn btn-primary" id="quickFormToggle" data-i18n="cta1"></button>
         <button type="button" class="btn btn-secondary" id="detailedToggle" data-i18n="detailedLinkText"></button>
         <div class="quick-popover" id="quickPopover">
-          <div class="mono quick-popover-perks" data-i18n="quickPerksLine"></div>
+          <!-- .quick-popover-perks line removed 2026-09-06 (owner's
+               text-audit request) — it repeated "Гарантия" a second time
+               in the same hero, already stated once by .hero-trust-line
+               above the buttons. The one non-duplicate idea it carried
+               ("turn-key price, no add-ons") was folded into heroWarranty
+               itself instead of kept as a separate text block. -->
           <form class="quick-form" id="quickForm" novalidate>
             <input type="text" name="qFirstName" required data-i18n-placeholder="quickFirstName">
             <input type="text" name="qLastName" required data-i18n-placeholder="quickLastName">
@@ -2409,7 +2419,7 @@ section{
         <svg viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
         <span>Giannou Kranidioti 21, Limassol 3110, Cyprus</span>
       </a>
-      <a class="contact-row" href="tel:+35795588595" target="_top">
+      <a class="contact-row" href="tel:+35795588595">
         <svg viewBox="0 0 24 24"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
         <span>+357 95 5885 95</span>
       </a>
@@ -2493,7 +2503,7 @@ const content = {
     routeRequest:"Your car request",
     routeVerified:"Search & verification",
     routeKeys:"Keys in your hand",
-    heroWarranty:"1-year / 15,000 km engine & gearbox warranty on cars from Japan",
+    heroWarranty:"1-year / 15,000 km engine & gearbox warranty — turn-key price, no add-ons",
     heroCyprusLead:"If none of this fits — you need a car right now, or a Japan import isn't your thing — we'll meet you halfway and source one locally, in Cyprus.",
     heroCyprusCta:"Search in Cyprus",
     processEyebrow:"How it works",
@@ -2547,7 +2557,6 @@ const content = {
     detailedLinkText:"Arrange a search",
     detailedOptionJapan:"Order a car from Japan",
     detailedOptionCyprus:"Find a car in Cyprus",
-    quickPerksLine:"Warranty · Service discount · All-in, turn-key price",
     tabCyprus:"Search in Cyprus",
     tabJapan:"Order from Japan",
     requestModalTitle:"Find your car",
@@ -2602,7 +2611,7 @@ const content = {
     routeRequest:"Ваша заявка на подбор авто",
     routeVerified:"Поиск и проверка",
     routeKeys:"Ключи у вас",
-    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км на автомобили из Японии",
+    heroWarranty:"Гарантия на ДВС и АКПП 1 год / 15 000 км — цена под ключ, без доплат",
     heroCyprusLead:"Если ничего из этого не подходит — нужна машина прямо сейчас, или подбор из Японии не ваш вариант — идём навстречу и ищем авто на месте, на Кипре.",
     heroCyprusCta:"Поиск на Кипре",
     processEyebrow:"Как это работает",
@@ -2656,7 +2665,6 @@ const content = {
     detailedLinkText:"Оформить подбор",
     detailedOptionJapan:"Заказать автомобиль из Японии",
     detailedOptionCyprus:"Подобрать автомобиль на Кипре",
-    quickPerksLine:"Гарантия · Скидка на сервис · Цена под ключ, без доплат",
     tabCyprus:"Поиск на Кипре",
     tabJapan:"Заказ из Японии",
     requestModalTitle:"Найти автомобиль",
@@ -2711,7 +2719,7 @@ const content = {
     routeRequest:"Το αίτημά σας για αυτοκίνητο",
     routeVerified:"Αναζήτηση & έλεγχος",
     routeKeys:"Τα κλειδιά σας",
-    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ σε αυτοκίνητα από την Ιαπωνία",
+    heroWarranty:"Εγγύηση κινητήρα/κιβωτίου 1 έτος / 15.000 χλμ — τιμή all-in, χωρίς προσαυξήσεις",
     heroCyprusLead:"Αν τίποτα από τα παραπάνω δεν σας ταιριάζει — χρειάζεστε αυτοκίνητο τώρα, ή η εισαγωγή από την Ιαπωνία δεν είναι για εσάς — σας συναντάμε στη μέση και βρίσκουμε ένα τοπικά, στην Κύπρο.",
     heroCyprusCta:"Αναζήτηση στην Κύπρο",
     processEyebrow:"Πώς λειτουργεί",
@@ -2765,7 +2773,6 @@ const content = {
     detailedLinkText:"Οργανώστε την αναζήτηση",
     detailedOptionJapan:"Παραγγελία αυτοκινήτου από την Ιαπωνία",
     detailedOptionCyprus:"Αναζήτηση αυτοκινήτου στην Κύπρο",
-    quickPerksLine:"Εγγύηση · Έκπτωση σέρβις · Τιμή all-in, χωρίς προσαυξήσεις",
     tabCyprus:"Αναζήτηση στην Κύπρο",
     tabJapan:"Παραγγελία από Ιαπωνία",
     requestModalTitle:"Βρείτε το αυτοκίνητό σας",
