@@ -911,6 +911,14 @@ section{
   .request-perk-chevron{animation:none;}
 }
 .request-perk-detail{
+  /* display:block is required here — this is a <span> by default
+     (display:inline), and max-height/overflow:hidden don't clip an
+     inline element's content the way they clip a block one. Confirmed
+     live: max-height computed as 0px correctly, but the element's real
+     rendered height was still ~56px because the browser was laying out
+     its text as inline content ignoring the height cap — the closed
+     accordion state was reserving nearly as much space as the open one. */
+  display:block;
   max-height:0;
   overflow:hidden;
   opacity:0;
