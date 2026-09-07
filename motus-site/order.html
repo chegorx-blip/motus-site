@@ -92,44 +92,10 @@
   --line: rgba(74,109,94,0.35);
 }
 
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg: var(--ink);
-    --bg-panel: var(--pine);
-    --text: var(--paper);
-    --text-on-panel: var(--paper);
-    --text-muted: var(--stone);
-    --accent: var(--bronze);
-    --surface: rgba(246,243,237,0.045);
-    --border: rgba(233,228,217,0.16);
-    --dot: var(--bronze);
-    --line: rgba(233,228,217,0.22);
-  }
-}
-:root[data-theme="dark"]{
-  --bg: var(--ink);
-  --bg-panel: var(--pine);
-  --text: var(--paper);
-  --text-on-panel: var(--paper);
-  --text-muted: var(--stone);
-  --accent: var(--bronze);
-  --surface: rgba(246,243,237,0.045);
-  --border: rgba(233,228,217,0.16);
-  --dot: var(--bronze);
-  --line: rgba(233,228,217,0.22);
-}
-:root[data-theme="light"]{
-  --bg: var(--paper);
-  --bg-panel: var(--pine);
-  --text: var(--ink);
-  --text-on-panel: var(--paper);
-  --text-muted: var(--sage);
-  --accent: var(--bronze);
-  --surface: #ffffff;
-  --border: rgba(74,109,94,0.28);
-  --dot: var(--bronze);
-  --line: rgba(74,109,94,0.35);
-}
+/* Auto dark-mode removed 2026-09-07 — see index-hero-demo.html's
+   identical removal comment for the full reasoning (8-site research: no
+   real premium/lead-gen site lets a visitor's system theme recolor the
+   page). Kept in sync so both pages behave the same way. */
 
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}

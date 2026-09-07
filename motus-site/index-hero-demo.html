@@ -79,44 +79,22 @@
   --line: rgba(74,109,94,0.35);
 }
 
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg: var(--ink);
-    --bg-panel: var(--pine);
-    --text: var(--paper);
-    --text-on-panel: var(--paper);
-    --text-muted: var(--stone);
-    --accent: var(--bronze);
-    --surface: rgba(246,243,237,0.045);
-    --border: rgba(233,228,217,0.16);
-    --dot: var(--bronze);
-    --line: rgba(233,228,217,0.22);
-  }
-}
-:root[data-theme="dark"]{
-  --bg: var(--ink);
-  --bg-panel: var(--pine);
-  --text: var(--paper);
-  --text-on-panel: var(--paper);
-  --text-muted: var(--stone);
-  --accent: var(--bronze);
-  --surface: rgba(246,243,237,0.045);
-  --border: rgba(233,228,217,0.16);
-  --dot: var(--bronze);
-  --line: rgba(233,228,217,0.22);
-}
-:root[data-theme="light"]{
-  --bg: var(--paper);
-  --bg-panel: var(--pine);
-  --text: var(--ink);
-  --text-on-panel: var(--paper);
-  --text-muted: var(--sage);
-  --accent: var(--bronze);
-  --surface: #ffffff;
-  --border: rgba(74,109,94,0.28);
-  --dot: var(--bronze);
-  --line: rgba(74,109,94,0.35);
-}
+/* Auto dark-mode (prefers-color-scheme) and the unused manual
+   [data-theme] variants removed 2026-09-07 — owner spotted the site
+   turning dark on their own phone (system dark mode was on) and asked
+   for a real comparison before deciding. Researched 8 real sites first
+   (Porsche, Mercedes-Benz, BMW USA, Range Rover, Stripe, Airbnb, plus
+   2 Russian dealer sites, Rolf and Avilon): every single one ships a
+   fixed, always-light appearance regardless of the visitor's device
+   theme — even Stripe and Airbnb, whose CSS frameworks technically
+   contain leftover prefers-color-scheme selectors, never actually wire
+   them up to anything live. A car-import/inspection brand especially
+   depends on photos and colors being seen exactly as shot, not
+   recolored by whatever mode a visitor's phone happens to be in at the
+   time. The [data-theme] rules being removed alongside it were already
+   dead code — nothing in this file's JS ever sets that attribute, so
+   they never fired either; kept them in sync with the same decision
+   rather than leaving them as an inconsistent half-removed feature. */
 
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
