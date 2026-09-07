@@ -1081,12 +1081,22 @@ svg[fill="currentColor"]{stroke:none !important; fill:currentColor !important;}
    weaker than .btn-primary's solid fill at rest, filling in only on
    hover/tap; the owner wants both buttons equally prominent from the
    start, not one looking secondary until touched. */
+/* Back to an outline instead of a solid fill (2026-09-07 audit +
+   funnel-priority decision) — "Закажите обратный звонок" (.btn-primary)
+   is the low-friction entry point (answers now, no page change) and
+   should read as THE main action; "Оформить подбор" is the higher-
+   commitment path (a full detailed form on order.html) for a visitor
+   who already knows exactly what they want. Two solid-filled buttons of
+   equal visual weight (the previous state) gave no such hint about which
+   one to try first — lead-gen best practice (and every reference site
+   checked, e.g. Volvo/Range Rover) pairs one solid primary with one
+   outlined secondary, never two solids side by side. */
 .btn-secondary{
-  background:var(--accent);
-  color:var(--ink);
+  background:transparent;
+  color:var(--accent);
   border-color:var(--accent);
 }
-.btn-secondary:hover{filter:brightness(1.08);}
+.btn-secondary:hover{background:var(--accent); color:var(--ink);}
 
 .hero.ready .eyebrow{animation:rise .6s ease .05s forwards;}
 .hero.ready .headline{animation:rise .6s ease .16s forwards;}
@@ -1334,11 +1344,22 @@ section{
   font-size:1.08em;
 }
 /* Slow pulse added 2026-09-06 per owner's explicit request ("сделай чтобы
-   он тоже медленно моргал") — reuses the exact same beaconOpacity keyframe/
-   duration as .logo-dot and .route-stop-dot.start so every "beacon" element
-   on the page pulses in the same rhythm, not a one-off animation invented
-   just for this icon. */
-.hero-trust-line-lead svg{animation:beaconOpacity 3.4s ease-in-out infinite; animation-delay:0s;}
+   он тоже медленно моргал") — same duration/rhythm as .logo-dot's own
+   beacon, but that keyframe animates fill-opacity (for a solid SVG path
+   fill) while this icon is a stroke-only outline svg, so it needs an
+   opacity keyframe instead. The rule referenced "beaconOpacity" here,
+   which was never actually defined anywhere in this file (a 2026-09-07
+   code audit caught it) — the browser was silently ignoring the whole
+   animation the entire time, so this icon never actually pulsed despite
+   the comment/owner request saying it should. Defining the missing
+   keyframe now (kept file-local since nothing else needs this exact
+   svg-opacity shape yet — see the technical-debt note in project memory
+   about eventually unifying all the site's beacon-style keyframes). */
+.hero-trust-line-lead svg{animation:heroTrustBeacon 3.4s ease-in-out infinite; animation-delay:0s;}
+@keyframes heroTrustBeacon{
+  0%,100%{opacity:1;}
+  50%{opacity:0;}
+}
 @media (prefers-reduced-motion: reduce){
   .hero-trust-line-lead svg{animation:none;}
 }
@@ -1796,7 +1817,13 @@ section{
 .cookie-banner{
   position:fixed;
   left:0; right:0; bottom:0;
-  z-index:60;
+  /* Raised from 60 (same as .chatfab) to 70, 2026-09-07 audit finding —
+     two independent fixed-position elements sharing a z-index only work
+     by accident, relying on DOM order never changing; the cookie banner
+     is the more important/blocking of the two (needs an explicit choice
+     before dismissing) so it should reliably sit above the chat button,
+     not just happen to. */
+  z-index:70;
   background:var(--ink);
   border-top:1px solid rgba(233,228,217,.16);
   box-shadow:0 -4px 20px rgba(0,0,0,.25);
@@ -2492,7 +2519,13 @@ section{
     <h2 data-i18n="finalTitle"></h2>
     <p data-i18n="finalBody"></p>
 
-    <a href="order.html" class="btn btn-primary" data-i18n="ctaOrder"></a>
+    <!-- Was <a href="order.html">, jumping straight to the Japan-only
+         order form (2026-09-07 audit + funnel plan) — inconsistent with
+         the identically-labeled hero/topbar buttons, which open the
+         Japan/Cyprus choice popover first. Changed to a <button> reusing
+         #topbarCta's exact scroll-then-open mechanic so all three
+         "Оформить подбор" entry points on the page behave the same way. -->
+    <button type="button" class="btn btn-primary" id="finalCtaOrder" data-i18n="ctaOrder"></button>
 
     <div class="messenger-row">
       <a class="messenger-circle messenger-circle-telegram" href="https://t.me/motus_cy" target="_blank" rel="noopener" aria-label="Telegram">
@@ -3110,7 +3143,15 @@ function render(lang){
   localStorage.setItem(STORAGE_KEY, lang);
 }
 
-document.querySelectorAll('.langswitch button').forEach(btn=>{
+// Was '.langswitch button' — too broad on mobile, where #langswitchToggle
+// (the globe icon that opens the compact menu) is also a <button> inside
+// .langswitch but carries no data-lang. Clicking it called
+// render(undefined), which crashed a few lines into render() trying to
+// read a key off content[undefined] (2026-09-07 audit finding, live-
+// reproduced: TypeError reading 'navWhy' of undefined on every mobile
+// language-menu open). '[data-lang]' scopes this to the actual language
+// buttons only.
+document.querySelectorAll('.langswitch button[data-lang]').forEach(btn=>{
   btn.addEventListener('click', ()=> render(btn.dataset.lang));
 });
 
@@ -3386,15 +3427,10 @@ function closeDetailedPopover(){
 }
 detailedToggle.addEventListener('click', ()=>{
   closeQuickPopover(); // only one popover open at a time under the row
-  const line = detailedPopover.querySelector('.route-line');
-  if(line && line.style.transition === 'none'){
-    // Force layout so the browser commits the transition:none + offset:200
-    // reset from the previous close before we re-enable the transition and
-    // add "open" — otherwise the browser can coalesce both changes into one
-    // frame and skip straight to the final state, no visible draw-in.
-    void detailedPopover.offsetHeight;
-    line.style.transition = '';
-  }
+  // (Dead .route-line replay-reset code removed here 2026-09-07 audit —
+  // #detailedPopover hasn't contained a .route-mark/.route-line since the
+  // owner had it moved to #quickPopover instead; querySelector always
+  // returned null here, so this block never ran.)
   // No top/padding-bottom math needed anymore (2026-09-06 rebuild) — see
   // the HTML comment above #ctaBlock. Toggling "open" just grows this
   // element's own max-height in normal document flow, which the browser
@@ -3411,32 +3447,40 @@ quickFormToggle.addEventListener('click', closeDetailedPopover);
 // topbar. Waits for the scroll to actually finish before opening, since
 // opening immediately would measure #ctaRowDual's position mid-scroll and
 // place the popover in the wrong spot.
-const topbarCta = document.getElementById('topbarCta');
-if(topbarCta){
-  topbarCta.addEventListener('click', ()=>{
-    const heroSection = document.getElementById('hero');
-    if(!heroSection){ detailedToggle.click(); return; }
-    let settled = false;
-    const openAfterScroll = ()=>{
-      if(settled) return;
-      settled = true;
-      window.removeEventListener('scroll', onScroll);
-      if(!detailedPopover.classList.contains('open')) detailedToggle.click();
-    };
-    let lastY = window.scrollY;
-    const onScroll = ()=>{
-      // scrollend isn't supported everywhere yet — fall back to "position
-      // stopped changing" via rAF polling instead of a fixed timeout guess.
-      requestAnimationFrame(()=>{
-        if(window.scrollY === lastY) openAfterScroll();
-        lastY = window.scrollY;
-      });
-    };
-    window.addEventListener('scroll', onScroll);
-    heroSection.scrollIntoView({behavior:'smooth', block:'start'});
-    setTimeout(openAfterScroll, 900); // safety net if scroll events stop firing early
-  });
+// Shared by every "Оформить подбор" entry point that lives OUTSIDE the
+// hero (topbar button, final-section button, and any future one) —
+// scrolls up to the hero and opens the Japan/Cyprus choice popover there,
+// instead of each one duplicating this scroll-then-open dance separately
+// (2026-09-07 refactor: was copy-pasted once already for #topbarCta,
+// about to be copy-pasted a second time for the final section's button
+// before being pulled out here instead).
+function scrollToHeroAndOpenDetailedPopover(){
+  const heroSection = document.getElementById('hero');
+  if(!heroSection){ detailedToggle.click(); return; }
+  let settled = false;
+  const openAfterScroll = ()=>{
+    if(settled) return;
+    settled = true;
+    window.removeEventListener('scroll', onScroll);
+    if(!detailedPopover.classList.contains('open')) detailedToggle.click();
+  };
+  let lastY = window.scrollY;
+  const onScroll = ()=>{
+    // scrollend isn't supported everywhere yet — fall back to "position
+    // stopped changing" via rAF polling instead of a fixed timeout guess.
+    requestAnimationFrame(()=>{
+      if(window.scrollY === lastY) openAfterScroll();
+      lastY = window.scrollY;
+    });
+  };
+  window.addEventListener('scroll', onScroll);
+  heroSection.scrollIntoView({behavior:'smooth', block:'start'});
+  setTimeout(openAfterScroll, 900); // safety net if scroll events stop firing early
 }
+const topbarCta = document.getElementById('topbarCta');
+if(topbarCta) topbarCta.addEventListener('click', scrollToHeroAndOpenDetailedPopover);
+const finalCtaOrder = document.getElementById('finalCtaOrder');
+if(finalCtaOrder) finalCtaOrder.addEventListener('click', scrollToHeroAndOpenDetailedPopover);
 
 const quickForm = document.getElementById('quickForm');
 const quickFormSuccess = document.getElementById('quickFormSuccess');
@@ -3511,8 +3555,13 @@ window.addEventListener('pageshow', (e)=>{
 });
 </script>
 
-<!-- Vercel Web Analytics + Speed Insights (free, no cookie banner needed — collects no personal data) -->
-<script defer src="/_vercel/insights/script.js"></script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
+<!-- Vercel Web Analytics + Speed Insights scripts removed 2026-09-07
+     (audit finding) — they only work when the site is actually served by
+     Vercel, which auto-injects real files at these paths at request time.
+     The site has been hosted on GitHub Pages since 2026-09-06 (see
+     project memory, project_motus_site_photo_weight_fix.md), where these
+     paths don't exist — every page load was throwing two silent 404s in
+     the console for nothing. If the site ever moves back to Vercel
+     hosting, re-add these two lines; until then they're dead weight. -->
 
 </body></html>
