@@ -1360,7 +1360,14 @@ section{
 }
 .request-group-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  /* minmax(0,1fr) not just 1fr (2026-09-07 audit finding) — a bare 1fr
+     track can't shrink below its content's min-content width, which risks
+     a horizontal overflow of a pixel or two on the fractional viewport
+     widths real phones report (vs. the round numbers Playwright/DevTools
+     use). This grid holds inputs with potentially long values (phone,
+     email, budget) — same overflow risk class already seen once in
+     .quick-form on the home page. */
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   gap:14px 14px;
 }
 .request-field.full{grid-column:1 / -1;}
@@ -2033,7 +2040,18 @@ function fieldEl(field, strings){
     input.type = field.type;
     input.name = field.name;
     if(field.required) input.required = true;
-    if(field.placeholder) input.placeholder = strings[field.placeholder] || '';
+    // Always set SOME placeholder on required fields, even a non-breaking
+    // space fallback (2026-09-07 audit finding) — the CSS rule
+    // `:invalid:not(:placeholder-shown)` (below, styles required-and-empty
+    // fields red) silently stops working for any field that lacks a real
+    // placeholder attribute at all, since :placeholder-shown can only ever
+    // match when one exists. Previously this depended entirely on nobody
+    // forgetting to add `placeholder:` when adding a new required field to
+    // formSchema — a real instance of exactly that already happened once
+    // (firstName/lastName rendering red from page load). Falling back to
+    // ' ' here makes the invariant hold structurally instead.
+    if(field.required) input.placeholder = field.placeholder ? (strings[field.placeholder] || '') : ' ';
+    else if(field.placeholder) input.placeholder = strings[field.placeholder] || '';
     wrap.appendChild(span);
     wrap.appendChild(input);
   } else if(field.type === 'textarea'){

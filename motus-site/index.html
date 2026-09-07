@@ -927,7 +927,13 @@ h1.headline{
 }
 .quick-form{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  /* minmax(0,1fr) not just 1fr (2026-09-07 audit finding) — a bare 1fr
+     track can't shrink below its content's min-content width, which risks
+     a horizontal overflow of a pixel or two on the fractional viewport
+     widths real phones report (vs. the round numbers Playwright/DevTools
+     use) — exactly the class of bug that clipped "Телефон, Telegram или
+     WhatsApp" in this form's inputs before (see the width note below). */
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   gap:10px;
   width:100%;
   /* Widened alongside .quick-popover (2026-09-03) — at the old 460px, each
@@ -2090,7 +2096,10 @@ section{
 }
 .request-group-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  /* minmax(0,1fr), see the .quick-form comment above for why (2026-09-07
+     audit finding) — this grid holds inputs with potentially long values
+     (phone, email, budget), same overflow risk class. */
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   gap:14px 14px;
 }
 .request-field.full{grid-column:1 / -1;}
@@ -2926,56 +2935,7 @@ const content = {
   }
 };
 
-const formSchema = {
-  cyprus:[
-    {group:'grpContact', fields:[
-      {key:'firstName', type:'text', required:true, name:'cyFirstName'},
-      {key:'lastName', type:'text', required:true, name:'cyLastName'},
-      {key:'phone', type:'tel', required:true, name:'cyPhone', placeholder:'placeholderPhone'},
-      {key:'telegram', type:'text', required:false, name:'cyTelegram', placeholder:'placeholderTelegram'},
-      {key:'email', type:'email', required:false, name:'cyEmail'},
-      {key:'city', type:'select', required:false, name:'cyCity', options:'cityOptions'}
-    ]},
-    {group:'grpVehicle', fields:[
-      {key:'model', type:'text', required:true, name:'cyModel', full:true},
-      {key:'color', type:'text', required:false, name:'cyColor', full:true},
-      {key:'budgetFrom', type:'text', required:true, name:'cyBudgetFrom', placeholder:'placeholderBudgetFrom'},
-      {key:'budgetTo', type:'text', required:true, name:'cyBudgetTo', placeholder:'placeholderBudgetTo'},
-      {key:'yearFrom', type:'text', required:false, name:'cyYearFrom'},
-      {key:'yearTo', type:'text', required:false, name:'cyYearTo'},
-      {key:'engine', type:'select', required:false, name:'cyEngine', options:'engineOptions', full:true},
-      {key:'mileageFrom', type:'text', required:false, name:'cyMileageFrom'},
-      {key:'mileageTo', type:'text', required:false, name:'cyMileageTo'},
-      {key:'extra', type:'textarea', required:false, name:'cyExtra', full:true},
-      {key:'timing', type:'radio', required:true, name:'cyTiming', options:'timingOptions', full:true}
-    ]}
-  ],
-  japan:[
-    {group:'grpContact', fields:[
-      {key:'firstName', type:'text', required:true, name:'jpFirstName'},
-      {key:'lastName', type:'text', required:true, name:'jpLastName'},
-      {key:'phone', type:'tel', required:true, name:'jpPhone', placeholder:'placeholderPhone'},
-      {key:'telegram', type:'text', required:false, name:'jpTelegram', placeholder:'placeholderTelegram'},
-      {key:'email', type:'email', required:false, name:'jpEmail'},
-      {key:'city', type:'select', required:false, name:'jpCity', options:'cityOptions'}
-    ]},
-    {group:'grpVehicle', fields:[
-      {key:'model', type:'text', required:true, name:'jpModel', full:true},
-      {key:'color', type:'text', required:false, name:'jpColor', full:true},
-      {key:'budgetFrom', type:'text', required:true, name:'jpBudgetFrom', placeholder:'placeholderBudgetFrom'},
-      {key:'budgetTo', type:'text', required:true, name:'jpBudgetTo', placeholder:'placeholderBudgetTo'},
-      {key:'yearLimit', type:'select', required:false, name:'jpYearLimit', options:'yearLimitOptions', full:true},
-      {key:'engine', type:'select', required:false, name:'jpEngine', options:'engineOptions', full:true},
-      {key:'mileageFrom', type:'text', required:false, name:'jpMileageFrom'},
-      {key:'mileageTo', type:'text', required:false, name:'jpMileageTo'},
-      {key:'extra', type:'textarea', required:false, name:'jpExtra', full:true},
-      {key:'timing', type:'radio', required:true, name:'jpTiming', options:'timingOptions', full:true}
-    ]}
-  ]
-};
-
 const STORAGE_KEY = 'motus_preview_lang';
-let requestIntent = 'japan';
 
 function detectLang(){
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -2984,103 +2944,6 @@ function detectLang(){
   if(nav.startsWith('ru')) return 'ru';
   if(nav.startsWith('el')) return 'el';
   return 'en';
-}
-
-function fieldEl(field, strings){
-  const wrap = document.createElement('label');
-  wrap.className = 'request-field' + (field.full ? ' full' : '');
-
-  if(field.type === 'text' || field.type === 'tel' || field.type === 'email'){
-    const span = document.createElement('span');
-    span.className = 'mono';
-    span.textContent = strings[field.key] || field.key;
-    const input = document.createElement('input');
-    input.type = field.type;
-    input.name = field.name;
-    if(field.required) input.required = true;
-    if(field.placeholder) input.placeholder = strings[field.placeholder] || '';
-    wrap.appendChild(span);
-    wrap.appendChild(input);
-  } else if(field.type === 'textarea'){
-    const span = document.createElement('span');
-    span.className = 'mono';
-    span.textContent = strings[field.key] || field.key;
-    const ta = document.createElement('textarea');
-    ta.name = field.name;
-    if(field.required) ta.required = true;
-    wrap.appendChild(span);
-    wrap.appendChild(ta);
-  } else if(field.type === 'select'){
-    const span = document.createElement('span');
-    span.className = 'mono';
-    span.textContent = strings[field.key] || field.key;
-    const sel = document.createElement('select');
-    sel.name = field.name;
-    if(field.required) sel.required = true;
-    const placeholderOpt = document.createElement('option');
-    placeholderOpt.value = '';
-    placeholderOpt.textContent = '—';
-    sel.appendChild(placeholderOpt);
-    const opts = strings.options[field.options] || [];
-    opts.forEach(optText=>{
-      const opt = document.createElement('option');
-      opt.value = optText;
-      opt.textContent = optText;
-      sel.appendChild(opt);
-    });
-    wrap.appendChild(span);
-    wrap.appendChild(sel);
-  } else if(field.type === 'radio'){
-    const span = document.createElement('span');
-    span.className = 'mono';
-    span.textContent = strings[field.key] || field.key;
-    wrap.appendChild(span);
-    const group = document.createElement('div');
-    group.className = 'chip-group';
-    group.setAttribute('role', 'radiogroup');
-    const opts = strings.options[field.options] || [];
-    opts.forEach((optText, i)=>{
-      const chip = document.createElement('label');
-      chip.className = 'chip';
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = field.name;
-      input.value = optText;
-      if(field.required && i === 0) input.required = true;
-      const span2 = document.createElement('span');
-      span2.textContent = optText;
-      chip.appendChild(input);
-      chip.appendChild(span2);
-      group.appendChild(chip);
-    });
-    wrap.appendChild(group);
-  }
-  return wrap;
-}
-
-function renderFormGroups(lang, intent){
-  const container = document.getElementById('requestGroups');
-  if(!container) return;
-  const strings = content[lang].fields;
-  const schema = formSchema[intent];
-  container.innerHTML = '';
-  schema.forEach(groupDef=>{
-    const groupEl = document.createElement('div');
-    groupEl.className = 'request-group';
-    const title = document.createElement('div');
-    title.className = 'mono request-group-title';
-    title.textContent = strings[groupDef.group] || groupDef.group;
-    groupEl.appendChild(title);
-    const grid = document.createElement('div');
-    grid.className = 'request-group-grid';
-    groupDef.fields.forEach(field=>{
-      grid.appendChild(fieldEl(field, strings));
-    });
-    groupEl.appendChild(grid);
-    container.appendChild(groupEl);
-  });
-  const consent0Row = document.getElementById('consent0Row');
-  if(consent0Row) consent0Row.style.display = (intent === 'japan') ? 'flex' : 'none';
 }
 
 function render(lang){
@@ -3117,7 +2980,6 @@ function render(lang){
     const key = el.getAttribute('data-i18n-placeholder');
     if(dict.fields && dict.fields[key] !== undefined) el.placeholder = dict.fields[key];
   });
-  renderFormGroups(lang, requestIntent);
   localStorage.setItem(STORAGE_KEY, lang);
 }
 
