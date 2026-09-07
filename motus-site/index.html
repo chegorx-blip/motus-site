@@ -814,6 +814,19 @@ h1.headline{
   opacity:0;
   position:relative;
 }
+/* Desktop-only: "Закажите обратный звонок" and "Оформить подбор" sat at
+   their own natural (text-length) width side by side, so the shorter
+   "Оформить подбор" always read visibly smaller than its neighbor even
+   though both are equally important entry points (owner report, real
+   desktop screenshot, 2026-09-07 — noticeably different button widths).
+   flex:1 makes both share the row's width equally; min/max-width keeps
+   them from stretching absurdly wide on a very large screen or shrinking
+   below a comfortable tap/click target on a narrower one. Mobile already
+   has its own width:100% stacked rule below (untouched) — this only
+   targets the side-by-side desktop layout. */
+@media (min-width:641px){
+  .cta-row-dual > .btn{flex:1 1 0; min-width:180px; max-width:280px;}
+}
 @media (max-width:640px){
   /* Below the row's own nowrap breakpoint the two CTA buttons stack, but
      each kept its natural content width — "Закажите обратный звонок"
