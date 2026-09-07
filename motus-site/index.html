@@ -214,6 +214,16 @@ a{color:inherit;}
   padding:26px 24px 22px;
   opacity:0; transform:translateY(-8px);
 }
+/* Mobile-only: this strip's text labels are already hidden everywhere
+   (.route-stop-label{display:none} below — icon-only, per an earlier
+   owner request), so on a narrow phone it's 3 unlabeled icons a visitor
+   can't actually read meaning into, while still taking up real vertical
+   space right above the hero's own CTA buttons — direct cause of a real
+   bug (owner report + real-phone screenshot, 2026-09-07): those buttons
+   were partly hidden behind the cookie banner on a first-time visit
+   because too much of the first screen was already spent above them.
+   Desktop keeps it — there's room to spare and it's a nice detail there. */
+@media (max-width:640px){ .route-strip{display:none;} }
 .hero.ready .route-strip{animation:riseRoute .6s ease .1s forwards;}
 @keyframes riseRoute{to{opacity:1; transform:translateY(0);}}
 .route-stop{display:flex; align-items:center; gap:8px; flex:none;}
@@ -628,6 +638,15 @@ a{color:inherit;}
     padding-top:6%;
     margin-bottom:8px;
   }
+  /* Mobile-only: the 420px floor was eating close to half of a typical
+     844px-tall phone screen on its own, on top of the headline — direct
+     contributor to a real bug (owner report + real-phone screenshot,
+     2026-09-07): the hero's own two CTA buttons were partly hidden behind
+     the cookie banner on a first visit because too much of the first
+     screen was already spent above them, between this photo and the
+     headline. Desktop's height:min(56vw,72vh)/420px floor untouched —
+     this only lowers the floor on narrow phones. */
+  @media (max-width:640px){ .hero-visual{min-height:300px;} }
   .hero-visual .hero-bg{
     position:absolute;
     inset:0;
@@ -738,6 +757,19 @@ h1.headline{
   line-height:1.14;
   margin-bottom:20px;
   opacity:0;
+}
+/* Mobile-only: at 390px the clamp() formula above works out to ~28px, so
+   the 30px floor is what actually renders — the 6-line headline this text
+   wraps to on a narrow phone then eats almost the entire first screen,
+   leaving the hero's own two CTA buttons only partly visible or fully
+   below the fold with no scroll indication (owner report + real-phone
+   screenshot, 2026-09-07: the second "Оформить подбор" button wasn't
+   visible at all without scrolling by hand first). Shrinking just the
+   floor here (desktop's clamp() ceiling is untouched) gets both buttons
+   into the first viewport on a typical phone without cutting the headline
+   down to fewer/shorter phrases. */
+@media (max-width:640px){
+  h1.headline{font-size:26px; line-height:1.2;}
 }
 .subhead{
   font-size:17px;
@@ -3282,7 +3314,19 @@ detailedToggle.addEventListener('click', ()=>{
   // the HTML comment above #ctaBlock. Toggling "open" just grows this
   // element's own max-height in normal document flow, which the browser
   // reflows on its own in the same paint every time.
+  const wasOpen = detailedPopover.classList.contains('open');
   detailedPopover.classList.toggle('open');
+  // Owner report, 2026-09-07 (live phone screenshot): this button itself
+  // sits low enough on a real phone screen that the two newly-revealed
+  // Japan/Cyprus options grow in BELOW the visible area — nothing here
+  // ever scrolled the screen to them, so a visitor who doesn't scroll by
+  // hand sees no visible change at all when tapping this button. The
+  // scroll-to-and-center dance already built for the page's OTHER
+  // "Оформить подбор" entry points (topbar, final section — see
+  // scrollToHeroAndOpenDetailedPopover below) was never wired up to this,
+  // the hero's own original button. Reuse it here too, but only when
+  // actually opening (not when this same click just closed it again).
+  if(!wasOpen) scrollToHeroAndOpenDetailedPopover();
 });
 // Opening the quick-callback popover should close this one too, so they
 // never show at the same time and fight over padding-bottom.
