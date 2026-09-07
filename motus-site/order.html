@@ -1,3 +1,16 @@
+<!-- No cookie-consent banner on this page, unlike index-hero-demo.html —
+     deliberate, not an oversight (2026-09-07 audit flagged the absence,
+     owner explicitly decided to leave it this way): this page has no
+     analytics script at all (no GA_MEASUREMENT_ID reference anywhere
+     here), so there's nothing on this page that needs cookie consent yet.
+     Personal-data consent for anyone actually submitting the form is
+     handled separately and correctly — see the consent1/consent2
+     checkboxes in #requestForm below, which is the right place for that
+     (a cookie banner covers passive visitors being tracked; these
+     checkboxes cover someone who has already decided to hand over their
+     contact details). If analytics is ever wired up on this page, add
+     the same cookie-banner markup/JS that index-hero-demo.html has
+     alongside it — don't add analytics here without it. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -903,8 +916,19 @@ section{
   stroke-linecap:round;
   stroke-linejoin:round;
   transition:transform .25s ease;
-  animation:beaconOpacity 3.4s ease-in-out infinite;
+  /* Was animation:beaconOpacity — that name was never actually defined
+     anywhere in this file (2026-09-07 code audit finding), so the
+     browser silently ignored the whole animation; this chevron never
+     pulsed despite the comment above saying it should. This icon is a
+     stroke-only outline svg, so it needs an opacity keyframe (the
+     .beacon keyframe already in this file animates fill-opacity, for a
+     solid-fill icon like the route-strip dot, not this one). */
+  animation:requestPerkChevronBeacon 3.4s ease-in-out infinite;
   animation-delay:0s;
+}
+@keyframes requestPerkChevronBeacon{
+  0%,100%{opacity:1;}
+  50%{opacity:0;}
 }
 .request-perk.open .request-perk-chevron{transform:rotate(180deg);}
 @media (prefers-reduced-motion: reduce){
@@ -964,6 +988,15 @@ section{
   border-color:var(--bronze);
   background:rgba(246,243,237,0.11);
 }
+/* :not(:placeholder-shown) is what keeps this from flagging an untouched
+   empty required field red on page load — it only matches once a field
+   HAS a placeholder to show (2026-09-07 audit finding: firstName/lastName
+   had no placeholder defined in formSchema, so :placeholder-shown never
+   matched them at all, and :not(:placeholder-shown) was true from the
+   very first paint — both fields showed red before the visitor had done
+   anything). Fixed by giving every required text field in formSchema a
+   placeholder now, but this rule's dependency on that is easy to forget
+   when adding a NEW required field later — give it a placeholder too. */
 .request-field input:invalid:not(:placeholder-shown){border-color:#c97b6b;}
 
 .request-submit{
@@ -1374,6 +1407,12 @@ section{
   padding-top:18px;
   border-top:1px solid rgba(246,243,237,0.18);
 }
+.request-consent-note{
+  font-size:11px;
+  color:var(--stone);
+  opacity:0.75;
+  margin:0 0 4px;
+}
 .request-checkbox{
   display:flex;
   align-items:flex-start;
@@ -1398,8 +1437,16 @@ section{
        mistake as the "← Motus" link above and its real cause. -->
   <a href="index-hero-demo.html" class="logo-mark" aria-label="Motus"><svg viewBox="0 0 2366 669" aria-hidden="true"><defs><linearGradient id="motusChrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.28" stop-color="#c8ced2"/><stop offset="0.48" stop-color="#5c676d"/><stop offset="0.58" stop-color="#eef1f2"/><stop offset="0.82" stop-color="#98a1a6"/><stop offset="1" stop-color="#f4f6f7"/></linearGradient></defs><path d="M 241.3 478.2 C 241.6 476.7 242.6 470.7 243.6 464.8 L 245.4 454.0 L 280.2 454.0 C 304.2 454.0 315.0 453.7 315.0 452.9 C 315.0 451.7 366.7 155.6 367.5 152.3 L 368.0 150.0 L 403.4 150.0 L 438.7 150.0 L 469.5 217.5 C 486.4 254.7 500.6 285.3 501.0 285.5 C 501.4 285.7 503.9 283.1 506.6 279.7 C 509.3 276.3 533.5 245.7 560.4 211.8 L 609.3 150.0 L 642.8 150.0 L 676.2 150.0 L 675.6 153.2 C 671.9 173.5 623.0 451.8 623.0 452.7 C 623.0 453.7 636.8 454.0 692.8 454.0 L 762.6 454.0 L 758.2 449.2 C 743.4 433.4 734.1 412.8 730.9 389.2 C 729.3 377.4 730.4 353.2 733.0 340.7 C 746.5 276.8 794.8 228.1 855.5 217.4 C 868.6 215.1 893.1 215.0 905.5 217.3 C 951.9 225.7 982.0 256.2 989.6 302.5 C 991.8 315.9 991.0 341.3 988.0 355.3 C 980.2 392.0 959.8 425.9 932.4 448.0 L 924.9 454.0 L 1001.9 454.0 L 1079.0 454.0 L 1075.6 448.8 C 1066.6 434.5 1062.9 415.7 1065.0 394.5 C 1065.8 386.2 1099.9 188.0 1102.5 176.5 C 1102.9 174.7 1109.0 172.4 1141.3 161.7 C 1162.4 154.7 1180.1 149.0 1180.6 149.0 C 1181.4 149.0 1171.2 209.7 1168.5 220.7 L 1168.0 223.0 L 1209.3 223.2 L 1250.6 223.5 L 1246.8 244.5 C 1244.7 256.1 1242.8 266.1 1242.5 266.8 C 1242.2 267.7 1233.0 268.0 1201.5 268.0 C 1170.0 268.0 1160.8 268.3 1160.5 269.2 C 1159.1 273.1 1140.9 378.1 1140.4 385.2 C 1139.1 401.3 1143.0 414.1 1151.2 421.5 C 1165.0 433.9 1186.8 433.9 1215.1 421.6 C 1216.8 420.9 1216.7 421.9 1211.5 450.8 L 1210.9 454.0 L 1271.0 454.0 L 1331.1 454.0 L 1327.1 448.8 C 1319.8 439.0 1314.5 426.3 1311.9 412.0 C 1310.3 403.4 1310.3 379.9 1311.9 368.0 C 1313.1 359.3 1335.3 230.4 1336.5 225.3 L 1337.0 223.0 L 1374.0 223.0 C 1394.4 223.0 1411.0 223.2 1411.0 223.5 C 1411.0 223.8 1405.1 256.8 1398.0 296.8 C 1390.8 336.8 1384.4 374.4 1383.8 380.3 C 1381.3 404.3 1387.1 418.8 1402.0 425.9 C 1406.9 428.2 1408.7 428.5 1418.5 428.5 C 1428.4 428.5 1430.1 428.2 1435.4 425.7 C 1447.5 420.0 1455.2 411.1 1460.1 396.5 C 1461.8 391.7 1465.7 372.8 1470.0 348.5 C 1473.9 326.5 1480.5 289.4 1484.6 266.0 C 1488.8 242.6 1492.3 223.4 1492.4 223.2 C 1492.6 223.1 1505.5 223.1 1521.1 223.2 L 1549.6 223.5 L 1535.9 301.2 C 1528.3 344.0 1521.0 383.5 1519.6 389.0 C 1513.3 413.6 1502.3 434.5 1488.5 448.3 L 1482.8 454.0 L 1539.8 454.0 L 1596.8 454.0 L 1597.3 451.8 C 1597.6 450.5 1599.5 440.5 1601.5 429.5 C 1603.5 418.5 1605.4 408.7 1605.8 407.8 C 1606.4 406.4 1607.6 406.8 1614.4 411.1 C 1657.6 437.8 1697.6 440.0 1704.0 416.1 C 1704.7 413.5 1704.9 409.7 1704.5 407.1 C 1702.9 396.0 1694.8 387.3 1668.6 368.1 C 1632.9 342.1 1622.4 327.3 1621.2 301.4 C 1620.6 287.3 1622.5 278.2 1628.6 266.0 C 1638.3 246.5 1658.7 230.5 1683.8 222.6 C 1713.7 213.2 1750.2 214.5 1779.5 225.9 C 1783.9 227.6 1788.1 229.4 1788.8 229.9 C 1789.9 230.5 1789.4 234.7 1786.5 251.6 C 1784.5 263.1 1782.7 272.7 1782.4 272.9 C 1782.2 273.1 1776.6 271.0 1769.9 268.1 C 1752.0 260.5 1745.6 258.9 1730.3 258.3 C 1718.9 257.8 1716.3 258.0 1710.3 259.8 C 1701.8 262.4 1695.8 267.3 1693.4 273.5 C 1688.6 286.2 1697.9 299.1 1726.0 318.5 C 1743.4 330.5 1757.8 344.2 1763.8 354.5 C 1781.7 384.9 1777.0 422.0 1752.2 448.3 L 1746.7 454.0 L 1991.3 454.0 C 2186.4 454.0 2236.0 454.3 2236.0 455.2 C 2236.0 455.9 2235.1 461.7 2234.0 468.0 C 2232.9 474.3 2232.0 479.8 2232.0 480.2 C 2232.0 480.7 1851.4 481.0 1386.1 481.0 L 540.3 481.0 L 542.5 468.2 C 543.8 461.2 545.1 454.8 545.4 454.0 C 546.3 451.5 577.1 274.6 576.8 273.3 C 576.6 272.6 554.9 299.7 528.5 333.4 C 502.1 367.2 480.2 394.5 479.8 394.2 C 479.4 393.8 467.1 367.2 452.5 335.1 C 437.9 303.0 425.4 275.7 424.7 274.4 C 423.6 272.3 422.9 275.1 419.1 296.8 C 416.8 310.4 410.4 346.7 405.0 377.5 C 399.6 408.3 393.5 443.4 391.5 455.5 C 389.5 467.6 387.7 478.3 387.4 479.2 C 386.9 480.9 382.5 481.0 313.8 481.0 L 240.8 481.0 L 241.3 478.2 Z M 858.1 437.4 C 877.9 431.6 895.2 410.0 905.4 378.4 C 911.0 360.8 913.1 347.3 913.7 325.0 C 914.1 307.9 913.9 304.3 912.2 295.6 C 907.3 272.2 895.5 258.3 879.0 256.4 C 844.0 252.4 813.6 296.4 807.9 359.5 C 804.9 392.8 810.8 418.3 824.5 430.8 C 827.5 433.6 831.9 436.5 834.2 437.3 C 839.9 439.3 851.3 439.4 858.1 437.4 Z " fill="url(#motusChrome)" fill-rule="evenodd"/><path class="logo-dot" d="M 184.0 489.7 C 179.1 488.1 170.7 479.5 169.2 474.4 C 166.4 465.0 168.4 457.5 175.5 450.5 C 180.6 445.3 185.7 443.0 192.0 443.0 C 198.3 443.0 203.4 445.3 208.5 450.5 C 218.7 460.6 218.7 473.4 208.5 483.5 C 201.5 490.6 193.3 492.6 184.0 489.7 Z " fill="#B4894E" fill-rule="evenodd"/></svg></a>
   <nav class="topbar-nav">
-    <a href="index.html#about" data-i18n="navWhy"></a>
-    <a href="index.html#payment" data-i18n="navPayment"></a>
+    <!-- index-hero-demo.html, not index.html (2026-09-07 audit finding) —
+         index.html was a stale, never-updated copy of the site (its
+         quickForm didn't even send leads to the CRM) that happened to be
+         what the bare site root URL served by default on GitHub Pages.
+         It's now been replaced with a copy of index-hero-demo.html (the
+         file actually maintained), but pointing here explicitly at the
+         real source file avoids re-introducing this exact confusion the
+         next time index.html is touched. -->
+    <a href="index-hero-demo.html#about" data-i18n="navWhy"></a>
+    <a href="index-hero-demo.html#payment" data-i18n="navPayment"></a>
   </nav>
   <div class="topbar-right">
   <!-- target="_top" removed (2026-09-06) — see index-hero-demo.html's
@@ -1538,6 +1585,10 @@ section{
         <div class="request-groups" id="requestGroups"></div>
 
         <div class="request-consent">
+          <!-- Small note added 2026-09-07 per owner's explicit request —
+               draws attention to the checkboxes below as something worth
+               actually reading, not just clicking through. -->
+          <p class="request-consent-note" data-i18n="consentNote"></p>
           <label class="request-checkbox" id="consent0Row" style="display:none;">
             <input type="checkbox" name="consent0">
             <span data-i18n="consent0"></span>
@@ -1665,6 +1716,7 @@ const content = {
     requestModalTitleCyprus:"Find a car in Cyprus",
     submitBtn:"Send request",
     successMsg:"Thanks — we've got it. We usually reply within minutes on Telegram or WhatsApp.",
+    consentNote:"Please read before submitting:",
     consent0:"I have read and understood AUTOEXPERT's commission, processing and warranty terms",
     consent1:"I consent to personal data processing",
     privacyLinkText:"Privacy Policy",
@@ -1694,6 +1746,8 @@ const content = {
       mileageFrom:"Mileage from (km)", mileageTo:"Mileage to (km)",
       extra:"Additional requirements", timing:"When are you planning to buy",
       source:"How did you hear about us",
+      placeholderFirstName:"John", placeholderLastName:"Smith",
+      placeholderModel:"Toyota Land Cruiser",
       placeholderTelegram:"@username", placeholderPhone:"+357 99 000 000",
       placeholderBudgetFrom:"€ 15 000", placeholderBudgetTo:"€ 30 000",
       options:{
@@ -1750,6 +1804,7 @@ const content = {
     requestModalTitleCyprus:"Найти автомобиль на Кипре",
     submitBtn:"Отправить заявку",
     successMsg:"Спасибо — заявка получена. Обычно отвечаем в течение нескольких минут в Telegram или WhatsApp.",
+    consentNote:"Пожалуйста, ознакомьтесь перед отправкой:",
     consent0:"Я ознакомлен(а) с условиями комиссии, оформления и гарантийной программой AUTOEXPERT",
     consent1:"Согласен(на) на обработку персональных данных",
     privacyLinkText:"Политика конфиденциальности",
@@ -1779,6 +1834,8 @@ const content = {
       mileageFrom:"Пробег от (км)", mileageTo:"Пробег до (км)",
       extra:"Дополнительные требования", timing:"Когда планируете покупку",
       source:"Откуда узнали о нас",
+      placeholderFirstName:"Иван", placeholderLastName:"Иванов",
+      placeholderModel:"Toyota Land Cruiser",
       placeholderTelegram:"@username", placeholderPhone:"+357 99 000 000",
       placeholderBudgetFrom:"€ 15 000", placeholderBudgetTo:"€ 30 000",
       options:{
@@ -1833,6 +1890,7 @@ const content = {
     tabJapan:"Παραγγελία από Ιαπωνία",
     submitBtn:"Αποστολή αιτήματος",
     successMsg:"Ευχαριστούμε — το λάβαμε. Απαντάμε συνήθως μέσα σε λίγα λεπτά στο Telegram ή WhatsApp.",
+    consentNote:"Παρακαλούμε διαβάστε πριν την αποστολή:",
     consent0:"Έχω διαβάσει και κατανοήσει τους όρους προμήθειας, διεκπεραίωσης και εγγύησης της AUTOEXPERT",
     consent1:"Συναινώ στην επεξεργασία προσωπικών δεδομένων",
     privacyLinkText:"Πολιτική Απορρήτου",
@@ -1862,6 +1920,8 @@ const content = {
       mileageFrom:"Χιλιόμετρα από", mileageTo:"Χιλιόμετρα έως",
       extra:"Πρόσθετες απαιτήσεις", timing:"Πότε σκοπεύετε να αγοράσετε",
       source:"Πώς μάθατε για εμάς",
+      placeholderFirstName:"Γιάννης", placeholderLastName:"Παπαδόπουλος",
+      placeholderModel:"Toyota Land Cruiser",
       placeholderTelegram:"@username", placeholderPhone:"+357 99 000 000",
       placeholderBudgetFrom:"€ 15.000", placeholderBudgetTo:"€ 30.000",
       options:{
@@ -1878,15 +1938,15 @@ const content = {
 const formSchema = {
   cyprus:[
     {group:'grpContact', fields:[
-      {key:'firstName', type:'text', required:true, name:'cyFirstName'},
-      {key:'lastName', type:'text', required:true, name:'cyLastName'},
+      {key:'firstName', type:'text', required:true, name:'cyFirstName', placeholder:'placeholderFirstName'},
+      {key:'lastName', type:'text', required:true, name:'cyLastName', placeholder:'placeholderLastName'},
       {key:'phone', type:'tel', required:true, name:'cyPhone', placeholder:'placeholderPhone'},
       {key:'telegram', type:'text', required:false, name:'cyTelegram', placeholder:'placeholderTelegram'},
       {key:'email', type:'email', required:false, name:'cyEmail'},
       {key:'city', type:'select', required:false, name:'cyCity', options:'cityOptions'}
     ]},
     {group:'grpVehicle', fields:[
-      {key:'model', type:'text', required:true, name:'cyModel', full:true},
+      {key:'model', type:'text', required:true, name:'cyModel', full:true, placeholder:'placeholderModel'},
       {key:'color', type:'text', required:false, name:'cyColor', full:true},
       {key:'budgetFrom', type:'text', required:true, name:'cyBudgetFrom', placeholder:'placeholderBudgetFrom'},
       {key:'budgetTo', type:'text', required:true, name:'cyBudgetTo', placeholder:'placeholderBudgetTo'},
@@ -1901,15 +1961,15 @@ const formSchema = {
   ],
   japan:[
     {group:'grpContact', fields:[
-      {key:'firstName', type:'text', required:true, name:'jpFirstName'},
-      {key:'lastName', type:'text', required:true, name:'jpLastName'},
+      {key:'firstName', type:'text', required:true, name:'jpFirstName', placeholder:'placeholderFirstName'},
+      {key:'lastName', type:'text', required:true, name:'jpLastName', placeholder:'placeholderLastName'},
       {key:'phone', type:'tel', required:true, name:'jpPhone', placeholder:'placeholderPhone'},
       {key:'telegram', type:'text', required:false, name:'jpTelegram', placeholder:'placeholderTelegram'},
       {key:'email', type:'email', required:false, name:'jpEmail'},
       {key:'city', type:'select', required:false, name:'jpCity', options:'cityOptions'}
     ]},
     {group:'grpVehicle', fields:[
-      {key:'model', type:'text', required:true, name:'jpModel', full:true},
+      {key:'model', type:'text', required:true, name:'jpModel', full:true, placeholder:'placeholderModel'},
       {key:'color', type:'text', required:false, name:'jpColor', full:true},
       {key:'budgetFrom', type:'text', required:true, name:'jpBudgetFrom', placeholder:'placeholderBudgetFrom'},
       {key:'budgetTo', type:'text', required:true, name:'jpBudgetTo', placeholder:'placeholderBudgetTo'},
@@ -2062,7 +2122,11 @@ function render(lang){
   localStorage.setItem(STORAGE_KEY, lang);
 }
 
-document.querySelectorAll('.langswitch button').forEach(btn=>{
+// Was '.langswitch button' — see index-hero-demo.html's identical fix
+// comment (2026-09-07 audit finding) for why this needs [data-lang]: the
+// mobile globe-icon toggle button is also a <button> inside .langswitch
+// but has no data-lang, so it was calling render(undefined) on click.
+document.querySelectorAll('.langswitch button[data-lang]').forEach(btn=>{
   btn.addEventListener('click', ()=> render(btn.dataset.lang));
 });
 
@@ -2244,8 +2308,8 @@ window.addEventListener('pageshow', (e)=>{
 });
 </script>
 
-<!-- Vercel Web Analytics + Speed Insights (free, no cookie banner needed — collects no personal data) -->
-<script defer src="/_vercel/insights/script.js"></script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
+<!-- Vercel Analytics scripts removed 2026-09-07 — see index-hero-demo.html's
+     identical removal comment (audit finding: 404s on every load, site is
+     hosted on GitHub Pages, not Vercel). -->
 
 </body></html>
