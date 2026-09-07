@@ -1519,12 +1519,18 @@ section{
            sight-unseen, from another country) justifies SOME trust-building
            copy first — as long as it's short, not a full list. So: only the
            two perks that defuse the buyer's #1 fear (getting overcharged /
-           surprised by hidden costs) stay above the form, short. The other
-           four — which are process reassurance or post-purchase bonuses,
-           not fears to defuse before someone will even consider filling the
-           form — moved to #requestPerksBottom, below the submit button, as
-           a "here's what else you get" for a visitor who's already decided
-           to scroll past the form (see that block further down). -->
+           surprised by hidden costs, or paying for corners cut after
+           delivery) stay above the form, short. "Flexible payment" was
+           dropped entirely here 2026-09-07 (owner's explicit request) —
+           "free first service" is the more concrete, attention-grabbing
+           fact of the two. The other three — process reassurance and a
+           post-purchase bonus, not fears to defuse before someone will
+           even consider filling the form — moved inside the form itself,
+           between the fields and the consent checkboxes (see
+           #requestPerksBottom further down) rather than after the submit
+           button, per owner's explicit request: a visitor scrolling the
+           form top-to-bottom sees them right before the checkboxes, not
+           stranded at the very end where they were easy to miss. -->
       <div class="request-perks" id="requestPerksTop">
         <!-- "Гибкая оплата"/perksPayment removed from the Cyprus group
              2026-09-06, per owner's explicit request — installment/
@@ -1543,14 +1549,38 @@ section{
             <span class="request-perk-detail" data-i18n="perksHonest"></span>
           </div>
           <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksPaymentLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksPayment"></span>
+            <span class="request-perk-title" data-i18n="perksFreeServiceLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksFreeService"></span>
           </div>
         </div>
       </div>
 
       <form class="request-form" id="requestForm" novalidate>
         <div class="request-groups" id="requestGroups"></div>
+
+        <!-- Bottom perks block, moved inside the form 2026-09-07 (was after
+             the submit button) — see the HTML comment above #requestPerksTop
+             for the full reasoning. Hidden entirely for the Cyprus group (it
+             only ever had one perk, already shown above the form) via the
+             empty .request-perk-group below + updatePerksBottomVisibility(). -->
+        <div class="request-perks-bottom-title" id="requestPerksBottomTitle" data-i18n="perksBonusesTitle"></div>
+        <div class="request-perks" id="requestPerksBottom">
+          <div class="request-perk-group" data-group="cyprus"></div>
+          <div class="request-perk-group active" data-group="japan">
+            <div class="request-perk">
+              <span class="request-perk-title" data-i18n="perksTurnkeyLabel"></span>
+              <span class="request-perk-detail" data-i18n="perksTurnkey"></span>
+            </div>
+            <div class="request-perk">
+              <span class="request-perk-title" data-i18n="perksServiceLabel"></span>
+              <span class="request-perk-detail" data-i18n="perksService"></span>
+            </div>
+            <div class="request-perk">
+              <span class="request-perk-title" data-i18n="perksBonusLabel"></span>
+              <span class="request-perk-detail" data-i18n="perksBonus"></span>
+            </div>
+          </div>
+        </div>
 
         <div class="request-consent">
           <!-- Small note added 2026-09-07 per owner's explicit request —
@@ -1581,41 +1611,6 @@ section{
         <button type="submit" class="btn request-submit" data-i18n="submitBtn"></button>
         <div class="request-success" id="requestSuccess" data-i18n="successMsg"></div>
       </form>
-
-      <!-- Bottom perks block, 2026-09-07 — see the HTML comment above
-           #requestPerksTop for the full reasoning. Hidden entirely for the
-           Cyprus group (it only ever had one perk, already shown above the
-           form) via the empty .request-perk-group below + the CSS rule
-           that hides #requestPerksBottom when it has no visible active
-           group content. -->
-      <div class="request-perks-bottom-title" id="requestPerksBottomTitle" data-i18n="perksBonusesTitle"></div>
-      <div class="request-perks" id="requestPerksBottom">
-        <div class="request-perk-group" data-group="cyprus"></div>
-        <div class="request-perk-group active" data-group="japan">
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksTurnkeyLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksTurnkey"></span>
-          </div>
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksServiceLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksService"></span>
-          </div>
-          <!-- "Первое ТО бесплатно" kept as its own perk (2026-09-06,
-               owner's explicit request) — the single strongest, most
-               concrete marketing fact here ("free" beats a discount for
-               grabbing attention), but placed after turnkey/service since
-               it's a post-purchase bonus, not a fear to defuse before the
-               form. -->
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksFreeServiceLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksFreeService"></span>
-          </div>
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksBonusLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksBonus"></span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </main>
