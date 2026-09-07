@@ -1,6 +1,0 @@
-{
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/((?!motus-site/).*)", "destination": "/motus-site/$1" }
-  ]
-}
