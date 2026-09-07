@@ -851,6 +851,10 @@ section{
   color:var(--bronze);
 }
 #requestPerksBottom{margin-bottom:0;}
+/* Timing radio field sits right after the bottom perks block, before the
+   consent checkboxes (2026-09-07, owner's explicit request) — a bit of its
+   own top spacing so it doesn't read as glued to the perks list above it. */
+#requestTiming{margin-top:22px;}
 .request-perk-group{display:none; flex-direction:column; gap:8px;}
 .request-perk-group.active{display:flex;}
 /* Perks turned from always-expanded text blocks into a collapsed-by-
@@ -1008,11 +1012,13 @@ section{
 .order-main{padding:48px 0 64px;}
 /* Mobile-only: the 48px top gap that reads fine as breathing room on a wide
    desktop viewport looks like a stray empty stripe on a short phone screen —
-   shrink it there without touching desktop spacing. First pass (20px) was
-   still flagged as too much by the owner on a real phone screenshot — the
-   back-link + its own margin already read as the top anchor, so pushed this
-   down close to zero rather than re-guessing another mid-value. */
-@media (max-width:640px){ .order-main{padding:6px 0 48px;} }
+   shrink it there without touching desktop spacing. Went through two
+   rounds already (48px -> 20px -> 6px) and the owner still measured the
+   total pale strip between the header and the form card at more than the
+   ~5-7mm (~19-26px) he wants — the padding alone wasn't the whole story,
+   the back-link's own height + margin below it were adding to the same
+   visible gap. Both trimmed together this round. */
+@media (max-width:640px){ .order-main{padding:3px 0 48px;} }
 .order-back-link{
   display:inline-flex;
   align-items:center;
@@ -1028,6 +1034,13 @@ section{
   font-family:'IBM Plex Mono',monospace;
   font-size:16px; letter-spacing:0.06em;
   color:var(--text-muted); text-decoration:none;
+}
+/* Mobile-only: shrink the back-link's own footprint (tap target height +
+   margin below it) too — this and .order-main's padding above were
+   combining into a total top gap the owner measured as still too tall on
+   a real phone even after two prior rounds of shrinking .order-main alone. */
+@media (max-width:640px){
+  .order-back-link{min-height:24px; margin-bottom:6px; font-size:15px;}
 }
 .order-back-link:hover{color:var(--bronze);}
 .order-card{
@@ -1582,6 +1595,11 @@ section{
           </div>
         </div>
 
+        <!-- Timing radio field, pulled out of #requestGroups 2026-09-07 —
+             see the JS comment above timingFieldDef for the full reasoning.
+             Rendered by renderFormGroups() same as every other field. -->
+        <div id="requestTiming"></div>
+
         <div class="request-consent">
           <!-- Small note added 2026-09-07 per owner's explicit request —
                draws attention to the checkboxes below as something worth
@@ -1956,8 +1974,7 @@ const formSchema = {
       {key:'engine', type:'select', required:false, name:'cyEngine', options:'engineOptions', full:true},
       {key:'mileageFrom', type:'text', required:false, name:'cyMileageFrom'},
       {key:'mileageTo', type:'text', required:false, name:'cyMileageTo'},
-      {key:'extra', type:'textarea', required:false, name:'cyExtra', full:true},
-      {key:'timing', type:'radio', required:true, name:'cyTiming', options:'timingOptions', full:true}
+      {key:'extra', type:'textarea', required:false, name:'cyExtra', full:true}
     ]}
   ],
   japan:[
@@ -1978,11 +1995,19 @@ const formSchema = {
       {key:'engine', type:'select', required:false, name:'jpEngine', options:'engineOptions', full:true},
       {key:'mileageFrom', type:'text', required:false, name:'jpMileageFrom'},
       {key:'mileageTo', type:'text', required:false, name:'jpMileageTo'},
-      {key:'extra', type:'textarea', required:false, name:'jpExtra', full:true},
-      {key:'timing', type:'radio', required:true, name:'jpTiming', options:'timingOptions', full:true}
+      {key:'extra', type:'textarea', required:false, name:'jpExtra', full:true}
     ]}
   ]
 };
+
+// Timing field pulled out of formSchema and rendered separately, 2026-09-07
+// (owner's explicit request) — it now lives in its own container in the
+// static HTML, positioned after the bottom perks block and before the
+// consent checkboxes, instead of being the last field inside #requestGroups
+// (which sits above the perks block). Field definition kept in the same
+// shape fieldEl() expects so the same renderer can build it.
+const timingFieldDef = {cyprus:{key:'timing', type:'radio', required:true, name:'cyTiming', options:'timingOptions', full:true},
+                         japan:{key:'timing', type:'radio', required:true, name:'jpTiming', options:'timingOptions', full:true}};
 
 const STORAGE_KEY = 'motus_preview_lang';
 let requestIntent = 'japan';
@@ -2111,6 +2136,11 @@ function renderFormGroups(lang, intent){
     groupEl.appendChild(grid);
     container.appendChild(groupEl);
   });
+  const timingContainer = document.getElementById('requestTiming');
+  if(timingContainer){
+    timingContainer.innerHTML = '';
+    timingContainer.appendChild(fieldEl(timingFieldDef[intent], strings));
+  }
   const consent0Row = document.getElementById('consent0Row');
   if(consent0Row) consent0Row.style.display = (intent === 'japan') ? 'flex' : 'none';
 }
