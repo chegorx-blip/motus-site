@@ -132,6 +132,12 @@ a{color:inherit;}
   padding:0 24px;
 }
 .wrap-wide{max-width:1120px;}
+/* Mobile-only: 24px side padding on .wrap plus the order-card's own side
+   padding was compounding to ~88px of total dead space on a 390px screen —
+   nearly a quarter of the width — forcing perk sentences to wrap after only
+   3-4 words and making the card read taller than it needs to. Narrowed just
+   the .wrap gutter on phones; desktop's 24px (fine at that width) untouched. */
+@media (max-width:640px){ .wrap{padding:0 14px;} }
 
 .hero-grid{
   display:grid;
@@ -883,12 +889,28 @@ section{
 @media (prefers-reduced-motion: reduce){
   .request-perk{opacity:1 !important; transform:none !important; transition:none !important;}
 }
+/* Small bronze accent mark before each perk's title, not before its detail
+   line — gives the eye a repeating anchor to catch at the start of each
+   block so 6 consecutive text blocks don't read as one unbroken wall (owner
+   flagged this on a real phone screenshot: "текст текст текст текст",
+   couldn't tell where one point ended and the next began, or that the list
+   ends before the form starts). */
 .request-perk-title{
-  display:block;
+  display:flex;
+  align-items:baseline;
+  gap:8px;
   color:var(--paper);
   font-weight:600;
   font-size:14.5px;
-  margin-bottom:3px;
+  margin-bottom:4px;
+}
+.request-perk-title::before{
+  content:'';
+  flex:none;
+  width:5px; height:5px;
+  border-radius:50%;
+  background:var(--bronze);
+  transform:translateY(-2px);
 }
 .request-perk-detail{
   display:block;
@@ -969,8 +991,11 @@ section{
 .order-main{padding:48px 0 64px;}
 /* Mobile-only: the 48px top gap that reads fine as breathing room on a wide
    desktop viewport looks like a stray empty stripe on a short phone screen —
-   shrink it there without touching desktop spacing. */
-@media (max-width:640px){ .order-main{padding:20px 0 48px;} }
+   shrink it there without touching desktop spacing. First pass (20px) was
+   still flagged as too much by the owner on a real phone screenshot — the
+   back-link + its own margin already read as the top anchor, so pushed this
+   down close to zero rather than re-guessing another mid-value. */
+@media (max-width:640px){ .order-main{padding:6px 0 48px;} }
 .order-back-link{
   display:inline-block;
   margin-bottom:22px;
@@ -988,7 +1013,7 @@ section{
   padding:36px 32px 32px;
   color:var(--paper);
 }
-@media (max-width:640px){ .order-card{padding:28px 20px 24px;} }
+@media (max-width:640px){ .order-card{padding:20px 14px 24px;} }
 .order-card .route-mark-static .route-line{stroke-dashoffset:0; transition:none;}
 .order-card-title{
   color:var(--paper);
