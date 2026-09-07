@@ -3327,16 +3327,44 @@ quickFormToggle.addEventListener('click', closeDetailedPopover);
 // has its real, final height.
 function scrollToHeroAndOpenDetailedPopover(){
   if(!detailedPopover.classList.contains('open')) detailedToggle.click();
-  // #ctaBlock, not #ctaRowDual — ctaRowDual is just the button row itself;
-  // the popover is ctaRowDual's sibling inside ctaBlock, so centering on
-  // ctaRowDual alone could still leave the now-open popover hanging below
-  // the visible area. ctaBlock spans both, so centering on it keeps the
-  // buttons AND the freshly-opened Japan/Cyprus options in view together.
-  const target = document.getElementById('ctaBlock') || document.getElementById('hero');
+  // Third attempt at this bug, same symptom each time (owner report +
+  // live Playwright measurement, 2026-09-07): centering #ctaBlock is
+  // mathematically correct — getBoundingClientRect confirmed its true
+  // center DID land on the viewport's center — but #ctaBlock includes
+  // the "Закажите обратный звонок"/"Оформить подбор" button row ABOVE
+  // the popover, so most of that centered block was those two ordinary
+  // buttons and the tail end of the hero photo above them, while the
+  // actual Japan/Cyprus options (#detailedPopover — what the visitor
+  // just opened and wants to see) sat in the block's lower half, not
+  // "at eye level" the way the owner meant. Centering #detailedPopover
+  // itself (the two options, not the whole surrounding block) is what
+  // actually puts them at eye level regardless of what's above them.
+  const target = document.getElementById('detailedPopover') || document.getElementById('hero');
   if(!target) return;
   // 360ms > the popover's own 350ms max-height transition, so this always
-  // fires after the expand animation has fully settled, not mid-flight.
-  setTimeout(()=> target.scrollIntoView({behavior:'smooth', block:'center'}), 360);
+  // fires after the expand animation has fully settled, not mid-flight —
+  // still needed even with the right target, since #detailedPopover's own
+  // rect is only meaningful once it has finished growing.
+  setTimeout(()=>{
+    // A first-time visitor still has the fixed cookie banner covering the
+    // bottom ~160px of the screen at this point (2026-09-07 finding) — a
+    // plain scrollIntoView(block:'center') measures against the FULL
+    // viewport height, so on that visit the popover's mathematical center
+    // still ends up visually low, partly hidden behind the banner.
+    // Computing the target scroll position once, in a single number, and
+    // setting it directly (rather than a scrollIntoView call followed by a
+    // second scrollBy nudge) avoids two overlapping smooth-scroll
+    // animations fighting each other — an earlier version of this fix did
+    // exactly that and the second scroll fired mid-flight of the first,
+    // landing far off target.
+    const banner = document.querySelector('.cookie-banner');
+    const bannerHeight = (banner && !banner.hidden) ? banner.getBoundingClientRect().height : 0;
+    const visibleHeight = window.innerHeight - bannerHeight;
+    const rect = target.getBoundingClientRect();
+    const elementCenter = rect.top + window.scrollY + rect.height / 2;
+    const desiredScrollY = elementCenter - visibleHeight / 2;
+    window.scrollTo({top: Math.max(0, desiredScrollY), behavior:'smooth'});
+  }, 360);
 }
 const topbarCta = document.getElementById('topbarCta');
 if(topbarCta) topbarCta.addEventListener('click', scrollToHeroAndOpenDetailedPopover);
