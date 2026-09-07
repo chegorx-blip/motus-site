@@ -839,6 +839,18 @@ section{
   border-radius:3px;
   background:rgba(180,137,78,0.08);
 }
+/* Bottom perks block sits after the submit button, separated from it with
+   its own top margin + a small label above it, so it reads as a distinct
+   "here's what else you get" section for a visitor who scrolled past the
+   form, not as leftover form UI. */
+#requestPerksBottomTitle{
+  margin-top:28px;
+  margin-bottom:10px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--bronze);
+}
+#requestPerksBottom{margin-bottom:0;}
 .request-perk-group{display:none; flex-direction:column; gap:8px;}
 .request-perk-group.active{display:flex;}
 /* Perks turned from always-expanded text blocks into a collapsed-by-
@@ -872,12 +884,17 @@ section{
 .request-perk:last-child{border-bottom:none;}
 /* Perks fade/slide in one at a time instead of all appearing at once
    (owner's explicit request — "слова будут появляться постепенно"). A JS
-   class (.perks-revealed) is added to #requestPerks once the page/intent
-   is ready, and each perk's own transition-delay staggers it by
-   position. nth-child is safe here because the perk count is fixed per
-   intent group (6 for Japan, 1 for Cyprus) and every perk is a direct
-   child of its group — no dynamic insertion that could shift the count
-   after this CSS was written. */
+   class (.perks-revealed) is added to every .request-perks container once
+   the page/intent is ready, and each perk's own transition-delay staggers
+   it by position within its own group. nth-child is safe here because the
+   perk count is fixed per intent group and every perk is a direct child of
+   its group — no dynamic insertion that could shift the count after this
+   CSS was written.
+   2026-09-07: split into two separate .request-perks containers (top:
+   price/payment, bottom: turnkey/service/free-service/club — see the HTML
+   comment above #requestPerksTop for why) so the selector below no longer
+   keys off the #requestPerks id, it keys off the shared .request-perks
+   class so both containers animate independently the same way. */
 .request-perk{opacity:0; transform:translateY(6px); transition:opacity .35s ease, transform .35s ease;}
 .request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(1){transition-delay:.05s;}
 .request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(2){transition-delay:.18s;}
@@ -997,10 +1014,19 @@ section{
    down close to zero rather than re-guessing another mid-value. */
 @media (max-width:640px){ .order-main{padding:6px 0 48px;} }
 .order-back-link{
-  display:inline-block;
-  margin-bottom:22px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  /* Text label dropped 2026-09-07 (owner's request — "Motus" next to the
+     arrow was redundant with the logo already at the top of the page,
+     and every extra line here adds to a mobile top gap he flagged as too
+     tall). Left just the arrow, but widened its own tap target so a lone
+     glyph still has a comfortable ~40px touch area, not a few narrow
+     pixels — was previously fine only because "Motus" gave it width. */
+  min-width:40px; min-height:32px;
+  margin-bottom:14px;
   font-family:'IBM Plex Mono',monospace;
-  font-size:12px; letter-spacing:0.06em;
+  font-size:16px; letter-spacing:0.06em;
   color:var(--text-muted); text-decoration:none;
 }
 .order-back-link:hover{color:var(--bronze);}
@@ -1482,19 +1508,24 @@ section{
         <button type="button" class="request-tab" id="tabCyprusBtn" data-intent="cyprus" role="tab" aria-selected="false" data-i18n="tabCyprus"></button>
       </div>
 
-      <!-- Always-expanded list, 2026-09-07 rebuild — see the CSS comment
-           above .request-perk for the full reasoning (reverted from a
-           CAPS+monospace accordion after a copywriting audit found real
-           competitors always show this kind of list fully expanded, in
-           normal type). Order changed to lead with what defuses the
-           biggest fear first for someone buying a car sight-unseen from
-           abroad: price/cost concerns first (honest price, then flexible
-           payment), then process concerns (turnkey paperwork, full
-           service), then after-purchase bonuses (free first service,
-           client club) last — those don't need to carry the argument,
-           they're a nice-to-know once the visitor is already close to
-           deciding. -->
-      <div class="request-perks" id="requestPerks">
+      <!-- 2026-09-07: split the always-expanded list into two containers
+           around the form itself, per owner's request after a real-phone
+           screenshot showed 6 full items reading as one unbroken text wall
+           before the visitor ever saw the form fields. Researched real
+           competitor forms (Davey Japan's contact form has NO benefit list
+           at all before its fields) plus independent CRO sources (HubSpot/
+           Neil Patel/GrowForm): above-the-fold forms convert better for
+           straightforward asks, but a high-value/complex purchase (a car,
+           sight-unseen, from another country) justifies SOME trust-building
+           copy first — as long as it's short, not a full list. So: only the
+           two perks that defuse the buyer's #1 fear (getting overcharged /
+           surprised by hidden costs) stay above the form, short. The other
+           four — which are process reassurance or post-purchase bonuses,
+           not fears to defuse before someone will even consider filling the
+           form — moved to #requestPerksBottom, below the submit button, as
+           a "here's what else you get" for a visitor who's already decided
+           to scroll past the form (see that block further down). -->
+      <div class="request-perks" id="requestPerksTop">
         <!-- "Гибкая оплата"/perksPayment removed from the Cyprus group
              2026-09-06, per owner's explicit request — installment/
              flexible-payment terms apply to a Japan-auction purchase,
@@ -1514,28 +1545,6 @@ section{
           <div class="request-perk">
             <span class="request-perk-title" data-i18n="perksPaymentLabel"></span>
             <span class="request-perk-detail" data-i18n="perksPayment"></span>
-          </div>
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksTurnkeyLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksTurnkey"></span>
-          </div>
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksServiceLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksService"></span>
-          </div>
-          <!-- "Первое ТО бесплатно" kept as its own perk (2026-09-06,
-               owner's explicit request) — the single strongest, most
-               concrete marketing fact here ("free" beats a discount for
-               grabbing attention), but now placed after the price/
-               process perks rather than in the middle of them, since
-               it's a post-purchase bonus, not a fear it defuses. -->
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksFreeServiceLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksFreeService"></span>
-          </div>
-          <div class="request-perk">
-            <span class="request-perk-title" data-i18n="perksBonusLabel"></span>
-            <span class="request-perk-detail" data-i18n="perksBonus"></span>
           </div>
         </div>
       </div>
@@ -1572,6 +1581,41 @@ section{
         <button type="submit" class="btn request-submit" data-i18n="submitBtn"></button>
         <div class="request-success" id="requestSuccess" data-i18n="successMsg"></div>
       </form>
+
+      <!-- Bottom perks block, 2026-09-07 — see the HTML comment above
+           #requestPerksTop for the full reasoning. Hidden entirely for the
+           Cyprus group (it only ever had one perk, already shown above the
+           form) via the empty .request-perk-group below + the CSS rule
+           that hides #requestPerksBottom when it has no visible active
+           group content. -->
+      <div class="request-perks-bottom-title" id="requestPerksBottomTitle" data-i18n="perksBonusesTitle"></div>
+      <div class="request-perks" id="requestPerksBottom">
+        <div class="request-perk-group" data-group="cyprus"></div>
+        <div class="request-perk-group active" data-group="japan">
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksTurnkeyLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksTurnkey"></span>
+          </div>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksServiceLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksService"></span>
+          </div>
+          <!-- "Первое ТО бесплатно" kept as its own perk (2026-09-06,
+               owner's explicit request) — the single strongest, most
+               concrete marketing fact here ("free" beats a discount for
+               grabbing attention), but placed after turnkey/service since
+               it's a post-purchase bonus, not a fear to defuse before the
+               form. -->
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksFreeServiceLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksFreeService"></span>
+          </div>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksBonusLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksBonus"></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -1636,7 +1680,7 @@ const content = {
     sub:"Every car is inspected before you get the keys — the first check is on us.",
     navWhy:"Why us",
     navPayment:"Payment methods",
-    orderBackLink:"← Motus",
+    orderBackLink:"←",
     routeRequest:"Your car request",
     routeVerified:"Search & verification",
     routeKeys:"Keys in your hand",
@@ -1694,6 +1738,7 @@ const content = {
     perksCyBonus:"Buy a car through us and get an ongoing 10–30% off services at our partner garage AutoExpert — painting, bodywork, electrical work",
     perksServiceLabel:"Full service access",
     perksService:"Tuning, accessories, multimedia region & language conversion — at partner rates, well below market",
+    perksBonusesTitle:"Once you're in, you also get:",
     fields:{
       grpContact:"Contact details", grpVehicle:"Vehicle",
       firstName:"First name", lastName:"Last name", phone:"Phone",
@@ -1724,7 +1769,7 @@ const content = {
     sub:"Каждый автомобиль проверяется до передачи ключей — первая диагностика за наш счёт.",
     navWhy:"Почему именно мы",
     navPayment:"Способы оплаты",
-    orderBackLink:"← Motus",
+    orderBackLink:"←",
     routeRequest:"Ваша заявка на подбор авто",
     routeVerified:"Поиск и проверка",
     routeKeys:"Ключи у вас",
@@ -1782,6 +1827,7 @@ const content = {
     perksCyBonus:"Покупая автомобиль у нас, вы получаете постоянную скидку 10–30% на услуги партнёра AutoExpert — покраска, кузовные работы, электрика",
     perksServiceLabel:"Полный сервис",
     perksService:"Тюнинг, допы, смена региона и языка мультимедиа — по ценам партнёра, значительно ниже рынка",
+    perksBonusesTitle:"А после покупки вы дополнительно получаете:",
     fields:{
       grpContact:"Контактные данные", grpVehicle:"Параметры автомобиля",
       firstName:"Имя", lastName:"Фамилия", phone:"Телефон",
@@ -1812,7 +1858,7 @@ const content = {
     sub:"Κάθε αυτοκίνητο ελέγχεται πριν παραλάβετε τα κλειδιά — ο πρώτος έλεγχος είναι δωρεάν.",
     navWhy:"Γιατί εμείς",
     navPayment:"Τρόποι πληρωμής",
-    orderBackLink:"← Motus",
+    orderBackLink:"←",
     routeRequest:"Το αίτημά σας για αυτοκίνητο",
     routeVerified:"Αναζήτηση & έλεγχος",
     routeKeys:"Τα κλειδιά σας",
@@ -1868,6 +1914,7 @@ const content = {
     perksCyBonus:"Αγοράστε αυτοκίνητο μέσω εμάς και πάρτε μόνιμη έκπτωση 10–30% σε υπηρεσίες του συνεργάτη μας AutoExpert — βαφή, εργασίες αμαξώματος, ηλεκτρολογικά",
     perksServiceLabel:"Πλήρης υπηρεσία",
     perksService:"Tuning, αξεσουάρ, αλλαγή περιοχής/γλώσσας multimedia — σε τιμές συνεργάτη, πολύ κάτω από την αγορά",
+    perksBonusesTitle:"Μόλις μπείτε, παίρνετε επίσης:",
     fields:{
       grpContact:"Στοιχεία επικοινωνίας", grpVehicle:"Παράμετροι οχήματος",
       firstName:"Όνομα", lastName:"Επώνυμο", phone:"Τηλέφωνο",
@@ -2158,7 +2205,10 @@ chatFabPromptClose.addEventListener('click', (e)=>{
 const requestModal = document.getElementById('requestModal'); // the .order-card, kept name for JS below
 const requestForm = document.getElementById('requestForm');
 const requestSuccess = document.getElementById('requestSuccess');
-const requestPerks = document.getElementById('requestPerks');
+// 2026-09-07: the single #requestPerks block was split into two — see the
+// HTML comment above #requestPerksTop — so this now reveals both.
+const requestPerksBlocks = document.querySelectorAll('.request-perks');
+const requestPerksBottomTitle = document.getElementById('requestPerksBottomTitle');
 
 // Perks are no longer a click-to-open accordion (2026-09-07 rebuild —
 // see the CSS comment above .request-perk) — this now only triggers the
@@ -2166,8 +2216,17 @@ const requestPerks = document.getElementById('requestPerks');
 // so the stagger is visible rather than firing before the visitor has
 // even looked at the page.
 requestAnimationFrame(()=>{
-  setTimeout(()=> requestPerks.classList.add('perks-revealed'), 150);
+  setTimeout(()=> requestPerksBlocks.forEach(el=> el.classList.add('perks-revealed')), 150);
 });
+
+// The Cyprus intent only ever had one perk (already shown above the form),
+// so the bottom "once you're in, you also get" block and its title have
+// nothing to show there — hide both rather than leaving an empty box.
+function updatePerksBottomVisibility(intent){
+  const hasBottomContent = intent === 'japan';
+  document.getElementById('requestPerksBottom').style.display = hasBottomContent ? '' : 'none';
+  requestPerksBottomTitle.style.display = hasBottomContent ? '' : 'none';
+}
 
 chatFabPrompt.addEventListener('click', (e)=>{
   if(e.target === chatFabPromptClose) return;
@@ -2190,9 +2249,11 @@ document.querySelectorAll('.request-tab').forEach(tab=>{
     document.querySelectorAll('.request-perk-group').forEach(g=>{
       g.classList.toggle('active', g.dataset.group === requestIntent);
     });
+    updatePerksBottomVisibility(requestIntent);
     renderFormGroups(document.documentElement.lang || 'en', requestIntent);
   });
 });
+updatePerksBottomVisibility(requestIntent);
 
 // Cold-open support: a QR code or shared link can point straight at the Cyprus
 // intent (?intent=cyprus) and/or tag its traffic source (?src=reception, etc.)
