@@ -588,6 +588,26 @@ a{color:inherit;}
 .hero{
   padding:0 0 48px;
 }
+/* Mobile-only: the hero's own two CTA buttons need to fully fit on a
+   first-time visitor's first screen without scrolling, and without the
+   next section's text peeking in under them (owner report + real-phone
+   screenshot, 2026-09-07: after tightening the hero to fit both buttons
+   on a 390x844 test viewport, the owner's own real phone had different
+   proportions and the "Выросли из автосервиса" heading from the next
+   section showed a cropped sliver right under the buttons). Rather than
+   chase one more phone's exact pixel dimensions — the next report would
+   just be a different device — this makes the whole hero section as tall
+   as the actual visible viewport (100dvh, not 100vh: dvh tracks the real
+   visible area as mobile browser chrome show/hide, vh does not) minus the
+   fixed header's own height, so the hero's content always fills exactly
+   to the edge of what's visible and the next section never shows through
+   underneath, on any phone's real screen. Desktop is untouched — this
+   whole rule is mobile-only, where "first screen, no scroll" is the goal;
+   on desktop the hero content plus next-section peeking in below has
+   never been a reported problem. */
+@media (max-width:640px){
+  .hero{min-height:calc(100dvh - 58px); display:flex; flex-direction:column;}
+}
 /* The full-bleed photo must start flush against the header at every
    width now that .hero-visual runs on mobile too (2026-09-05) — a
    padding-top here left a gap of empty paper-color background between
