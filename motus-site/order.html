@@ -843,84 +843,58 @@ section{
    lost among the rest. Each .request-perk is now a <button> (real tap
    target, not a styled div) that toggles .open on itself; only the label
    row shows by default, the detail text is revealed on tap. */
+/* Perks rebuilt 2026-09-07 — was a collapsed-by-default accordion with
+   CAPS + monospace labels (the previous round's fix for "wall of text").
+   Owner then flagged the labels themselves as unreadable; a copywriting
+   audit (researched Ginza JDM, Davey Japan, J-CARS — real competitors in
+   this exact niche) found the real cause wasn't the wording but the
+   presentation: CAPS destroys word-shape recognition on multi-word
+   phrases, monospace is a code/terminal typeface with no place in an
+   emotional purchase decision, and an accordion is the wrong pattern for
+   the small set of facts meant to defuse a buyer's biggest fears before
+   ordering — every reference site keeps this kind of list fully expanded,
+   in normal sentence-case type. Reverted to always-expanded, but kept
+   each perk to a short heading + one short sentence (not the original
+   long paragraph) so it still doesn't read as a wall of text even fully
+   open. The reveal-one-at-a-time animation stays (a separate, valid
+   request), just without the accordion tap-to-open mechanic under it. */
 .request-perk{
   display:block;
-  width:100%;
-  text-align:left;
-  background:none;
-  border:none;
+  padding:10px 0;
   border-bottom:1px solid rgba(246,243,237,0.14);
-  padding:8px 0;
-  cursor:pointer;
-  color:var(--paper);
-  font-family:inherit;
 }
 .request-perk:last-child{border-bottom:none;}
-.request-perk-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-.request-perk .mono{
-  color:var(--bronze);
-  font-size:10px;
-  letter-spacing:0.12em;
-}
-/* A plain static "▾" read as decoration, easy to miss as interactive
-   (owner's explicit request: the toggle "должна быть живая, чтобы
-   человек хотел на неё нажать") — the same slow beacon pulse used
-   elsewhere on the site (logo dot, route-strip, warranty shield) marks
-   this consistently as "there's more here, worth a tap" rather than
-   introducing a one-off animation just for this. */
-.request-perk-chevron{
-  flex:none;
-  width:16px; height:16px;
-  stroke:var(--bronze);
-  fill:none;
-  stroke-width:2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-  transition:transform .25s ease;
-  /* Was animation:beaconOpacity — that name was never actually defined
-     anywhere in this file (2026-09-07 code audit finding), so the
-     browser silently ignored the whole animation; this chevron never
-     pulsed despite the comment above saying it should. This icon is a
-     stroke-only outline svg, so it needs an opacity keyframe (the
-     .beacon keyframe already in this file animates fill-opacity, for a
-     solid-fill icon like the route-strip dot, not this one). */
-  animation:requestPerkChevronBeacon 3.4s ease-in-out infinite;
-  animation-delay:0s;
-}
-@keyframes requestPerkChevronBeacon{
-  0%,100%{opacity:1;}
-  50%{opacity:0;}
-}
-.request-perk.open .request-perk-chevron{transform:rotate(180deg);}
+/* Perks fade/slide in one at a time instead of all appearing at once
+   (owner's explicit request — "слова будут появляться постепенно"). A JS
+   class (.perks-revealed) is added to #requestPerks once the page/intent
+   is ready, and each perk's own transition-delay staggers it by
+   position. nth-child is safe here because the perk count is fixed per
+   intent group (6 for Japan, 1 for Cyprus) and every perk is a direct
+   child of its group — no dynamic insertion that could shift the count
+   after this CSS was written. */
+.request-perk{opacity:0; transform:translateY(6px); transition:opacity .35s ease, transform .35s ease;}
+.request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(1){transition-delay:.05s;}
+.request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(2){transition-delay:.18s;}
+.request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(3){transition-delay:.31s;}
+.request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(4){transition-delay:.44s;}
+.request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(5){transition-delay:.57s;}
+.request-perks.perks-revealed .request-perk-group.active .request-perk:nth-child(6){transition-delay:.70s;}
+.request-perks.perks-revealed .request-perk-group.active .request-perk{opacity:1; transform:translateY(0);}
 @media (prefers-reduced-motion: reduce){
-  .request-perk-chevron{animation:none;}
+  .request-perk{opacity:1 !important; transform:none !important; transition:none !important;}
+}
+.request-perk-title{
+  display:block;
+  color:var(--paper);
+  font-weight:600;
+  font-size:14.5px;
+  margin-bottom:3px;
 }
 .request-perk-detail{
-  /* display:block is required here — this is a <span> by default
-     (display:inline), and max-height/overflow:hidden don't clip an
-     inline element's content the way they clip a block one. Confirmed
-     live: max-height computed as 0px correctly, but the element's real
-     rendered height was still ~56px because the browser was laying out
-     its text as inline content ignoring the height cap — the closed
-     accordion state was reserving nearly as much space as the open one. */
   display:block;
-  max-height:0;
-  overflow:hidden;
-  opacity:0;
   font-size:13px;
   line-height:1.5;
   color:var(--stone);
-  transition:max-height .3s ease, opacity .25s ease, margin-top .3s ease;
-}
-.request-perk.open .request-perk-detail{
-  max-height:160px;
-  opacity:1;
-  margin-top:6px;
 }
 
 .request-fields{
@@ -1471,12 +1445,18 @@ section{
         <button type="button" class="request-tab" id="tabCyprusBtn" data-intent="cyprus" role="tab" aria-selected="false" data-i18n="tabCyprus"></button>
       </div>
 
-      <!-- Collapsed-by-default accordion, 2026-09-06 rebuild (see the CSS
-           comment above .request-perk for the full reasoning) — each perk
-           button toggles its own .open class in JS below; markup is
-           identical in shape for every perk so one shared click handler
-           (delegated on #requestPerks) covers all of them without special-
-           casing any one perk. -->
+      <!-- Always-expanded list, 2026-09-07 rebuild — see the CSS comment
+           above .request-perk for the full reasoning (reverted from a
+           CAPS+monospace accordion after a copywriting audit found real
+           competitors always show this kind of list fully expanded, in
+           normal type). Order changed to lead with what defuses the
+           biggest fear first for someone buying a car sight-unseen from
+           abroad: price/cost concerns first (honest price, then flexible
+           payment), then process concerns (turnkey paperwork, full
+           service), then after-purchase bonuses (free first service,
+           client club) last — those don't need to carry the argument,
+           they're a nice-to-know once the visitor is already close to
+           deciding. -->
       <div class="request-perks" id="requestPerks">
         <!-- "Гибкая оплата"/perksPayment removed from the Cyprus group
              2026-09-06, per owner's explicit request — installment/
@@ -1484,66 +1464,42 @@ section{
              not to sourcing a car locally on Cyprus; showing it here
              implied a promise that doesn't actually apply. -->
         <div class="request-perk-group" data-group="cyprus">
-          <button type="button" class="request-perk">
-            <span class="request-perk-row">
-              <span class="mono" data-i18n="perksCyBonusLabel"></span>
-              <svg class="request-perk-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksCyBonusLabel"></span>
             <span class="request-perk-detail" data-i18n="perksCyBonus"></span>
-          </button>
+          </div>
         </div>
         <div class="request-perk-group active" data-group="japan">
-          <button type="button" class="request-perk">
-            <span class="request-perk-row">
-              <span class="mono" data-i18n="perksHonestLabel"></span>
-              <svg class="request-perk-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksHonestLabel"></span>
             <span class="request-perk-detail" data-i18n="perksHonest"></span>
-          </button>
-          <button type="button" class="request-perk">
-            <span class="request-perk-row">
-              <span class="mono" data-i18n="perksTurnkeyLabel"></span>
-              <svg class="request-perk-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
-            <span class="request-perk-detail" data-i18n="perksTurnkey"></span>
-          </button>
-          <!-- "Первое ТО бесплатно" pulled out of perksBonus's long
-               paragraph into its own perk with a dedicated label
-               (perksFreeServiceLabel), 2026-09-06 per owner's explicit
-               request — it's the single strongest, most concrete
-               marketing fact here ("free" beats a discount for grabbing
-               attention) and was getting lost mid-sentence inside a
-               longer perk about club discounts. perksBonus's own text
-               (the discount-club detail) stays a separate perk below,
-               minus the "first service free" clause it used to open with. -->
-          <button type="button" class="request-perk">
-            <span class="request-perk-row">
-              <span class="mono" data-i18n="perksFreeServiceLabel"></span>
-              <svg class="request-perk-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
-            <span class="request-perk-detail" data-i18n="perksFreeService"></span>
-          </button>
-          <button type="button" class="request-perk">
-            <span class="request-perk-row">
-              <span class="mono" data-i18n="perksBonusLabel"></span>
-              <svg class="request-perk-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
-            <span class="request-perk-detail" data-i18n="perksBonus"></span>
-          </button>
-          <button type="button" class="request-perk">
-            <span class="request-perk-row">
-              <span class="mono" data-i18n="perksServiceLabel"></span>
-              <svg class="request-perk-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
-            <span class="request-perk-detail" data-i18n="perksService"></span>
-          </button>
-          <button type="button" class="request-perk">
-            <span class="request-perk-row">
-              <span class="mono" data-i18n="perksPaymentLabel"></span>
-              <svg class="request-perk-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
+          </div>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksPaymentLabel"></span>
             <span class="request-perk-detail" data-i18n="perksPayment"></span>
-          </button>
+          </div>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksTurnkeyLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksTurnkey"></span>
+          </div>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksServiceLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksService"></span>
+          </div>
+          <!-- "Первое ТО бесплатно" kept as its own perk (2026-09-06,
+               owner's explicit request) — the single strongest, most
+               concrete marketing fact here ("free" beats a discount for
+               grabbing attention), but now placed after the price/
+               process perks rather than in the middle of them, since
+               it's a post-purchase bonus, not a fear it defuses. -->
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksFreeServiceLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksFreeService"></span>
+          </div>
+          <div class="request-perk">
+            <span class="request-perk-title" data-i18n="perksBonusLabel"></span>
+            <span class="request-perk-detail" data-i18n="perksBonus"></span>
+          </div>
         </div>
       </div>
 
@@ -1766,7 +1722,7 @@ const content = {
     quickPerksLine:"Гарантия · Скидка на сервис · Цена под ключ, без доплат",
     tabCyprus:"Поиск на Кипре",
     tabJapan:"Заказ из Японии",
-    requestModalTitleJapan:"Заказать автомобиль из Японии",
+    requestModalTitleJapan:"Заказать<br>автомобиль из Японии",
     requestModalTitleCyprus:"Найти автомобиль на Кипре",
     submitBtn:"Отправить заявку",
     successMsg:"Спасибо — заявка получена. Обычно отвечаем в течение нескольких минут в Telegram или WhatsApp.",
@@ -2044,7 +2000,17 @@ function renderFormGroups(lang, intent){
   const titleEl = document.getElementById('requestModalTitle');
   if(titleEl){
     const dict = content[lang];
-    titleEl.textContent = intent === 'cyprus' ? dict.requestModalTitleCyprus : dict.requestModalTitleJapan;
+    // innerHTML here (not textContent like every other [data-i18n]
+    // element) is deliberate and safe — these two strings are our own
+    // fixed translation dictionary, never user input, and this is the
+    // one title that needs an explicit line-break point rather than
+    // leaving the browser to wrap wherever it fits. Owner report,
+    // 2026-09-07: "Заказать автомобиль из Японии" was wrapping to
+    // "Заказать автомобиль" / "из Японии" — an unbalanced 2-line split
+    // with a short, abrupt-looking second line. A <br> baked into the
+    // dictionary string itself forces the intended balanced split
+    // instead ("Заказать" / "автомобиль из Японии").
+    titleEl.innerHTML = intent === 'cyprus' ? dict.requestModalTitleCyprus : dict.requestModalTitleJapan;
   }
   const container = document.getElementById('requestGroups');
   if(!container) return;
@@ -2157,12 +2123,13 @@ const requestForm = document.getElementById('requestForm');
 const requestSuccess = document.getElementById('requestSuccess');
 const requestPerks = document.getElementById('requestPerks');
 
-// One delegated click handler covers every .request-perk button
-// regardless of which intent group it's in or how many perks exist —
-// each button just toggles its own "open" class, no per-perk wiring.
-requestPerks.addEventListener('click', (e)=>{
-  const perk = e.target.closest('.request-perk');
-  if(perk) perk.classList.toggle('open');
+// Perks are no longer a click-to-open accordion (2026-09-07 rebuild —
+// see the CSS comment above .request-perk) — this now only triggers the
+// one-at-a-time reveal animation, on a short delay after the page loads
+// so the stagger is visible rather than firing before the visitor has
+// even looked at the page.
+requestAnimationFrame(()=>{
+  setTimeout(()=> requestPerks.classList.add('perks-revealed'), 150);
 });
 
 chatFabPrompt.addEventListener('click', (e)=>{
