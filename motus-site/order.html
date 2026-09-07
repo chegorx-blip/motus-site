@@ -967,6 +967,10 @@ section{
 
 /* ---------- order page (standalone request form) ---------- */
 .order-main{padding:48px 0 64px;}
+/* Mobile-only: the 48px top gap that reads fine as breathing room on a wide
+   desktop viewport looks like a stray empty stripe on a short phone screen —
+   shrink it there without touching desktop spacing. */
+@media (max-width:640px){ .order-main{padding:20px 0 48px;} }
 .order-back-link{
   display:inline-block;
   margin-bottom:22px;
@@ -989,7 +993,15 @@ section{
 .order-card-title{
   color:var(--paper);
   font-size:clamp(22px, 2.4vw + 12px, 28px);
+  font-weight:700;
   margin-bottom:20px;
+}
+/* Mobile-only: at the small end of the clamp() the title reads too close in
+   weight/size to the perk titles below it — bump it up specifically on phone
+   widths so it visibly leads the card. Desktop already gets enough size from
+   the vw-scaling half of the clamp, so it's left untouched. */
+@media (max-width:640px){
+  .order-card-title{font-size:26px; line-height:1.18; letter-spacing:-0.01em;}
 }
 .order-card .request-tabs{margin-bottom:16px;}
 .order-card .request-perks{margin-bottom:22px;}
