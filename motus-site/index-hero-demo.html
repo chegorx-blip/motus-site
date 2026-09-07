@@ -3426,34 +3426,32 @@ quickFormToggle.addEventListener('click', closeDetailedPopover);
 // opening immediately would measure #ctaRowDual's position mid-scroll and
 // place the popover in the wrong spot.
 // Shared by every "Оформить подбор" entry point that lives OUTSIDE the
-// hero (topbar button, final-section button, and any future one) —
-// scrolls up to the hero and opens the Japan/Cyprus choice popover there,
-// instead of each one duplicating this scroll-then-open dance separately
-// (2026-09-07 refactor: was copy-pasted once already for #topbarCta,
-// about to be copy-pasted a second time for the final section's button
-// before being pulled out here instead).
+// hero (topbar button, final-section button, and any future one) — opens
+// the Japan/Cyprus choice popover and scrolls it into view, instead of
+// each one duplicating this dance separately (2026-09-07 refactor: was
+// copy-pasted once already for #topbarCta, about to be copy-pasted a
+// second time for the final section's button before being pulled out
+// here instead).
+//
+// Was scroll-to-hero-TOP then open (owner report, 2026-09-07: clicking
+// the final section's button scrolled all the way up to the hero PHOTO
+// (block:'start' on the whole #hero section), so the actual Japan/Cyprus
+// buttons landed off-screen at the very bottom of the viewport — a
+// visitor saw the headline/photo they'd already scrolled past once, not
+// what they clicked for). Fixed by reversing the order: open the popover
+// FIRST (so #ctaRowDual already has its final, grown height), THEN
+// scroll #ctaRowDual itself into view with block:'center' — that lands
+// the actual buttons in the middle of the screen regardless of how tall
+// the hero photo above them is.
 function scrollToHeroAndOpenDetailedPopover(){
-  const heroSection = document.getElementById('hero');
-  if(!heroSection){ detailedToggle.click(); return; }
-  let settled = false;
-  const openAfterScroll = ()=>{
-    if(settled) return;
-    settled = true;
-    window.removeEventListener('scroll', onScroll);
-    if(!detailedPopover.classList.contains('open')) detailedToggle.click();
-  };
-  let lastY = window.scrollY;
-  const onScroll = ()=>{
-    // scrollend isn't supported everywhere yet — fall back to "position
-    // stopped changing" via rAF polling instead of a fixed timeout guess.
-    requestAnimationFrame(()=>{
-      if(window.scrollY === lastY) openAfterScroll();
-      lastY = window.scrollY;
-    });
-  };
-  window.addEventListener('scroll', onScroll);
-  heroSection.scrollIntoView({behavior:'smooth', block:'start'});
-  setTimeout(openAfterScroll, 900); // safety net if scroll events stop firing early
+  if(!detailedPopover.classList.contains('open')) detailedToggle.click();
+  // #ctaBlock, not #ctaRowDual — ctaRowDual is just the button row itself;
+  // the popover is ctaRowDual's sibling inside ctaBlock, so centering on
+  // ctaRowDual alone could still leave the now-open popover hanging below
+  // the visible area. ctaBlock spans both, so centering on it keeps the
+  // buttons AND the freshly-opened Japan/Cyprus options in view together.
+  const target = document.getElementById('ctaBlock') || document.getElementById('hero');
+  if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
 }
 const topbarCta = document.getElementById('topbarCta');
 if(topbarCta) topbarCta.addEventListener('click', scrollToHeroAndOpenDetailedPopover);
