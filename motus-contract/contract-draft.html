@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<title>Договор Motus</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pine:#21463A;
+  --pine-deep:#182F27;
+  --ink:#14201A;
+  --bronze:#B4894E;
+  --stone:#E9E4D9;
+  --paper:#F6F3ED;
+  --border:rgba(20,32,26,0.14);
+  --border-strong:rgba(20,32,26,0.28);
+  --muted:#5C6B62;
+  --todo-bg:#FBF0D9;
+  --todo-border:#D9A441;
+  --todo-text:#8A5A00;
+  --added-bg:rgba(180,137,78,0.08);
+  --added-mark:#B4894E;
+  --bg:var(--paper);
+  --surface:#FFFFFF;
+  --text:var(--ink);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141B17;
+    --surface:#1B2621;
+    --text:#EDE9E0;
+    --muted:#9CA89F;
+    --border:rgba(237,233,224,0.14);
+    --border-strong:rgba(237,233,224,0.26);
+    --pine:#2C5646;
+    --pine-deep:#1E3A2E;
+    --todo-bg:#3A2F12;
+    --todo-border:#B4894E;
+    --todo-text:#F0C468;
+    --added-bg:rgba(180,137,78,0.14);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141B17;
+  --surface:#1B2621;
+  --text:#EDE9E0;
+  --muted:#9CA89F;
+  --border:rgba(237,233,224,0.14);
+  --border-strong:rgba(237,233,224,0.26);
+  --pine:#2C5646;
+  --pine-deep:#1E3A2E;
+  --todo-bg:#3A2F12;
+  --todo-border:#B4894E;
+  --todo-text:#F0C468;
+  --added-bg:rgba(180,137,78,0.14);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Golos Text',system-ui,sans-serif;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.pagewrap{max-width:1180px; margin:0 auto; padding:0 20px 100px;}
+
+/* ---------- top notice bar (not part of the contract itself) ---------- */
+.notice{
+  background:var(--pine-deep);
+  color:var(--stone);
+  padding:14px 20px;
+  font-size:13px;
+  line-height:1.6;
+}
+.notice-inner{max-width:1180px; margin:0 auto; display:flex; gap:10px; align-items:flex-start;}
+.notice b{color:var(--paper);}
+.notice-icon{flex:none; width:18px; height:18px; margin-top:1px; opacity:0.85;}
+
+/* ---------- doc header ---------- */
+.doc-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:24px;
+  padding:36px 0 22px;
+  border-bottom:2px solid var(--pine);
+  flex-wrap:wrap;
+}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-mark{
+  width:38px; height:38px; border-radius:50%;
+  border:2px solid var(--pine);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Golos Text',sans-serif; font-weight:700; font-size:17px; color:var(--pine);
+  flex:none;
+}
+.brand-name{font-size:19px; font-weight:700; letter-spacing:0.01em;}
+.brand-role{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--muted); margin-top:1px;
+}
+.doc-header-right{display:flex; align-items:center; gap:22px;}
+.provider-badge{text-align:right;}
+.provider-badge-label{
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--bronze); margin-bottom:2px;
+}
+.provider-badge-name{font-size:15px; font-weight:600;}
+
+.doc-title-block{padding:26px 0 8px;}
+.doc-eyebrow{
+  font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--bronze); margin-bottom:8px;
+}
+.doc-titles{display:grid; grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr); gap:0; align-items:start;}
+.doc-title-ru h1, .doc-title-en h1{
+  font-size:clamp(21px,1.6vw + 14px,27px);
+  margin:0 0 6px;
+  text-wrap:balance;
+}
+.doc-title-ru p, .doc-title-en p{margin:0; color:var(--muted); font-size:14px;}
+.doc-title-en{border-left:1px solid var(--border); padding-left:24px;}
+.doc-title-ru{padding-right:24px;}
+
+.meta-row{
+  display:grid; grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);
+  gap:0; margin-top:22px;
+}
+.meta-field{padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:5px;}
+.meta-field + .meta-field{margin-top:10px;}
+.meta-label{
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:4px;
+}
+.meta-value{font-size:14.5px;}
+.meta-value.blank{color:var(--muted); border-bottom:1px dashed var(--border-strong); display:inline-block; min-width:70%;}
+.meta-col-ru{display:flex; flex-direction:column; gap:10px;}
+.meta-col-en{display:flex; flex-direction:column; gap:10px; border-left:1px solid var(--border); padding-left:24px;}
+.meta-col-ru{padding-right:24px;}
+
+/* ---------- placeholder / editorial tags ---------- */
+.todo{
+  background:var(--todo-bg);
+  border:1px dashed var(--todo-border);
+  border-radius:4px;
+  color:var(--todo-text);
+  padding:1px 7px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.86em;
+  font-weight:600;
+  white-space:nowrap;
+}
+.added{position:relative; background:var(--added-bg);}
+.added-tag{
+  display:inline-block;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--bronze);
+  background:var(--added-bg);
+  border:1px solid var(--bronze);
+  border-radius:3px;
+  padding:1px 5px;
+  margin-left:6px;
+  vertical-align:2px;
+}
+
+/* ---------- clause table ---------- */
+.clauses{margin-top:8px; border-top:2px solid var(--border-strong);}
+.clause{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);
+  border-bottom:1px solid var(--border);
+}
+.clause-head{
+  background:var(--pine);
+  color:var(--paper);
+}
+.clause-head .clause-num{background:var(--pine-deep); color:var(--paper);}
+.clause-head h2{font-size:15px; margin:0; padding:11px 16px; font-weight:600;}
+.clause-head .en h2{border-left:1px solid rgba(246,243,237,0.18);}
+.clause-num{
+  display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--bronze); font-weight:600;
+  border-left:1px solid var(--border); border-right:1px solid var(--border);
+}
+.clause-body-ru, .clause-body-en{padding:14px 16px; font-size:14px;}
+.clause-body-en{border-left:1px solid var(--border); color:var(--text);}
+.clause-body-ru p, .clause-body-en p{margin:0 0 9px;}
+.clause-body-ru p:last-child, .clause-body-en p:last-child{margin-bottom:0;}
+.clause-sub{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--bronze); margin-right:5px;}
+
+.field-line{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin-top:10px; padding:9px 12px;
+  background:var(--surface); border:1px solid var(--border); border-radius:4px;
+}
+.field-line-label{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--muted);
+}
+.field-line-value{font-variant-numeric:tabular-nums; font-weight:600; color:var(--bronze); font-size:15px;}
+
+/* ---------- client details ---------- */
+.client-section{margin-top:34px;}
+.client-head{
+  display:grid; grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);
+  background:var(--stone);
+}
+:root[data-theme="dark"] .client-head, @media (prefers-color-scheme:dark){ }
+.client-head h2{font-size:15px; margin:0; padding:11px 16px; font-weight:600; color:var(--ink);}
+.client-head .en h2{border-left:1px solid var(--border-strong);}
+.client-grid{
+  display:grid; grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);
+  border:1px solid var(--border); border-top:none;
+}
+.client-fields-ru, .client-fields-en{padding:16px;}
+.client-fields-en{border-left:1px solid var(--border);}
+.cf-row{padding:9px 0; border-bottom:1px solid var(--border);}
+.cf-row:last-child{border-bottom:none;}
+.cf-label{font-size:12.5px; color:var(--muted); margin-bottom:3px;}
+.cf-blank{border-bottom:1px solid var(--border-strong); min-height:18px;}
+
+/* ---------- signatures ---------- */
+.sign-section{margin-top:6px; border:1px solid var(--border); border-top:none;}
+.sign-grid{display:grid; grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);}
+.sign-col{padding:20px 16px;}
+.sign-col.en{border-left:1px solid var(--border);}
+.sign-role{font-size:12px; font-family:'IBM Plex Mono',monospace; letter-spacing:0.06em; text-transform:uppercase; color:var(--bronze); margin-bottom:14px;}
+.sign-line{border-bottom:1px solid var(--border-strong); height:34px; margin-bottom:5px;}
+.sign-caption{font-size:11.5px; color:var(--muted);}
+
+/* ---------- legend / footer ---------- */
+.legend{
+  margin-top:40px; padding:16px 18px;
+  background:var(--surface); border:1px solid var(--border); border-radius:6px;
+  font-size:13px; color:var(--muted); line-height:1.65;
+}
+.legend-title{font-size:12px; font-weight:600; color:var(--text); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.06em; font-family:'IBM Plex Mono',monospace;}
+.legend-row{display:flex; align-items:center; gap:8px; margin-bottom:5px;}
+.legend-row:last-child{margin-bottom:0;}
+
+.center-col-spacer{}
+
+@media (max-width:820px){
+  .doc-titles, .meta-row, .clause, .client-head, .client-grid, .sign-grid{
+    grid-template-columns:1fr;
+  }
+  .doc-title-en, .meta-col-en, .clause-body-en, .client-fields-en, .sign-col.en{
+    border-left:none; padding-left:0; border-top:1px solid var(--border); margin-top:14px; padding-top:14px;
+  }
+  .clause-num{display:none;}
+  .clause-head h2{padding:10px 14px;}
+  .clause-head .en h2{border-left:none;}
+  .client-head .en h2{border-left:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="notice">
+  <div class="notice-inner">
+    <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+    <div>
+      <b>Черновик для вычитки, не финальный текст.</b> Собран из двух источников: формата и части
+      формулировок вашего двухколоночного шаблона + защитных юридических механизмов
+      (неустойка, форс-мажор, ответственность за дефекты, разрешение споров) из
+      одноязычного варианта юристов — с адаптацией под морскую доставку (без жёстких
+      сроков) и с CL MOTUS LTD как Исполнителем вместо AutoExpert. Поля вида
+      <span class="todo">[ТАК]</span> — то, что нужно вписать или подтвердить у юриста перед
+      использованием. Абзацы с меткой <span class="added-tag">добавлено</span> — новые по
+      сравнению с вашей версией, перенесённые из юридического файла.
+    </div>
+  </div>
+</div>
+
+<div class="pagewrap">
+
+  <div class="doc-header">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div>
+        <div class="brand-name">MOTUS</div>
+        <div class="brand-role">Импорт и продажа · Imported &amp; sold by</div>
+      </div>
+    </div>
+    <div class="doc-header-right">
+      <div class="provider-badge">
+        <div class="provider-badge-label">Исполнитель · Service Provider</div>
+        <div class="provider-badge-name">CL MOTUS LTD</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-title-block">
+    <div class="doc-eyebrow">Русский · English</div>
+    <div class="doc-titles">
+      <div class="doc-title-ru">
+        <h1>Договор на оказание услуг по подбору, покупке и доставке автомобиля с аукционов Японии</h1>
+        <p>Юридически значимый текст — русская версия является вспомогательной.</p>
+      </div>
+      <div class="center-col-spacer"></div>
+      <div class="doc-title-en">
+        <h1>Contract for vehicle selection, purchase and delivery from Japanese auctions</h1>
+        <p>The English text is the governing version of this Agreement.</p>
+      </div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-col-ru">
+        <div class="meta-field">
+          <div class="meta-label">Договор №</div>
+          <div class="meta-value blank todo">[НОМЕР ДОГОВОРА]</div>
+        </div>
+        <div class="meta-field">
+          <div class="meta-label">Место, дата</div>
+          <div class="meta-value">Лимассол, <span class="todo">[ДД.ММ.ГГГГ]</span></div>
+        </div>
+      </div>
+      <div class="center-col-spacer"></div>
+      <div class="meta-col-en">
+        <div class="meta-field">
+          <div class="meta-label">Contract No.</div>
+          <div class="meta-value blank todo">[CONTRACT NO.]</div>
+        </div>
+        <div class="meta-field">
+          <div class="meta-label">Place, date</div>
+          <div class="meta-value">Limassol, <span class="todo">[DD.MM.YYYY]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="clauses">
+
+    <!-- 1. Стороны -->
+    <div class="clause clause-head">
+      <div><h2>Стороны</h2></div>
+      <div class="clause-num">1</div>
+      <div class="en"><h2>Parties</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">1.1</span><b>Исполнитель:</b> CL MOTUS LTD, рег. № <span class="todo">[HE-НОМЕР]</span>, VAT <span class="todo">[VAT-НОМЕР]</span>, Giannou Kranidioti 21, Limassol 3110, Cyprus — далее «Исполнитель».</p>
+        <p><span class="clause-sub">1.2</span><b>Заказчик</b> — физическое лицо, чьи данные указаны в разделе «Данные Заказчика» ниже, далее «Заказчик».</p>
+        <p><span class="clause-sub">1.3</span>Стороны заключили настоящий договор о нижеследующем.</p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">1.1</span><b>Service Provider:</b> CL MOTUS LTD, Reg. No. <span class="todo">[HE NUMBER]</span>, VAT <span class="todo">[VAT NUMBER]</span>, Giannou Kranidioti 21, Limassol 3110, Cyprus — hereinafter the "Service Provider".</p>
+        <p><span class="clause-sub">1.2</span><b>The Client</b> — the individual whose details are set out in the "Client Details" section below, hereinafter the "Client".</p>
+        <p><span class="clause-sub">1.3</span>The Parties have entered into this Agreement as follows.</p>
+      </div>
+    </div>
+
+    <!-- 2. Предмет договора -->
+    <div class="clause clause-head">
+      <div><h2>Предмет договора</h2></div>
+      <div class="clause-num">2</div>
+      <div class="en"><h2>Subject</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">2.1</span>Исполнитель оказывает услуги по подбору, покупке и организации доставки автомобиля с аукционов Японии в рамках согласованной итоговой стоимости «под ключ».</p>
+        <p><span class="clause-sub">2.2</span>Исполнитель действует как агент Заказчика. Продавцом является аукционный дом в Японии; Исполнитель приобретает права и обязанности по сделке от своего имени, но за счёт Заказчика.</p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">2.1</span>The Service Provider renders services for vehicle selection, purchase and delivery from Japanese auctions within the agreed total turnkey price.</p>
+        <p><span class="clause-sub">2.2</span>The Service Provider acts as the Client's agent. The seller is the auction house in Japan; the Service Provider acquires rights and obligations under the sale in its own name, but at the Client's expense.</p>
+      </div>
+    </div>
+
+    <!-- 3. Порядок работы -->
+    <div class="clause clause-head">
+      <div><h2>Порядок работы</h2></div>
+      <div class="clause-num">3</div>
+      <div class="en"><h2>Procedure</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">3.1</span>Заказчик согласовывает параметры автомобиля и итоговую стоимость «под ключ» — сумму, которую Заказчик оплачивает за автомобиль, готовый к эксплуатации на Кипре.</p>
+        <p><span class="clause-sub">3.2</span>Исполнитель участвует в аукционе от своего имени и после выигрыша незамедлительно уведомляет Заказчика.</p>
+        <p><span class="clause-sub">3.3</span>Исполнитель организует транспортировку, таможенное оформление, прохождение MOT и регистрацию автомобиля на Кипре.</p>
+        <p><span class="clause-sub">3.4</span>Передача автомобиля производится после: полного проведения всех расчётов; прохождения автомобилем всех этапов оформления; подготовки автомобиля к передаче Заказчику.</p>
+        <p class="added"><span class="clause-sub">3.5</span>Заказчик обязан подтвердить получение от Исполнителя информации о состоявшейся или несостоявшейся сделке по приобретению ТС, направив подтверждение по телефону, электронной почте или SMS. <span class="added-tag">добавлено</span></p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">3.1</span>The Client approves vehicle parameters and the agreed turnkey price — the total amount the Client pays for the vehicle ready for use in Cyprus.</p>
+        <p><span class="clause-sub">3.2</span>The Service Provider participates in the auction and upon winning immediately notifies the Client.</p>
+        <p><span class="clause-sub">3.3</span>The Service Provider arranges transportation, customs clearance, MOT and vehicle registration in Cyprus.</p>
+        <p><span class="clause-sub">3.4</span>The vehicle is handed over after: all payments are completed; the vehicle has passed all registration stages; the vehicle has been prepared for handover to the Client.</p>
+        <p class="added"><span class="clause-sub">3.5</span>The Client must confirm receipt of the Service Provider's notice of a successful or unsuccessful purchase, by phone, email or SMS. <span class="added-tag">added</span></p>
+      </div>
+    </div>
+
+    <!-- 4. Стоимость и оплата -->
+    <div class="clause clause-head">
+      <div><h2>Стоимость и оплата</h2></div>
+      <div class="clause-num">4</div>
+      <div class="en"><h2>Price &amp; Payment</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">4.1</span>Согласованная итоговая стоимость включает все расходы: аукционную цену, комиссию Исполнителя, фрахт, таможенные пошлины, НДС, MOT и регистрацию на Кипре.</p>
+        <div class="field-line"><span class="field-line-label">Итоговая стоимость</span><span class="field-line-value todo">[€ ЦЕНА]</span></div>
+        <p><span class="clause-sub">4.2</span>Для начала работы Заказчик вносит предоплату в размере не менее 10% от предполагаемой стоимости автомобиля, необходимую для участия в аукционе. Последующие платежи согласовываются Сторонами индивидуально.</p>
+        <div class="field-line"><span class="field-line-label">Предоплата</span><span class="field-line-value todo">[€ СУММА]</span></div>
+        <p><span class="clause-sub">4.3</span>Все платежи должны быть завершены в полном объёме до момента передачи автомобиля. Заказчик вправе произвести оплату досрочно.</p>
+        <p><span class="clause-sub">4.4</span>Предоплата является невозвратной после выигрыша автомобиля на аукционе и подтверждения Заказчиком намерения о покупке. Все последующие платежи также не подлежат возврату.</p>
+        <p class="added"><span class="clause-sub">4.5</span>При просрочке платежей, предусмотренных согласованным графиком расчётов, Заказчик уплачивает Исполнителю неустойку в размере 0,33% от суммы просроченного платежа за каждый день просрочки, но не более 5% от суммы платежа. Автомобиль не передаётся Заказчику до уплаты неустойки. <span class="added-tag">добавлено</span></p>
+        <p class="added"><span class="clause-sub">4.6</span>При отказе Заказчика от дальнейшей оплаты после выигрыша автомобиля на аукционе договор считается расторгнутым по инициативе Заказчика; уплаченная предоплата не возвращается в порядке, предусмотренном п. 4.4. <span class="added-tag">добавлено</span></p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">4.1</span>The agreed total price includes all costs: auction price, commission, freight, customs duties, VAT, MOT and Cyprus registration.</p>
+        <div class="field-line"><span class="field-line-label">Total price</span><span class="field-line-value todo">[€ PRICE]</span></div>
+        <p><span class="clause-sub">4.2</span>To commence work, the Client pays an advance of no less than 10% of the estimated vehicle price, required to participate in the auction. Subsequent payments are agreed individually between the Parties.</p>
+        <div class="field-line"><span class="field-line-label">Advance</span><span class="field-line-value todo">[€ AMOUNT]</span></div>
+        <p><span class="clause-sub">4.3</span>All payments must be completed in full prior to vehicle handover. The Client may pay earlier.</p>
+        <p><span class="clause-sub">4.4</span>The advance is non-refundable after the vehicle is won at auction and the Client confirms the purchase. All subsequent payments are also non-refundable.</p>
+        <p class="added"><span class="clause-sub">4.5</span>Should any payment under the agreed schedule be delayed, the Client shall pay the Service Provider a penalty of 0.33% of the overdue amount per day of delay, capped at 5% of that payment. The vehicle is not released to the Client until the penalty is paid. <span class="added-tag">added</span></p>
+        <p class="added"><span class="clause-sub">4.6</span>Should the Client refuse further payment after the vehicle is won at auction, the Agreement is deemed terminated at the Client's initiative; the advance paid is forfeited per clause 4.4. <span class="added-tag">added</span></p>
+      </div>
+    </div>
+
+    <!-- 5. Состояние автомобиля -->
+    <div class="clause clause-head">
+      <div><h2>Состояние автомобиля</h2></div>
+      <div class="clause-num">5</div>
+      <div class="en"><h2>Vehicle Condition</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">5.1</span>Автомобиль проходит профессиональную инспекцию аукционного дома. Исполнитель предоставляет Заказчику аукционный лист и всю доступную информацию об автомобиле.</p>
+        <p><span class="clause-sub">5.2</span>Исполнитель действует в интересах Заказчика и прилагает все усилия для выбора автомобиля в наилучшем состоянии согласно аукционным данным.</p>
+        <p><span class="clause-sub">5.3</span>Гарантия на двигатель и КПП сроком 1 (один) год или 15 000 км (что наступит раньше) предоставляется при одновременном выполнении двух условий: пробег на момент покупки не превышает 60 000 км; Заказчик проходит техническое обслуживание исключительно в партнёрском сервисном центре Исполнителя (Лимассол) согласно установленному регламенту и в указанные сроки.</p>
+        <p class="added"><span class="clause-sub">5.4</span>При обнаружении в приобретённом автомобиле новых дефектов лакокрасочного покрытия кузова, возникших в процессе доставки до порта назначения, Исполнитель по обоснованному требованию Заказчика: а) безвозмездно устраняет существенные недостатки; либо б) соразмерно уменьшает вознаграждение Исполнителя. <span class="added-tag">добавлено</span></p>
+        <p class="added"><span class="clause-sub">5.5</span>Если выявленные существенные недостатки не устранены и расходы на их устранение не возмещены Исполнителем в течение 30 дней с момента предъявления обоснованного требования, Заказчик вправе потребовать возврата уплаченной стоимости автомобиля (или её части), пропорционально степени недостатка. <span class="added-tag">добавлено</span></p>
+        <p class="added"><span class="clause-sub">5.6</span>Исполнитель не несёт ответственности за: сохранность и комплектность вложений (запасные колёса, инструмент, ключи, карты памяти, сервисные книжки и пр.); новые дефекты, возникшие в результате крепления автомобиля при транспортировке (следы от строп, сколы или царапины на дисках), если они не выходят за пределы обычной практики морской перевозки. <span class="added-tag">добавлено</span></p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">5.1</span>The vehicle undergoes professional inspection by the auction house. The Service Provider provides the auction sheet and all available vehicle information.</p>
+        <p><span class="clause-sub">5.2</span>The Service Provider acts in the Client's interest and makes every effort to select a vehicle in the best condition per auction data.</p>
+        <p><span class="clause-sub">5.3</span>Engine and gearbox warranty of 1 (one) year or 15,000 km (whichever comes first) is provided when two conditions are met simultaneously: mileage at purchase does not exceed 60,000 km; the Client performs all maintenance exclusively at the Service Provider's partner service centre (Limassol) per the established service schedule.</p>
+        <p class="added"><span class="clause-sub">5.4</span>Should new bodywork/paint defects be found on the vehicle, arising during transit to the port of destination, the Service Provider shall, upon the Client's reasonable request: (a) remedy material defects at no cost; or (b) reduce its fee proportionately. <span class="added-tag">added</span></p>
+        <p class="added"><span class="clause-sub">5.5</span>If material defects are not remedied, or the cost of remedying them is not reimbursed by the Service Provider within 30 days of a reasonable request, the Client may claim a refund of the price paid for the vehicle (or a proportionate part of it). <span class="added-tag">added</span></p>
+        <p class="added"><span class="clause-sub">5.6</span>The Service Provider is not liable for: the presence or condition of accessories (spare wheels, tools, keys, memory cards, service books, etc.); new defects arising from securing the vehicle during transport (strap marks, chips or scratches on wheels), where these do not exceed what is ordinary in sea freight. <span class="added-tag">added</span></p>
+      </div>
+    </div>
+
+    <!-- 6. Доставка и логистика -->
+    <div class="clause clause-head">
+      <div><h2>Доставка и логистика</h2></div>
+      <div class="clause-num">6</div>
+      <div class="en"><h2>Delivery &amp; Logistics</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">6.1</span>Стоимость доставки рассчитана на момент заключения договора и включена в итоговую цену. Исполнитель организует доставку в интересах Заказчика, выбирая надёжных перевозчиков.</p>
+        <p><span class="clause-sub">6.2</span>В случае изменения тарифов перевозчиков, портовых сборов или иных логистических условий Исполнитель незамедлительно уведомляет Заказчика, объясняет причины и согласовывает доплату. Исполнитель не получает выгоды от таких изменений.</p>
+        <p class="added"><span class="clause-sub">6.3</span>Исполнитель несёт ответственность за сохранность автомобиля до момента его передачи Заказчику лично или представителю транспортной компании, выбранной Заказчиком. <span class="added-tag">добавлено</span></p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">6.1</span>Delivery cost is calculated at the time of signing and included in the total price. The Service Provider organises delivery on behalf of the Client, selecting reliable carriers.</p>
+        <p><span class="clause-sub">6.2</span>Should freight rates, port charges or other logistics conditions change, the Service Provider immediately notifies the Client, explains the reasons and agrees on any additional payment. The Service Provider does not benefit from such changes.</p>
+        <p class="added"><span class="clause-sub">6.3</span>The Service Provider is responsible for the vehicle's safekeeping until it is handed over to the Client in person or to a carrier's representative chosen by the Client. <span class="added-tag">added</span></p>
+      </div>
+    </div>
+
+    <!-- 7. Сроки -->
+    <div class="clause clause-head">
+      <div><h2>Сроки</h2></div>
+      <div class="clause-num">7</div>
+      <div class="en"><h2>Timeline</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">7.1</span>Подбор: ориентировочно до 15 рабочих дней с момента подписания договора и внесения предоплаты. Если автомобиль не выигран — Заказчик вправе вернуть предоплату или продолжить поиск.</p>
+        <p class="added"><span class="clause-sub">7.2</span>Дальнейшие сроки — подготовка и отправка автомобиля из Японии, морская доставка до Кипра, таможенное оформление — зависят от результатов аукциона, расписания морских линий, портовой загруженности и иных факторов, находящихся вне контроля Исполнителя, и определяются индивидуально по каждому автомобилю. Исполнитель информирует Заказчика об ожидаемых сроках по мере их уточнения на каждом этапе. <span class="added-tag">переработано</span></p>
+        <p class="added"><span class="clause-sub">7.3</span>Сроки по настоящему разделу являются ориентировочными и не составляют гарантированное обязательство Исполнителя. Обстоятельства, указанные в п. 7.2, а также форс-мажор по разделу 8, сами по себе не являются нарушением договора и не влекут ответственности Исполнителя. <span class="added-tag">добавлено</span></p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">7.1</span>Selection: estimated up to 15 business days from signing and advance payment. If no vehicle is won — the Client may withdraw the advance or continue the search.</p>
+        <p class="added"><span class="clause-sub">7.2</span>Further timelines — preparation and dispatch from Japan, sea delivery to Cyprus, customs clearance — depend on auction outcomes, shipping line schedules, port congestion and other factors outside the Service Provider's control, and are determined individually for each vehicle. The Service Provider keeps the Client informed of expected timing as it becomes clearer at each stage. <span class="added-tag">reworked</span></p>
+        <p class="added"><span class="clause-sub">7.3</span>Timeframes under this Section are estimates and do not constitute a guaranteed commitment by the Service Provider. The circumstances listed in 7.2, as well as force majeure under Section 8, are not in themselves a breach of this Agreement and do not give rise to liability. <span class="added-tag">added</span></p>
+      </div>
+    </div>
+
+    <!-- 8. Форс-мажор -->
+    <div class="clause clause-head">
+      <div><h2>Форс-мажор</h2></div>
+      <div class="clause-num">8</div>
+      <div class="en"><h2>Force Majeure</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">8.1</span>Стороны освобождаются от ответственности за неисполнение или задержку исполнения обязательств по настоящему Договору, если это вызвано обстоятельствами непреодолимой силы, включая наводнения, землетрясения и иные стихийные бедствия, войны, блокады и военные действия (в том числе в морских проливах и на маршрутах перевозки), моратории, перебои в работе железнодорожного и морского транспорта, отсутствие мест на судах, резкое изменение стоимости топлива или фрахта, а также иные обстоятельства, находящиеся вне разумного контроля Стороны. <span class="added-tag">расширено</span></p>
+        <p><span class="clause-sub">8.2</span>Сторона, для которой стало невозможным дальнейшее исполнение обязательств, обязана в 10-дневный срок уведомить другую Сторону о начале и об окончании действия таких обстоятельств.</p>
+        <p><span class="clause-sub">8.3</span>Если обстоятельства непреодолимой силы длятся более 6 месяцев, каждая из Сторон вправе отказаться от дальнейшего исполнения Договора, и в этом случае ни одна из Сторон не вправе требовать возмещения причинённого этим убытка.</p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">8.1</span>The Parties are released from liability for non-performance or delayed performance caused by force majeure, including floods, earthquakes and other natural disasters, war, blockades and hostilities (including in shipping straits and along transport routes), moratoria, disruption of rail or sea transport, unavailability of vessel space, sudden changes in fuel or freight cost, and other circumstances beyond a Party's reasonable control. <span class="added-tag">expanded</span></p>
+        <p><span class="clause-sub">8.2</span>The Party for whom further performance becomes impossible must notify the other Party within 10 days of the start and end of such circumstances.</p>
+        <p><span class="clause-sub">8.3</span>Should force majeure last more than 6 months, either Party may withdraw from further performance of the Agreement, and neither Party may claim compensation for resulting loss.</p>
+      </div>
+    </div>
+
+    <!-- 9. Ответственность -->
+    <div class="clause clause-head">
+      <div><h2>Ответственность</h2></div>
+      <div class="clause-num">9</div>
+      <div class="en"><h2>Liability</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">9.1</span>Ответственность Исполнителя ограничена суммой его вознаграждения по настоящему Договору и не распространяется на действия аукционных домов, перевозчиков и таможенных органов.</p>
+        <p><span class="clause-sub">9.2</span>Исполнитель не несёт ответственности за изменение таможенных пошлин, сроков и порядка таможенного оформления, устанавливаемых компетентными органами Республики Кипр.</p>
+        <p class="added"><span class="clause-sub">9.3</span>Сторона, виновная в причинении убытков другой Стороне, возмещает их в порядке, установленном законодательством Республики Кипр. Меры ответственности, прямо не предусмотренные настоящим Договором, применяются в соответствии с действующим законодательством Республики Кипр. <span class="added-tag">добавлено</span></p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">9.1</span>The Service Provider's liability is limited to the amount of its fee under this Agreement and does not extend to the acts of auction houses, carriers or customs authorities.</p>
+        <p><span class="clause-sub">9.2</span>The Service Provider is not liable for changes in customs duties, timelines or clearance procedures set by the competent authorities of the Republic of Cyprus.</p>
+        <p class="added"><span class="clause-sub">9.3</span>A Party at fault for loss caused to the other Party shall compensate it as provided under the laws of the Republic of Cyprus. Liability not expressly covered by this Agreement is governed by the applicable law of the Republic of Cyprus. <span class="added-tag">added</span></p>
+      </div>
+    </div>
+
+    <!-- 10. Применимое право -->
+    <div class="clause clause-head">
+      <div><h2>Применимое право и споры</h2></div>
+      <div class="clause-num">10</div>
+      <div class="en"><h2>Governing Law &amp; Disputes</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">10.1</span>Договор регулируется законодательством Республики Кипр. Оба текста (RU и EN) подписываются Сторонами; в случае расхождений между версиями текст на английском языке имеет преимущественную силу.</p>
+        <p><span class="clause-sub">10.2</span>Любые споры разрешаются Сторонами путём переговоров. При недостижении согласия спор передаётся на рассмотрение компетентного суда Республики Кипр.</p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">10.1</span>This Agreement is governed by the law of the Republic of Cyprus. Both texts (RU and EN) are signed by the Parties; in case of discrepancy between versions, the English text prevails.</p>
+        <p><span class="clause-sub">10.2</span>Disputes are resolved by negotiation between the Parties. If unresolved, the dispute is referred to the competent court of the Republic of Cyprus.</p>
+      </div>
+    </div>
+
+    <!-- 11. Гарантийное обслуживание -->
+    <div class="clause clause-head">
+      <div><h2>Гарантийное обслуживание</h2></div>
+      <div class="clause-num">11</div>
+      <div class="en"><h2>Warranty Service</h2></div>
+    </div>
+    <div class="clause">
+      <div class="clause-body-ru">
+        <p><span class="clause-sub">11.1</span>Гарантийное и сервисное обслуживание, указанное в п. 5.3, фактически производится в партнёрском сервисном центре Исполнителя по адресу: Giannou Kranidioti 21, Limassol 3110, Cyprus. <span class="todo">[ПРОВЕРИТЬ ФОРМУЛИРОВКУ С ЮРИСТОМ — упоминание конкретного адреса без названия юрлица-партнёра]</span></p>
+      </div>
+      <div class="clause-body-en">
+        <p><span class="clause-sub">11.1</span>Warranty and maintenance service under clause 5.3 is carried out at the Service Provider's partner service centre at: Giannou Kranidioti 21, Limassol 3110, Cyprus. <span class="todo">[CONFIRM WORDING WITH LAWYER — naming an address without naming a partner legal entity]</span></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ---------- client details ---------- -->
+  <div class="client-section">
+    <div class="client-head">
+      <div><h2>Данные Заказчика</h2></div>
+      <div class="clause-num" style="background:var(--stone); color:var(--ink); border-color:var(--border-strong);">12</div>
+      <div class="en"><h2>Client Details</h2></div>
+    </div>
+    <div class="client-grid">
+      <div class="client-fields-ru">
+        <div class="cf-row"><div class="cf-label">Фамилия и имя</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">Дата рождения</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">ID / номер паспорта</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">Адрес с индексом</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">Телефон · Email</div><div class="cf-blank"></div></div>
+      </div>
+      <div class="client-fields-en">
+        <div class="cf-row"><div class="cf-label">Full name</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">Date of birth</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">ID or passport no.</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">Address with postcode</div><div class="cf-blank"></div></div>
+        <div class="cf-row"><div class="cf-label">Phone · Email</div><div class="cf-blank"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- signatures ---------- -->
+  <div class="sign-section">
+    <div class="sign-grid">
+      <div class="sign-col ru">
+        <div class="sign-role">Исполнитель</div>
+        <div class="sign-line"></div>
+        <div class="sign-caption">Подпись, печать · CL MOTUS LTD</div>
+        <div class="sign-line" style="margin-top:16px; max-width:160px;"></div>
+        <div class="sign-caption">Дата</div>
+      </div>
+      <div class="sign-col en">
+        <div class="sign-role">Client</div>
+        <div class="sign-line"></div>
+        <div class="sign-caption">Подпись · Signature</div>
+        <div class="sign-line" style="margin-top:16px; max-width:160px;"></div>
+        <div class="sign-caption">Дата · Date</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-title">Легенда черновика</div>
+    <div class="legend-row"><span class="todo">[ТАК]</span> — вписать данные или подтвердить формулировку у юриста перед использованием.</div>
+    <div class="legend-row"><span class="added-tag">добавлено</span> / <span class="added-tag">расширено</span> — пункт или формулировка, перенесённая или адаптированная из юридического варианта, отсутствовавшая в исходном двухколоночном шаблоне.</div>
+  </div>
+
+</div>
+</body>
+</html>
