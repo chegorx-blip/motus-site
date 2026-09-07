@@ -2604,6 +2604,7 @@ section{
 <script>
 const content = {
   en:{
+    pageTitle:"Motus — Verified. Guaranteed. Ready to drive.",
     eyebrow:"VERIFIED · GUARANTEED · READY TO DRIVE",
     h1:"Verified cars from Japan. Delivered to Cyprus. Ready to use from day one.",
     h1Lines:["Verified cars from Japan.","Delivered to Cyprus.","Ready to use from day one."],
@@ -2714,6 +2715,7 @@ const content = {
     }
   },
   ru:{
+    pageTitle:"Motus — Проверено. Гарантия. Готово к дороге.",
     eyebrow:"ПРОВЕРЕНО · ГАРАНТИЯ · ГОТОВО К ДОРОГЕ",
     h1:"Проверенные автомобили из Японии. Доставка на Кипр. Готовы к эксплуатации с первого дня.",
     h1Lines:["Проверенные автомобили из Японии.","Доставка на Кипр.","Готовы к эксплуатации с первого дня."],
@@ -2824,6 +2826,7 @@ const content = {
     }
   },
   el:{
+    pageTitle:"Motus — Επαληθευμένο. Εγγύηση. Έτοιμο για δρόμο.",
     eyebrow:"ΕΠΑΛΗΘΕΥΜΕΝΟ · ΕΓΓΥΗΣΗ · ΕΤΟΙΜΟ ΓΙΑ ΔΡΟΜΟ",
     h1:"Ελεγμένα αυτοκίνητα από την Ιαπωνία. Παράδοση στην Κύπρο. Έτοιμα για χρήση από την πρώτη μέρα.",
     h1Lines:["Ελεγμένα αυτοκίνητα από την Ιαπωνία.","Παράδοση στην Κύπρο.","Έτοιμα για χρήση από την πρώτη μέρα."],
@@ -2949,6 +2952,10 @@ function detectLang(){
 function render(lang){
   const dict = content[lang];
   document.documentElement.lang = lang;
+  // Browser tab title wasn't translating (2026-09-07 audit finding) — every
+  // on-page string switched with the language, but the <title> tag was set
+  // once in the static HTML and never touched again.
+  if(dict.pageTitle) document.title = dict.pageTitle;
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
     if(dict[key] !== undefined) el.textContent = dict[key];

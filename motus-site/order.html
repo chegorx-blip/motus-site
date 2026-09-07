@@ -1695,6 +1695,7 @@ section{
 <script>
 const content = {
   en:{
+    pageTitle:"Find your car — Motus",
     eyebrow:"VERIFIED · GUARANTEED · READY TO DRIVE",
     h1:"Verified cars from Japan. Delivered to Cyprus. Ready to drive.",
     sub:"Every car is inspected before you get the keys — the first check is on us.",
@@ -1784,6 +1785,7 @@ const content = {
     }
   },
   ru:{
+    pageTitle:"Найдите свой автомобиль — Motus",
     eyebrow:"ПРОВЕРЕНО · ГАРАНТИЯ · ГОТОВО К ДОРОГЕ",
     h1:"Проверенные автомобили из Японии. Доставка на Кипр. Готовы к дороге.",
     sub:"Каждый автомобиль проверяется до передачи ключей — первая диагностика за наш счёт.",
@@ -1873,6 +1875,7 @@ const content = {
     }
   },
   el:{
+    pageTitle:"Βρείτε το αυτοκίνητό σας — Motus",
     eyebrow:"ΕΠΑΛΗΘΕΥΜΕΝΟ · ΕΓΓΥΗΣΗ · ΕΤΟΙΜΟ ΓΙΑ ΔΡΟΜΟ",
     h1:"Ελεγμένα αυτοκίνητα από την Ιαπωνία. Παράδοση στην Κύπρο. Έτοιμα για το δρόμο.",
     sub:"Κάθε αυτοκίνητο ελέγχεται πριν παραλάβετε τα κλειδιά — ο πρώτος έλεγχος είναι δωρεάν.",
@@ -2166,6 +2169,10 @@ function renderFormGroups(lang, intent){
 function render(lang){
   const dict = content[lang];
   document.documentElement.lang = lang;
+  // Browser tab title wasn't translating (2026-09-07 audit finding) — every
+  // on-page string switched with the language, but the <title> tag was set
+  // once in the static HTML and never touched again.
+  if(dict.pageTitle) document.title = dict.pageTitle;
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
     if(dict[key] !== undefined) el.textContent = dict[key];
